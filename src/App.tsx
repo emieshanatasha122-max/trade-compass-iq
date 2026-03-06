@@ -7,9 +7,6 @@ import { LanguageProvider } from "@/contexts/LanguageContext";
 import { FilterProvider } from "@/contexts/FilterContext";
 import DashboardLayout from "@/components/DashboardLayout";
 import Overview from "@/pages/Overview";
-import RegionalAnalysis from "@/pages/RegionalAnalysis";
-import EnterpriseAnalysis from "@/pages/EnterpriseAnalysis";
-import TradeIntelligence from "@/pages/TradeIntelligence";
 import Publications from "@/pages/Publications";
 import NotFound from "./pages/NotFound";
 
@@ -26,9 +23,6 @@ const App = () => (
             <Routes>
               <Route element={<DashboardLayout />}>
                 <Route path="/" element={<Overview />} />
-                <Route path="/regional" element={<RegionalAnalysis />} />
-                <Route path="/enterprise" element={<EnterpriseAnalysis />} />
-                <Route path="/intelligence" element={<TradeIntelligence />} />
                 <Route path="/publications" element={<Publications />} />
               </Route>
               <Route path="*" element={<NotFound />} />

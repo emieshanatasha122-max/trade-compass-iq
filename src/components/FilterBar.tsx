@@ -1,12 +1,13 @@
 import React from 'react';
 import { useFilters } from '@/contexts/FilterContext';
-import { useLanguage } from '@/contexts/LanguageContext';
+import { useLanguage, ENTERPRISE_LABEL_MAP } from '@/contexts/LanguageContext';
 import { Filter } from 'lucide-react';
 
 const YEARS = Array.from({ length: 11 }, (_, i) => 2014 + i);
 const MONTHS = Array.from({ length: 12 }, (_, i) => i + 1);
-const NEGERI = ['Selangor', 'Johor', 'Pulau Pinang', 'Sarawak', 'Sabah', 'Perak', 'Kedah', 'Pahang', 'Kelantan', 'Terengganu', 'Melaka', 'Negeri Sembilan', 'Perlis', 'W.P. Kuala Lumpur', 'W.P. Labuan'];
+const NEGERI = ['Selangor', 'Johor', 'Pulau Pinang', 'Sarawak', 'Sabah', 'Perak', 'Kedah', 'Pahang', 'Kelantan', 'Terengganu', 'Melaka', 'Negeri Sembilan', 'Perlis', 'W.P. Kuala Lumpur', 'W.P. Labuan', 'Supra'];
 const KOMODITI = ['Elektrikal & Elektronik', 'Minyak Sawit', 'Petroleum', 'Jentera', 'Getah', 'Kimia', 'Kayu', 'Tekstil', 'Logam', 'Makanan'];
+const KELUASAN_KEYS = ['LARGE', 'SME_MICRO', 'SME_SMALL', 'SME_MEDIUM', 'AGENTS'];
 
 export default function FilterBar() {
   const { filters, setFilter } = useFilters();
@@ -47,9 +48,9 @@ export default function FilterBar() {
 
       <select value={filters.keluasan} onChange={e => setFilter('keluasan', e.target.value)} className={selectClass}>
         <option value="all">{t('enterpriseSize')} - {t('all')}</option>
-        <option value="Perusahaan Besar">{t('large')}</option>
-        <option value="PKS">{t('sme')}</option>
-        <option value="Mikro">{t('micro')}</option>
+        {KELUASAN_KEYS.map(k => (
+          <option key={k} value={k}>{t(ENTERPRISE_LABEL_MAP[k])}</option>
+        ))}
       </select>
     </div>
   );
