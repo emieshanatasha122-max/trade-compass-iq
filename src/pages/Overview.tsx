@@ -1,12 +1,14 @@
 import React, { useMemo } from 'react';
 import { useFilters } from '@/contexts/FilterContext';
-import { useLanguage } from '@/contexts/LanguageContext';
+import { useLanguage, ENTERPRISE_LABEL_MAP } from '@/contexts/LanguageContext';
 import FilterBar from '@/components/FilterBar';
+import InfoTooltip from '@/components/InfoTooltip';
+import WorldMap from '@/components/WorldMap';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, CartesianGrid } from 'recharts';
 import { TrendingUp, MapPin, Package, Building2, Download } from 'lucide-react';
 import { motion } from 'framer-motion';
 
-const COLORS = ['hsl(187, 92%, 55%)', 'hsl(200, 80%, 50%)', 'hsl(160, 60%, 45%)', 'hsl(220, 60%, 60%)'];
+const COLORS = ['hsl(187, 92%, 55%)', 'hsl(200, 80%, 50%)', 'hsl(160, 60%, 45%)', 'hsl(220, 60%, 60%)', 'hsl(42, 78%, 55%)'];
 
 function formatRM(value: number): string {
   if (value >= 1e12) return `RM ${(value / 1e12).toFixed(1)}T`;
@@ -34,7 +36,8 @@ export default function Overview() {
   }, [filteredData]);
 
   const smePercent = useMemo(() => {
-    const sme = filteredData.filter(r => r.keluasanSyarikat === 'PKS').reduce((s, r) => s + r.jumlahDaganganRM, 0);
+    const smeKeys = ['SME_MICRO', 'SME_SMALL', 'SME_MEDIUM'];
+    const sme = filteredData.filter(r => smeKeys.includes(r.keluasanSyarikat)).reduce((s, r) => s + r.jumlahDaganganRM, 0);
     return totalTrade ? ((sme / totalTrade) * 100).toFixed(1) : '0';
   }, [filteredData, totalTrade]);
 
@@ -50,7 +53,24 @@ export default function Overview() {
   const enterpriseData = useMemo(() => {
     const map: Record<string, number> = {};
     filteredData.forEach(r => { map[r.keluasanSyarikat] = (map[r.keluasanSyarikat] || 0) + r.jumlahDaganganRM; });
-    return Object.entries(map).map(([name, value]) => ({ name, value }));
+    return Object.entries(map).map(([key, value]) => ({
+      key,
+      name: t(ENTERPRISE_LABEL_MAP[key] || key),
+      value,
+    }));
+  }, [filteredData, t]);
+
+  // Export destination data for world map
+  const exportDestinations = useMemo(() => {
+    const map: Record<string, { value: number; code: string }> = {};
+    filteredData
+      .filter(r => r.jenisDagangan === 'Eksport' && r.kodDestinasiEksportImport)
+      .forEach(r => {
+        const code = r.kodDestinasiEksportImport;
+        if (!map[code]) map[code] = { value: 0, code };
+        map[code].value += r.jumlahDaganganRM;
+      });
+    return map;
   }, [filteredData]);
 
   const kpis = [
@@ -77,16 +97,26 @@ export default function Overview() {
         ))}
       </div>
 
+      {/* World Map */}
+      <div className="chart-container mb-4">
+        <div className="flex items-center gap-2 mb-3">
+          <h3 className="text-sm font-semibold text-foreground">{t('globalTradeMap')}</h3>
+          <InfoTooltip text={t('tooltipExportIntensity')} />
+          <div className="ml-auto flex items-center gap-1 text-[10px] text-primary hover:underline cursor-pointer">
+            <Download className="w-3 h-3" />
+            {t('exportDashboard')}
+          </div>
+        </div>
+        <WorldMap destinations={exportDestinations} />
+      </div>
+
       {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Trade by State Bar Chart */}
         <div className="lg:col-span-2 chart-container">
-          <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2 mb-3">
             <h3 className="text-sm font-semibold text-foreground">{t('tradeByState')}</h3>
-            <button className="flex items-center gap-1 text-[10px] text-primary hover:underline">
-              <Download className="w-3 h-3" />
-              {t('exportDashboard')}
-            </button>
+            <InfoTooltip text={t('tooltipSupra')} />
           </div>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={stateData} layout="vertical" margin={{ left: 10, right: 20, top: 5, bottom: 5 }}>
@@ -104,10 +134,13 @@ export default function Overview() {
 
         {/* Enterprise Structure Donut */}
         <div className="chart-container">
-          <h3 className="text-sm font-semibold text-foreground mb-3">{t('enterpriseStructure')}</h3>
+          <div className="flex items-center gap-2 mb-3">
+            <h3 className="text-sm font-semibold text-foreground">{t('enterpriseStructure')}</h3>
+            <InfoTooltip text={t('tooltipAgent')} />
+          </div>
           <ResponsiveContainer width="100%" height={300}>
             <PieChart>
-              <Pie data={enterpriseData} cx="50%" cy="50%" innerRadius={60} outerRadius={100} dataKey="value" paddingAngle={3}>
+              <Pie data={enterpriseData} cx="50%" cy="50%" innerRadius={60} outerRadius={100} dataKey="value" nameKey="name" paddingAngle={3}>
                 {enterpriseData.map((_, i) => (
                   <Cell key={i} fill={COLORS[i % COLORS.length]} />
                 ))}
@@ -118,10 +151,10 @@ export default function Overview() {
               />
             </PieChart>
           </ResponsiveContainer>
-          <div className="flex justify-center gap-4 mt-2">
+          <div className="flex flex-wrap justify-center gap-3 mt-2">
             {enterpriseData.map((d, i) => (
-              <div key={d.name} className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
-                <span className="w-2 h-2 rounded-full" style={{ background: COLORS[i % COLORS.length] }} />
+              <div key={d.key} className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+                <span className="w-2 h-2 rounded-full shrink-0" style={{ background: COLORS[i % COLORS.length] }} />
                 {d.name}
               </div>
             ))}

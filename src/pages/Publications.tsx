@@ -1,6 +1,6 @@
 import React from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { FileText, Calendar, ArrowRight } from 'lucide-react';
+import { Calendar, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export default function Publications() {
@@ -9,15 +9,17 @@ export default function Publications() {
   const cards = [
     {
       category: t('mediaStatement'),
-      title: 'Statistik Eksport Import Mengikut Negeri — Jan 2026',
-      date: '01 April 2026',
+      title: 'Statistik Eksport Import mengikut Negeri — Jan 2026',
+      date: '01 Apr 2026',
       color: 'hsl(187, 92%, 55%)',
+      url: 'https://www.dosm.gov.my',
     },
     {
       category: t('annualBook'),
       title: 'Buku Tahunan Perdagangan Luar Negeri Malaysia — 2025',
-      date: '15 March 2026',
-      color: 'hsl(200, 80%, 50%)',
+      date: '15 Mar 2026',
+      color: 'hsl(42, 78%, 55%)',
+      url: 'https://www.dosm.gov.my',
     },
   ];
 
@@ -35,6 +37,10 @@ export default function Publications() {
             transition={{ delay: i * 0.1 }}
             className="glass-card group cursor-pointer"
           >
+            {/* Placeholder image area */}
+            <div className="w-full h-32 rounded-lg mb-4 flex items-center justify-center" style={{ background: `${card.color}10` }}>
+              <span className="text-3xl opacity-30">📄</span>
+            </div>
             <div className="flex items-center gap-2 mb-3">
               <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ background: `${card.color}20`, color: card.color }}>
                 {card.category}
@@ -46,9 +52,14 @@ export default function Publications() {
                 <Calendar className="w-3 h-3" />
                 {card.date}
               </div>
-              <button className="flex items-center gap-1 text-xs font-medium text-primary group-hover:underline">
+              <a
+                href={card.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1 text-xs font-medium text-primary group-hover:underline"
+              >
                 {t('readMore')} <ArrowRight className="w-3 h-3" />
-              </button>
+              </a>
             </div>
           </motion.div>
         ))}

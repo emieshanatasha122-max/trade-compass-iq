@@ -49,11 +49,15 @@
     --glass-bg: 222 47% 14% / 0.6;
     --glass-border: 222 30% 30% / 0.3;
     --cyan-glow: 187 92% 55% / 0.15;
+    --gold: 42 78% 55%;
+    --gold-foreground: 222 47% 8%;
+    --gold-muted: 42 40% 40%;
     --chart-1: 187 92% 55%;
     --chart-2: 187 70% 40%;
     --chart-3: 200 80% 50%;
     --chart-4: 160 60% 45%;
     --chart-5: 220 60% 60%;
+    --chart-gold: 42 78% 55%;
   }
 
   .light {
@@ -87,6 +91,10 @@
     --glass-bg: 0 0% 100% / 0.7;
     --glass-border: 214 32% 85% / 0.5;
     --cyan-glow: 187 80% 40% / 0.1;
+    --gold: 42 70% 45%;
+    --gold-foreground: 0 0% 100%;
+    --gold-muted: 42 30% 50%;
+    --chart-gold: 42 70% 45%;
   }
 }
 

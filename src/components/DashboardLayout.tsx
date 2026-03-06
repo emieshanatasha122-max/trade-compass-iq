@@ -1,15 +1,12 @@
 import React, { useState } from 'react';
 import { NavLink as RouterNavLink, Outlet } from 'react-router-dom';
-import { BarChart3, Globe, Building2, Brain, FileText, Menu, X, Sun, Moon } from 'lucide-react';
+import { BarChart3, FileText, Menu, X, Sun, Moon } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import ChatBot from '@/components/ChatBot';
 
 const navItems = [
   { key: 'overview', icon: BarChart3, path: '/' },
-  { key: 'regionalAnalysis', icon: Globe, path: '/regional' },
-  { key: 'enterpriseAnalysis', icon: Building2, path: '/enterprise' },
-  { key: 'tradeIntelligence', icon: Brain, path: '/intelligence' },
 ];
 
 const bottomItems = [
@@ -94,13 +91,15 @@ export default function DashboardLayout() {
             <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-1.5 rounded-lg hover:bg-secondary transition-colors text-foreground">
               {sidebarOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
             </button>
-            <h1 className="text-sm font-bold tracking-wide gradient-text uppercase">
-              {t('dashboardTitle')}
-            </h1>
+            <div>
+              <h1 className="text-sm font-bold tracking-wide gradient-text uppercase">
+                {t('dashboardTitle')}
+              </h1>
+              <p className="text-[9px] text-muted-foreground -mt-0.5">{t('dashboardSubtitle')}</p>
+            </div>
           </div>
 
           <div className="flex items-center gap-2">
-            {/* Language Toggle */}
             <div className="flex rounded-lg overflow-hidden border border-border text-xs">
               <button
                 onClick={() => setLang('bm')}
@@ -116,7 +115,6 @@ export default function DashboardLayout() {
               </button>
             </div>
 
-            {/* Theme Toggle */}
             <button onClick={toggleTheme} className="p-1.5 rounded-lg hover:bg-secondary transition-colors text-muted-foreground">
               {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
             </button>
