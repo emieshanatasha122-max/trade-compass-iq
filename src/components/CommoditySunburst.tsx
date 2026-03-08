@@ -2,26 +2,37 @@ import React, { useMemo } from 'react';
 import ReactECharts from 'echarts-for-react';
 import type { TradeRecord } from '@/data/mockTradeData';
 
-const CATEGORY_RULES: { category: string; keywords: string[] }[] = [
-  { category: 'E&E', keywords: ['elektrik', 'elektronik', 'litar'] },
-  { category: 'Chemicals & Fuels', keywords: ['petroleum', 'oleokimia', 'kimia'] },
-  { category: 'Wood & Furniture', keywords: ['kayu', 'perabut', 'gergaji'] },
+const SITC_RULES: { category: string; label: string; keywords: string[] }[] = [
+  { category: 'SITC 0-1', label: 'Makanan & Tembakau', keywords: ['makanan', 'tembakau', 'minuman', 'ikan', 'sayur', 'buah', 'gula', 'kopi', 'teh'] },
+  { category: 'SITC 2-4', label: 'Bahan Mentah & Minyak/Lemak', keywords: ['getah', 'kelapa sawit', 'minyak sawit', 'oleokimia', 'bijih', 'kulit'] },
+  { category: 'SITC 3', label: 'Bahan Api Mineral', keywords: ['petroleum', 'gas asli', 'arang batu', 'minyak mentah'] },
+  { category: 'SITC 5', label: 'Bahan Kimia', keywords: ['kimia', 'farmaseutikal', 'baja', 'racun'] },
+  { category: 'SITC 6', label: 'Barang Dikilang (Logam/Kayu)', keywords: ['logam', 'kayu', 'gergaji', 'perabut', 'rotan', 'kertas', 'simen', 'kaca'] },
+  { category: 'SITC 7', label: 'Jentera & Alat Pengangkutan', keywords: ['elektrik', 'elektronik', 'litar', 'jentera', 'mesin', 'alat ganti', 'motokar', 'kapal'] },
+  { category: 'SITC 8', label: 'Pelbagai Barang Dikilang', keywords: ['pakaian', 'tekstil', 'kasut', 'kekemasan', 'mainan', 'sukan', 'optik'] },
 ];
 
-function getParentCategory(name: string): string {
+function getSITCCategory(name: string): { category: string; label: string } {
   const lower = name.toLowerCase();
-  for (const rule of CATEGORY_RULES) {
-    if (rule.keywords.some(k => lower.includes(k))) return rule.category;
+  for (const rule of SITC_RULES) {
+    if (rule.keywords.some(k => lower.includes(k))) return { category: rule.category, label: rule.label };
   }
-  return 'Others';
+  return { category: 'SITC 9', label: 'Lain-lain' };
 }
 
-const PARENT_ORDER = ['E&E', 'Chemicals & Fuels', 'Wood & Furniture', 'Others'];
+const PARENT_ORDER = ['SITC 7', 'SITC 0-1', 'SITC 2-4', 'SITC 3', 'SITC 5', 'SITC 6', 'SITC 8', 'SITC 9'];
 
-const COLORS = [
-  '#1ab5c5', '#2db89a', '#3b82f6', '#14b8a6', '#6366f1',
-  '#d4a017', '#8b5cf6', '#ec4899', '#f97316', '#65a30d',
-];
+// Sequential teal-to-navy palette
+const COLORS: Record<string, string> = {
+  'SITC 7': '#0d9488',
+  'SITC 0-1': '#14b8a6',
+  'SITC 2-4': '#2dd4bf',
+  'SITC 3': '#0e7490',
+  'SITC 5': '#0369a1',
+  'SITC 6': '#1e40af',
+  'SITC 8': '#1e3a5f',
+  'SITC 9': '#334155',
+};
 
 interface Props {
   data: TradeRecord[];
@@ -29,29 +40,31 @@ interface Props {
 
 export default function CommoditySunburst({ data }: Props) {
   const sunburstData = useMemo(() => {
-    // Group original commodities into parent categories
-    const parentMap: Record<string, Record<string, number>> = {};
+    const parentMap: Record<string, { label: string; children: Record<string, number> }> = {};
+
     data.forEach(r => {
-      const parent = getParentCategory(r.komoditiUtama);
-      if (!parentMap[parent]) parentMap[parent] = {};
-      parentMap[parent][r.komoditiUtama] = (parentMap[parent][r.komoditiUtama] || 0) + r.jumlahDaganganRM;
+      const { category, label } = getSITCCategory(r.komoditiUtama);
+      if (!parentMap[category]) parentMap[category] = { label, children: {} };
+      parentMap[category].children[r.komoditiUtama] =
+        (parentMap[category].children[r.komoditiUtama] || 0) + r.jumlahDaganganRM;
     });
 
     return PARENT_ORDER
       .filter(p => parentMap[p])
-      .map((parent, i) => {
-        const children = Object.entries(parentMap[parent]).sort((a, b) => b[1] - a[1]);
-        const parentValue = children.reduce((s, [, v]) => s + v, 0);
-        const color = COLORS[i % COLORS.length];
+      .map(cat => {
+        const { label, children } = parentMap[cat];
+        const entries = Object.entries(children).sort((a, b) => b[1] - a[1]);
+        const parentValue = entries.reduce((s, [, v]) => s + v, 0);
+        const color = COLORS[cat] || '#475569';
 
         return {
-          name: parent,
+          name: `${cat}\n${label}`,
           value: parentValue,
           itemStyle: { color },
-          children: children.map(([name, value], j) => ({
+          children: entries.map(([name, value], j) => ({
             name,
             value,
-            itemStyle: { color, opacity: 0.55 + (0.45 * (1 - j / children.length)) },
+            itemStyle: { color, opacity: 0.5 + 0.5 * (1 - j / Math.max(entries.length, 1)) },
           })),
         };
       });
@@ -87,7 +100,7 @@ export default function CommoditySunburst({ data }: Props) {
             r: '55%',
             label: {
               show: true,
-              fontSize: 10,
+              fontSize: 9,
               fontWeight: 600,
               color: '#fff',
               rotate: 'tangential',
@@ -99,9 +112,7 @@ export default function CommoditySunburst({ data }: Props) {
           {
             r0: '55%',
             r: '90%',
-            label: {
-              show: false,
-            },
+            label: { show: false },
             emphasis: {
               label: {
                 show: true,
