@@ -192,24 +192,14 @@ export default function Overview() {
         </div>
       </section>
 
-      {/* Section 3: Trade Activity by State (Treemap) */}
+      {/* Section 3: Trade Activity by State (Flag Grid) */}
       <section>
         <SectionHeader title={t('stateActivity')} description={t('stateActivityDesc')} icon={MapPin} />
         <div className="chart-container">
           <div className="flex items-center gap-2 mb-3">
             <InfoTooltip text={t('tooltipSupra')} />
           </div>
-          <ResponsiveContainer width="100%" height={350}>
-            <Treemap
-              data={stateTreemap}
-              dataKey="value"
-              nameKey="name"
-              stroke="hsl(var(--card))"
-              content={<TreemapContent />}
-            >
-              <Tooltip contentStyle={tooltipStyle} formatter={(value: number) => [formatRM(value), t('tradeValue')]} />
-            </Treemap>
-          </ResponsiveContainer>
+          <StateFlagGrid data={filteredData} />
         </div>
       </section>
 
