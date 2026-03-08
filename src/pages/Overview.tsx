@@ -6,8 +6,9 @@ import InfoTooltip from '@/components/InfoTooltip';
 import WorldMap from '@/components/WorldMap';
 import {
   XAxis, YAxis, Tooltip, ResponsiveContainer,
-  PieChart, Pie, Cell, CartesianGrid, LineChart, Line, Legend, Treemap
+  PieChart, Pie, Cell, CartesianGrid, LineChart, Line, Legend
 } from 'recharts';
+import StateFlagGrid from '@/components/StateFlagGrid';
 import CommoditySunburst from '@/components/CommoditySunburst';
 import { TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight, Download, Globe, Building2, Package, MapPin } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -37,23 +38,6 @@ function SectionHeader({ title, description, icon: Icon }: { title: string; desc
   );
 }
 
-// Custom treemap content
-const TreemapContent = (props: any) => {
-  const { x, y, width, height, name, value, index } = props;
-  if (width < 40 || height < 30) return null;
-  return (
-    <g>
-      <rect x={x} y={y} width={width} height={height} rx={4}
-        fill={COLORS[index % COLORS.length]} fillOpacity={0.85} stroke="hsl(var(--card))" strokeWidth={2} />
-      {width > 60 && height > 40 && (
-        <>
-          <text x={x + 8} y={y + 18} fontSize={11} fontWeight={600} fill="#fff">{name}</text>
-          <text x={x + 8} y={y + 32} fontSize={9} fill="rgba(255,255,255,0.7)">{formatRM(value)}</text>
-        </>
-      )}
-    </g>
-  );
-};
 
 export default function Overview() {
   const { filteredData } = useFilters();
@@ -83,14 +67,6 @@ export default function Overview() {
       .map(([year, vals]) => ({ year: Number(year), export: vals.export, import: vals.import, total: vals.export + vals.import }));
   }, [filteredData]);
 
-  // State treemap data
-  const stateTreemap = useMemo(() => {
-    const map: Record<string, number> = {};
-    filteredData.forEach(r => { map[r.negeri] = (map[r.negeri] || 0) + r.jumlahDaganganRM; });
-    return Object.entries(map)
-      .sort((a, b) => b[1] - a[1])
-      .map(([name, value]) => ({ name, value }));
-  }, [filteredData]);
 
   // Commodity data (top 10)
   const commodityData = useMemo(() => {
@@ -191,24 +167,14 @@ export default function Overview() {
         </div>
       </section>
 
-      {/* Section 3: Trade Activity by State (Treemap) */}
+      {/* Section 3: Trade Activity by State (Flag Grid) */}
       <section>
         <SectionHeader title={t('stateActivity')} description={t('stateActivityDesc')} icon={MapPin} />
         <div className="chart-container">
           <div className="flex items-center gap-2 mb-3">
             <InfoTooltip text={t('tooltipSupra')} />
           </div>
-          <ResponsiveContainer width="100%" height={350}>
-            <Treemap
-              data={stateTreemap}
-              dataKey="value"
-              nameKey="name"
-              stroke="hsl(var(--card))"
-              content={<TreemapContent />}
-            >
-              <Tooltip contentStyle={tooltipStyle} formatter={(value: number) => [formatRM(value), t('tradeValue')]} />
-            </Treemap>
-          </ResponsiveContainer>
+          <StateFlagGrid data={filteredData} />
         </div>
       </section>
 
