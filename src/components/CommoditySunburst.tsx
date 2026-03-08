@@ -54,58 +54,59 @@ interface SITCData {
   negeri: NegeriNode[]; colorIdx: number;
 }
 
-/* ─── Horizontal Tree Node ─── */
-function TreeNode({ label, icon: Icon, color, depth, isExpanded, hasChildren, onClick }: {
-  label: string; icon: React.ElementType; color: string; depth: number;
-  isExpanded?: boolean; hasChildren?: boolean; onClick?: () => void;
+/* ─── Horizontal bar with label ─── */
+function HBar({ label, pct, color, icon: Icon, onClick, isExpanded, hasChildren }: {
+  label: string; pct: number; color: string; icon: React.ElementType;
+  onClick?: () => void; isExpanded?: boolean; hasChildren?: boolean;
 }) {
   return (
     <div
       onClick={onClick}
-      className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-[11px] font-medium whitespace-nowrap shrink-0 transition-all ${
-        onClick ? 'cursor-pointer hover:shadow-sm' : ''
-      } ${isExpanded ? 'ring-1 ring-primary/30 shadow-sm' : ''}`}
-      style={{
-        borderColor: color + '40',
-        background: isExpanded ? color + '15' : 'hsl(var(--card))',
-        color: 'hsl(var(--foreground))',
-      }}
+      className={`flex items-center gap-1.5 group ${onClick ? 'cursor-pointer' : ''}`}
     >
-      <Icon className="w-3 h-3 shrink-0" style={{ color }} />
-      <span className="truncate max-w-[120px]">{label}</span>
+      <Icon className="w-3 h-3 shrink-0 text-muted-foreground" />
+      <span className="text-[10px] text-foreground font-medium w-[90px] truncate shrink-0">{label}</span>
+      <div className="h-4 flex-1 rounded-sm bg-muted/30 overflow-hidden min-w-[40px]">
+        <motion.div
+          className="h-full rounded-sm"
+          style={{ background: color, opacity: 0.75 }}
+          initial={{ width: 0 }}
+          animate={{ width: `${Math.max(pct, 2)}%` }}
+          transition={{ duration: 0.4 }}
+        />
+      </div>
       {hasChildren && (
         <ChevronRight
-          className={`w-3 h-3 shrink-0 transition-transform ${isExpanded ? 'rotate-90' : ''}`}
-          style={{ color }}
+          className={`w-3 h-3 shrink-0 transition-transform text-muted-foreground ${isExpanded ? 'rotate-90' : 'group-hover:translate-x-0.5'}`}
         />
       )}
     </div>
   );
 }
 
-/* ─── Connector line (horizontal) ─── */
-function HLine({ color }: { color: string }) {
-  return <div className="w-4 h-px shrink-0" style={{ background: color + '50' }} />;
-}
-
-function VBranch({ color, children }: { color: string; children: React.ReactNode }) {
+/* ─── Branch connector (vertical line + horizontal stubs) ─── */
+function BranchGroup({ color, children }: { color: string; children: React.ReactNode }) {
   return (
-    <div className="flex items-stretch">
-      <div className="w-px shrink-0 my-1" style={{ background: color + '35' }} />
-      <div className="flex flex-col gap-1 pl-0">
-        {children}
-      </div>
+    <div className="relative pl-5 ml-[6px] border-l" style={{ borderColor: color + '30' }}>
+      {React.Children.map(children, (child) => (
+        <div className="relative py-[2px]">
+          {/* horizontal connector stub */}
+          <div className="absolute left-0 top-1/2 w-4 h-px -translate-x-px" style={{ background: color + '40' }} />
+          <div className="pl-1">{child}</div>
+        </div>
+      ))}
     </div>
   );
 }
 
-/* ─── Single SITC Panel with horizontal tree ─── */
+/* ─── Single SITC Panel ─── */
 function SITCPanel({ sitc }: { sitc: SITCData }) {
   const [expandedNegeri, setExpandedNegeri] = useState<string | null>(null);
   const [expandedKawasan, setExpandedKawasan] = useState<string | null>(null);
-  const { t } = useLanguage();
+
   const colors = ACCENT_COLORS[sitc.colorIdx];
   const isEmpty = sitc.total === 0;
+  const negeriMax = useMemo(() => Math.max(...sitc.negeri.map(n => n.value), 1), [sitc.negeri]);
 
   const toggleNegeri = useCallback((name: string) => {
     setExpandedNegeri(prev => prev === name ? null : name);
@@ -113,6 +114,10 @@ function SITCPanel({ sitc }: { sitc: SITCData }) {
   }, []);
 
   const activeNegeri = sitc.negeri.find(n => n.name === expandedNegeri);
+  const kawasanMax = activeNegeri ? Math.max(...activeNegeri.kawasan.map(k => k.value), 1) : 1;
+
+  const activeKawasan = activeNegeri?.kawasan.find(k => k.name === expandedKawasan);
+  const saizMax = activeKawasan ? Math.max(...activeKawasan.saiz.map(s => s.value), 1) : 1;
 
   return (
     <motion.div
@@ -134,100 +139,85 @@ function SITCPanel({ sitc }: { sitc: SITCData }) {
         </p>
       </div>
 
-      {/* Horizontal tree body */}
+      {/* Tree body */}
       {!isEmpty && (
-        <div className="p-3 flex-1 overflow-x-auto overflow-y-auto max-h-[360px]">
-          <div className="flex items-start gap-0 min-w-max">
-            {/* Root node */}
-            <div className="flex flex-col items-end justify-center shrink-0 mr-0">
-              <div className="px-2 py-1 rounded-md text-[10px] font-bold text-white" style={{ background: colors.bar }}>
-                {sitc.code}
-              </div>
-            </div>
+        <div className="px-3 py-3 flex-1 overflow-y-auto max-h-[400px] space-y-0">
+          {/* Negeri level */}
+          {sitc.negeri.slice(0, 12).map(neg => {
+            const negPct = (neg.value / negeriMax) * 100;
+            const isNegExpanded = expandedNegeri === neg.name;
+            return (
+              <div key={neg.name}>
+                <HBar
+                  label={neg.name}
+                  pct={negPct}
+                  color={colors.bar}
+                  icon={MapPin}
+                  hasChildren={neg.kawasan.length > 0}
+                  isExpanded={isNegExpanded}
+                  onClick={() => toggleNegeri(neg.name)}
+                />
 
-            <HLine color={colors.bar} />
+                {/* Kawasan level */}
+                <AnimatePresence>
+                  {isNegExpanded && activeNegeri && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.25 }}
+                      className="overflow-hidden"
+                    >
+                      <BranchGroup color={colors.bar}>
+                        {activeNegeri.kawasan.map(kw => {
+                          const kwPct = (kw.value / kawasanMax) * 100;
+                          const isKwExpanded = expandedKawasan === kw.name;
+                          return (
+                            <div key={kw.name}>
+                              <HBar
+                                label={kw.name}
+                                pct={kwPct}
+                                color={colors.bar}
+                                icon={Globe2}
+                                hasChildren={kw.saiz.length > 0}
+                                isExpanded={isKwExpanded}
+                                onClick={() => setExpandedKawasan(prev => prev === kw.name ? null : kw.name)}
+                              />
 
-            {/* Negeri branches */}
-            <VBranch color={colors.bar}>
-              {sitc.negeri.slice(0, 10).map(neg => (
-                <div key={neg.name} className="flex items-start gap-0">
-                  <div className="flex items-center">
-                    <HLine color={colors.bar} />
-                    <TreeNode
-                      label={neg.name}
-                      icon={MapPin}
-                      color={colors.bar}
-                      depth={0}
-                      hasChildren={neg.kawasan.length > 0}
-                      isExpanded={expandedNegeri === neg.name}
-                      onClick={() => toggleNegeri(neg.name)}
-                    />
-                  </div>
-
-                  {/* Kawasan expansion */}
-                  <AnimatePresence>
-                    {expandedNegeri === neg.name && activeNegeri && (
-                      <motion.div
-                        initial={{ width: 0, opacity: 0 }}
-                        animate={{ width: 'auto', opacity: 1 }}
-                        exit={{ width: 0, opacity: 0 }}
-                        transition={{ duration: 0.25 }}
-                        className="flex items-start gap-0 overflow-hidden"
-                      >
-                        <HLine color={colors.bar} />
-                        <VBranch color={colors.bar}>
-                          {activeNegeri.kawasan.map(kw => (
-                            <div key={kw.name} className="flex items-start gap-0">
-                              <div className="flex items-center">
-                                <HLine color={colors.bar} />
-                                <TreeNode
-                                  label={kw.name}
-                                  icon={Globe2}
-                                  color={colors.bar}
-                                  depth={1}
-                                  hasChildren={kw.saiz.length > 0}
-                                  isExpanded={expandedKawasan === kw.name}
-                                  onClick={() => setExpandedKawasan(prev => prev === kw.name ? null : kw.name)}
-                                />
-                              </div>
-
-                              {/* Saiz expansion */}
+                              {/* Saiz level */}
                               <AnimatePresence>
-                                {expandedKawasan === kw.name && (
+                                {isKwExpanded && (
                                   <motion.div
-                                    initial={{ width: 0, opacity: 0 }}
-                                    animate={{ width: 'auto', opacity: 1 }}
-                                    exit={{ width: 0, opacity: 0 }}
+                                    initial={{ height: 0, opacity: 0 }}
+                                    animate={{ height: 'auto', opacity: 1 }}
+                                    exit={{ height: 0, opacity: 0 }}
                                     transition={{ duration: 0.2 }}
-                                    className="flex items-start gap-0 overflow-hidden"
+                                    className="overflow-hidden"
                                   >
-                                    <HLine color={colors.bar} />
-                                    <VBranch color={colors.bar}>
+                                    <BranchGroup color={colors.bar}>
                                       {kw.saiz.map(s => (
-                                        <div key={s.name} className="flex items-center">
-                                          <HLine color={colors.bar} />
-                                          <TreeNode
-                                            label={s.name}
-                                            icon={Building2}
-                                            color={colors.bar}
-                                            depth={2}
-                                          />
-                                        </div>
+                                        <HBar
+                                          key={s.name}
+                                          label={s.name}
+                                          pct={(s.value / saizMax) * 100}
+                                          color={colors.bar}
+                                          icon={Building2}
+                                        />
                                       ))}
-                                    </VBranch>
+                                    </BranchGroup>
                                   </motion.div>
                                 )}
                               </AnimatePresence>
                             </div>
-                          ))}
-                        </VBranch>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-              ))}
-            </VBranch>
-          </div>
+                          );
+                        })}
+                      </BranchGroup>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            );
+          })}
         </div>
       )}
     </motion.div>
