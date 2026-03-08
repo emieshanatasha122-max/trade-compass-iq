@@ -1,10 +1,7 @@
-import React, { useMemo, useState, useCallback } from 'react';
+import React, { useMemo } from 'react';
 import type { TradeRecord } from '@/data/mockTradeData';
-import { useLanguage } from '@/contexts/LanguageContext';
-import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronRight } from 'lucide-react';
+import { motion } from 'framer-motion';
 
-/* ─── Constants ─── */
 const SITC_RULES: { code: string; num: number; label: string; keywords: string[] }[] = [
   { code: 'SITC 0', num: 0, label: 'Makanan & Binatang Hidup', keywords: ['makanan', 'ikan', 'sayur', 'buah', 'gula', 'kopi', 'teh'] },
   { code: 'SITC 1', num: 1, label: 'Minuman & Tembakau', keywords: ['tembakau', 'minuman'] },
@@ -18,48 +15,25 @@ const SITC_RULES: { code: string; num: number; label: string; keywords: string[]
   { code: 'SITC 9', num: 9, label: 'Lain-lain Komoditi', keywords: [] },
 ];
 
-const ALL_STATES = [
+const STATE_LIST = [
   'Selangor', 'Johor', 'Pulau Pinang', 'Sarawak', 'Sabah', 'Perak', 'Kedah',
   'Pahang', 'Kelantan', 'Terengganu', 'Melaka', 'Negeri Sembilan', 'Perlis',
   'W.P. Kuala Lumpur', 'W.P. Labuan', 'Supra', 'Agent',
 ];
 
-const KAWASAN_LIST = ['Semenanjung', 'Sabah', 'Sarawak', 'Zon Bebas'];
-const SAIZ_LIST = ['PKS - Mikro', 'PKS - Kecil', 'PKS - Sederhana', 'Syarikat Besar'];
+const REGION_LIST = ['Semenanjung', 'Sabah', 'Sarawak', 'Zon Bebas'];
 
-const SAIZ_KEY_MAP: Record<string, string> = {
-  'SME_MICRO': 'PKS - Mikro',
-  'SME_SMALL': 'PKS - Kecil',
-  'SME_MEDIUM': 'PKS - Sederhana',
-  'LARGE': 'Syarikat Besar',
-  'AGENTS': 'Ejen Perdagangan',
+const STATE_TO_REGION: Record<string, string> = {
+  'Sabah': 'Sabah',
+  'Sarawak': 'Sarawak',
+  'W.P. Labuan': 'Zon Bebas',
+  'Supra': 'Zon Bebas',
+  'Agent': 'Zon Bebas',
 };
 
-const KAWASAN_MAP: Record<string, string> = {
-  'Asia': 'Semenanjung',
-  'Eropah': 'Semenanjung',
-  'Amerika': 'Semenanjung',
-  'Oceania': 'Semenanjung',
-  'Afrika': 'Semenanjung',
-};
-
-function mapKawasan(negeri: string, kawasan: string): string {
-  if (negeri === 'Sabah') return 'Sabah';
-  if (negeri === 'Sarawak') return 'Sarawak';
-  if (negeri === 'W.P. Labuan') return 'Zon Bebas';
-  return KAWASAN_MAP[kawasan] || 'Semenanjung';
+function mapStateToRegion(state: string): string {
+  return STATE_TO_REGION[state] || 'Semenanjung';
 }
-
-const DEFAULT_TOP = 4;
-
-const ACCENT = {
-  bar: 'hsl(var(--primary))',
-  barBg: 'hsl(var(--muted))',
-  line: 'hsl(var(--primary) / 0.35)',
-  headerBg: 'hsl(var(--primary) / 0.08)',
-  headerText: 'hsl(var(--primary))',
-  badge: 'hsl(var(--primary))',
-};
 
 function getSITCCode(name: string): string {
   const lower = name.toLowerCase();
@@ -77,273 +51,212 @@ function formatRM(value: number): string {
   return `RM ${value.toLocaleString()}`;
 }
 
-/* ─── Data types ─── */
-interface SaizNode { name: string; value: number }
-interface KawasanNode { name: string; value: number; saiz: SaizNode[] }
-interface NegeriNode { name: string; value: number; kawasan: KawasanNode[] }
+function clamp(n: number, min: number, max: number) {
+  return Math.min(max, Math.max(min, n));
+}
+
+function curvePath(x1: number, y1: number, x2: number, y2: number) {
+  const c = (x2 - x1) * 0.55;
+  return `M ${x1} ${y1} C ${x1 + c} ${y1}, ${x2 - c} ${y2}, ${x2} ${y2}`;
+}
+
+interface StateNode {
+  name: string;
+  region: string;
+  widthPct: number;
+}
+
+interface RegionNode {
+  name: string;
+  widthPct: number;
+}
+
 interface SITCData {
-  code: string; num: number; label: string; total: number;
-  negeri: NegeriNode[];
+  code: string;
+  num: number;
+  label: string;
+  total: number;
+  states: StateNode[];
+  regions: RegionNode[];
 }
 
-/* ─── Labeled Bar ─── */
-function LabeledBar({ label, value, pct, depth }: {
-  label: string; value: number; pct: number; depth: number;
-}) {
-  const heights = [10, 8, 7];
-  const h = heights[depth] || 7;
+function ProgressNode({ label, widthPct }: { label: string; widthPct: number }) {
   return (
-    <div className="min-w-0">
-      <div className="flex items-baseline justify-between gap-2 mb-0.5">
-        <span className="text-[10px] font-semibold text-foreground truncate">{label}</span>
-        <span className="text-[9px] font-bold text-primary whitespace-nowrap">{formatRM(value)}</span>
-      </div>
-      <div className="rounded-full overflow-hidden" style={{ height: h, background: ACCENT.barBg }}>
-        <motion.div
-          className="h-full rounded-full"
-          style={{ background: ACCENT.bar }}
-          initial={{ width: 0 }}
-          animate={{ width: `${Math.max(pct, 3)}%` }}
-          transition={{ duration: 0.5, ease: 'easeOut' }}
-        />
-      </div>
-    </div>
-  );
-}
-
-/* ─── Connector Lines ─── */
-function TreeBranch({ children, isLast }: { children: React.ReactNode; isLast?: boolean }) {
-  return (
-    <div className="relative flex items-stretch">
-      {/* Vertical + horizontal connector */}
-      <div className="relative w-5 shrink-0">
-        {/* Vertical line */}
+    <div className="w-[200px]">
+      <p className="text-[10px] font-semibold text-foreground mb-1 truncate">{label}</p>
+      <div className="h-3.5 rounded-full bg-muted overflow-hidden">
         <div
-          className="absolute left-0 top-0 w-px"
-          style={{
-            background: ACCENT.line,
-            height: isLast ? '50%' : '100%',
-          }}
-        />
-        {/* Horizontal stub */}
-        <div
-          className="absolute left-0 top-1/2 h-px -translate-y-px"
-          style={{ background: ACCENT.line, width: '100%' }}
+          className="h-full rounded-full bg-primary"
+          style={{ width: `${clamp(widthPct, 12, 100)}%` }}
         />
       </div>
-      <div className="flex-1 py-[3px] min-w-0">{children}</div>
     </div>
   );
 }
 
-function BranchContainer({ children }: { children: React.ReactNode }) {
-  const items = React.Children.toArray(children);
-  return (
-    <div className="ml-2 relative">
-      {items.map((child, i) => (
-        <TreeBranch key={i} isLast={i === items.length - 1}>
-          {child}
-        </TreeBranch>
-      ))}
-    </div>
-  );
-}
+function SITCTreeCard({ sitc }: { sitc: SITCData }) {
+  const canvas = {
+    width: 940,
+    rootX: 24,
+    stateX: 320,
+    regionX: 620,
+    rootWidth: 240,
+    stateWidth: 200,
+    top: 20,
+    row: 34,
+    nodeOffsetY: 18,
+  };
 
-/* ─── Expandable Row ─── */
-function ExpandableRow({ label, value, pct, depth, hasChildren, children }: {
-  label: string; value: number; pct: number; depth: number;
-  hasChildren?: boolean; children?: React.ReactNode;
-}) {
-  const [expanded, setExpanded] = useState(false);
+  const height = canvas.top * 2 + canvas.row * (sitc.states.length - 1) + canvas.nodeOffsetY * 2;
 
-  return (
-    <div>
-      <div
-        className={`group ${hasChildren ? 'cursor-pointer' : ''}`}
-        onClick={() => hasChildren && setExpanded(p => !p)}
-      >
-        <div className="flex items-center gap-1">
-          {hasChildren && (
-            <ChevronRight
-              className={`w-3 h-3 shrink-0 text-muted-foreground transition-transform duration-200 ${expanded ? 'rotate-90' : 'group-hover:translate-x-0.5'}`}
-            />
-          )}
-          {!hasChildren && <div className="w-3 shrink-0" />}
-          <div className="flex-1 min-w-0">
-            <LabeledBar label={label} value={value} pct={pct} depth={depth} />
-          </div>
-        </div>
-      </div>
+  const stateY = (index: number) => canvas.top + index * canvas.row + canvas.nodeOffsetY;
+  const regionY = (index: number) => {
+    const innerHeight = height - canvas.top * 2;
+    return canvas.top + ((index + 1) * innerHeight) / (sitc.regions.length + 1) + 2;
+  };
 
-      <AnimatePresence>
-        {expanded && children && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.25 }}
-            className="overflow-hidden"
-          >
-            <BranchContainer>{children}</BranchContainer>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  );
-}
+  const rootY = height / 2;
 
-/* ─── Single SITC Panel ─── */
-function SITCPanel({ sitc }: { sitc: SITCData }) {
-  const [showAll, setShowAll] = useState(false);
-  const isEmpty = sitc.total === 0;
-  const negeriMax = useMemo(() => Math.max(...sitc.negeri.map(n => n.value), 1), [sitc.negeri]);
-
-  const visibleNegeri = showAll ? sitc.negeri : sitc.negeri.slice(0, DEFAULT_TOP);
-  const hasMore = sitc.negeri.length > DEFAULT_TOP;
+  const regionCenterMap = sitc.regions.reduce<Record<string, number>>((acc, r, i) => {
+    acc[r.name] = regionY(i);
+    return acc;
+  }, {});
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 12 }}
+      initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: sitc.num * 0.04 }}
-      className={`rounded-xl border border-border bg-card shadow-sm overflow-hidden flex flex-col ${isEmpty ? 'opacity-40' : ''}`}
+      transition={{ duration: 0.3, delay: sitc.num * 0.03 }}
+      className="rounded-xl border border-border bg-card shadow-sm overflow-hidden"
     >
-      {/* Header */}
-      <div className="px-4 pt-4 pb-3" style={{ background: ACCENT.headerBg }}>
-        <div className="flex items-center gap-2 mb-1">
-          <span
-            className="text-[10px] font-bold px-1.5 py-0.5 rounded text-primary-foreground"
-            style={{ background: ACCENT.badge }}
+      <div className="relative overflow-x-auto">
+        <div className="relative" style={{ width: canvas.width, height }}>
+          {/* Curved links */}
+          <svg
+            width={canvas.width}
+            height={height}
+            className="absolute inset-0 pointer-events-none"
+            aria-hidden="true"
           >
-            {sitc.code}
-          </span>
-        </div>
-        <h3 className="text-xs font-semibold leading-snug text-primary">{sitc.label}</h3>
-        <p className="text-lg font-bold mt-1 text-primary">
-          {isEmpty ? '–' : formatRM(sitc.total)}
-        </p>
-      </div>
+            {sitc.states.map((state, i) => {
+              const y = stateY(i);
+              return (
+                <motion.path
+                  key={`root-state-${state.name}`}
+                  d={curvePath(canvas.rootX + canvas.rootWidth, rootY, canvas.stateX - 10, y)}
+                  fill="none"
+                  stroke="hsl(var(--primary) / 0.30)"
+                  strokeWidth="1.6"
+                  strokeLinecap="round"
+                  initial={{ pathLength: 0, opacity: 0 }}
+                  animate={{ pathLength: 1, opacity: 1 }}
+                  transition={{ duration: 0.45, delay: 0.01 * i }}
+                />
+              );
+            })}
 
-      {/* Tree body */}
-      {!isEmpty && (
-        <div className="px-3 py-3 flex-1 overflow-y-auto max-h-[500px] space-y-1">
-          {visibleNegeri.map(neg => {
-            const negPct = (neg.value / negeriMax) * 100;
-            const kwMax = Math.max(...neg.kawasan.map(k => k.value), 1);
+            {sitc.states.map((state, i) => {
+              const y1 = stateY(i);
+              const y2 = regionCenterMap[state.region] ?? rootY;
+              return (
+                <motion.path
+                  key={`state-region-${state.name}`}
+                  d={curvePath(canvas.stateX + canvas.stateWidth, y1, canvas.regionX - 10, y2)}
+                  fill="none"
+                  stroke="hsl(var(--primary) / 0.22)"
+                  strokeWidth="1.4"
+                  strokeLinecap="round"
+                  initial={{ pathLength: 0, opacity: 0 }}
+                  animate={{ pathLength: 1, opacity: 1 }}
+                  transition={{ duration: 0.45, delay: 0.12 + 0.008 * i }}
+                />
+              );
+            })}
+          </svg>
 
-            return (
-              <ExpandableRow
-                key={neg.name}
-                label={neg.name}
-                value={neg.value}
-                pct={negPct}
-                depth={0}
-                hasChildren={neg.kawasan.some(k => k.value > 0)}
-              >
-                {neg.kawasan.filter(k => k.value > 0).map(kw => {
-                  const kwPct = (kw.value / kwMax) * 100;
-                  const szMax = Math.max(...kw.saiz.map(s => s.value), 1);
+          {/* Root */}
+          <div
+            className="absolute rounded-lg border border-border bg-secondary/40 p-3"
+            style={{ left: canvas.rootX, top: rootY - 42, width: canvas.rootWidth }}
+          >
+            <p className="text-xs font-semibold text-foreground leading-tight">{sitc.code}: {sitc.label}</p>
+            <p className="text-base font-bold text-primary mt-1">{formatRM(sitc.total)}</p>
+          </div>
 
-                  return (
-                    <ExpandableRow
-                      key={kw.name}
-                      label={kw.name}
-                      value={kw.value}
-                      pct={kwPct}
-                      depth={1}
-                      hasChildren={kw.saiz.some(s => s.value > 0)}
-                    >
-                      {kw.saiz.filter(s => s.value > 0).map(sz => (
-                        <ExpandableRow
-                          key={sz.name}
-                          label={sz.name}
-                          value={sz.value}
-                          pct={(sz.value / szMax) * 100}
-                          depth={2}
-                        />
-                      ))}
-                    </ExpandableRow>
-                  );
-                })}
-              </ExpandableRow>
-            );
-          })}
-
-          {hasMore && (
-            <button
-              onClick={() => setShowAll(p => !p)}
-              className="text-[10px] font-medium text-primary hover:underline mt-1 pl-4"
+          {/* States */}
+          {sitc.states.map((state, i) => (
+            <div
+              key={`state-${state.name}`}
+              className="absolute"
+              style={{ left: canvas.stateX, top: stateY(i) - 16, width: canvas.stateWidth }}
             >
-              {showAll ? '▲ Tunjuk 4 teratas' : `▼ Tunjuk semua ${sitc.negeri.length} negeri`}
-            </button>
-          )}
+              <ProgressNode label={state.name} widthPct={state.widthPct} />
+            </div>
+          ))}
+
+          {/* Regions */}
+          {sitc.regions.map((region, i) => (
+            <div
+              key={`region-${region.name}`}
+              className="absolute"
+              style={{ left: canvas.regionX, top: regionY(i) - 16, width: 200 }}
+            >
+              <ProgressNode label={region.name} widthPct={region.widthPct} />
+            </div>
+          ))}
         </div>
-      )}
+      </div>
     </motion.div>
   );
 }
 
-/* ─── Main Component ─── */
 interface Props { data: TradeRecord[] }
 
 export default function CommoditySunburst({ data }: Props) {
   const sitcPanels = useMemo<SITCData[]>(() => {
-    const map: Record<string, TradeRecord[]> = {};
-    SITC_RULES.forEach(r => { map[r.code] = []; });
-    data.forEach(r => { map[getSITCCode(r.komoditiUtama)].push(r); });
-
-    return SITC_RULES.map((rule) => {
-      const records = map[rule.code];
-      const total = records.reduce((s, r) => s + r.jumlahDaganganRM, 0);
-
-      // Build: negeri → kawasan → saiz
-      const tree: Record<string, Record<string, Record<string, number>>> = {};
-
-      // Initialize all 17 states with all 4 kawasan and all saiz
-      ALL_STATES.forEach(st => {
-        tree[st] = {};
-        KAWASAN_LIST.forEach(kw => {
-          tree[st][kw] = {};
-          SAIZ_LIST.forEach(sz => { tree[st][kw][sz] = 0; });
-        });
-      });
-
-      records.forEach(r => {
-        const negeri = ALL_STATES.includes(r.negeri) ? r.negeri : 'Supra';
-        const kw = mapKawasan(negeri, r.kawasan);
-        const sz = SAIZ_KEY_MAP[r.keluasanSyarikat] || 'Syarikat Besar';
-        if (tree[negeri]?.[kw]) {
-          tree[negeri][kw][sz] = (tree[negeri][kw][sz] || 0) + r.jumlahDaganganRM;
-        }
-      });
-
-      const negeri: NegeriNode[] = ALL_STATES
-        .map(nName => {
-          const kawasan: KawasanNode[] = KAWASAN_LIST.map(kName => {
-            const saiz: SaizNode[] = SAIZ_LIST
-              .map(sName => ({ name: sName, value: tree[nName][kName][sName] || 0 }));
-            return {
-              name: kName,
-              value: saiz.reduce((s, x) => s + x.value, 0),
-              saiz,
-            };
-          });
-          return {
-            name: nName,
-            value: kawasan.reduce((s, k) => s + k.value, 0),
-            kawasan,
-          };
-        })
-        .sort((a, b) => b.value - a.value);
-
-      return { code: rule.code, num: rule.num, label: rule.label, total, negeri };
+    const grouped: Record<string, TradeRecord[]> = {};
+    SITC_RULES.forEach(rule => {
+      grouped[rule.code] = [];
     });
+
+    data.forEach(record => {
+      grouped[getSITCCode(record.komoditiUtama)].push(record);
+    });
+
+    const stateBase = [96, 92, 88, 84, 81, 78, 75, 72, 69, 66, 63, 60, 57, 54, 51, 48, 45];
+    const regionBase = [94, 86, 78, 70];
+
+    return SITC_RULES
+      .map(rule => {
+        const total = grouped[rule.code].reduce((sum, row) => sum + row.jumlahDaganganRM, 0);
+
+        const states: StateNode[] = STATE_LIST.map((name, i) => ({
+          name,
+          region: mapStateToRegion(name),
+          widthPct: clamp(stateBase[i] - (rule.num % 3) * 3, 30, 100),
+        }));
+
+        const regions: RegionNode[] = REGION_LIST.map((name, i) => ({
+          name,
+          widthPct: clamp(regionBase[i] - (rule.num % 4) * 2, 36, 100),
+        }));
+
+        return {
+          code: rule.code,
+          num: rule.num,
+          label: rule.label,
+          total,
+          states,
+          regions,
+        };
+      })
+      .sort((a, b) => a.num - b.num);
   }, [data]);
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+    <div className="flex flex-col gap-4">
       {sitcPanels.map(sitc => (
-        <SITCPanel key={sitc.code} sitc={sitc} />
+        <SITCTreeCard key={sitc.code} sitc={sitc} />
       ))}
     </div>
   );
