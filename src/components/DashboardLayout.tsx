@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavLink as RouterNavLink, Outlet } from 'react-router-dom';
 import { BarChart3, FileText, Menu, X, Sun, Moon } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -16,13 +16,13 @@ const bottomItems = [
 export default function DashboardLayout() {
   const { lang, setLang, t } = useLanguage();
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [theme, setTheme] = useState<'dark' | 'light'>('dark');
+  const [theme, setTheme] = useState<'dark' | 'light'>('light');
 
-  const toggleTheme = () => {
-    const next = theme === 'dark' ? 'light' : 'dark';
-    setTheme(next);
-    document.documentElement.classList.toggle('light', next === 'light');
-  };
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', theme === 'dark');
+  }, [theme]);
+
+  const toggleTheme = () => setTheme(prev => prev === 'dark' ? 'light' : 'dark');
 
   return (
     <div className="flex h-screen overflow-hidden">
@@ -34,17 +34,16 @@ export default function DashboardLayout() {
             animate={{ width: 240, opacity: 1 }}
             exit={{ width: 0, opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="h-full flex flex-col border-r border-border overflow-hidden"
-            style={{ background: 'hsl(var(--sidebar-background))' }}
+            className="h-full flex flex-col border-r border-sidebar-border overflow-hidden bg-sidebar"
           >
-            <div className="p-4 border-b border-border">
+            <div className="p-4 border-b border-sidebar-border">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-                  <BarChart3 className="w-4 h-4 text-primary-foreground" />
+                <div className="w-8 h-8 rounded-lg bg-sidebar-primary flex items-center justify-center">
+                  <BarChart3 className="w-4 h-4 text-sidebar-primary-foreground" />
                 </div>
-                <div className="text-xs font-bold leading-tight text-foreground">
+                <div className="text-xs font-bold leading-tight text-sidebar-accent-foreground">
                   DOSM<br />
-                  <span className="text-[10px] font-normal text-muted-foreground">TEC Data Hub</span>
+                  <span className="text-[10px] font-normal text-sidebar-foreground">TEC Data Hub</span>
                 </div>
               </div>
             </div>
@@ -65,7 +64,7 @@ export default function DashboardLayout() {
               ))}
             </nav>
 
-            <div className="p-3 border-t border-border space-y-1">
+            <div className="p-3 border-t border-sidebar-border space-y-1">
               {bottomItems.map(item => (
                 <RouterNavLink
                   key={item.key}
@@ -86,7 +85,7 @@ export default function DashboardLayout() {
       {/* Main */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Header */}
-        <header className="h-14 border-b border-border flex items-center justify-between px-4 shrink-0" style={{ background: 'hsl(var(--card))' }}>
+        <header className="h-14 border-b border-border flex items-center justify-between px-4 shrink-0 bg-card">
           <div className="flex items-center gap-3">
             <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-1.5 rounded-lg hover:bg-secondary transition-colors text-foreground">
               {sidebarOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}

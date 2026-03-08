@@ -13,12 +13,14 @@ export default function FilterBar() {
   const { filters, setFilter } = useFilters();
   const { t } = useLanguage();
 
-  const selectClass = "bg-secondary text-secondary-foreground border border-border rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-primary";
+  const selectClass = "bg-card text-foreground border border-border rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-primary transition-colors";
 
   return (
     <div className="glass-panel p-3 mb-4 flex flex-wrap items-center gap-2">
-      <Filter className="w-4 h-4 text-primary shrink-0" />
-      <span className="text-xs font-semibold text-muted-foreground mr-1">{t('filters')}:</span>
+      <div className="flex items-center gap-1.5 mr-1">
+        <Filter className="w-4 h-4 text-primary shrink-0" />
+        <span className="text-xs font-semibold text-muted-foreground">{t('filters')}:</span>
+      </div>
 
       <select value={filters.tahun} onChange={e => setFilter('tahun', e.target.value)} className={selectClass}>
         <option value="all">{t('year')} - {t('all')}</option>

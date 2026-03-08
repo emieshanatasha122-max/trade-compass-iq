@@ -14,7 +14,7 @@ export default {
     },
     extend: {
       fontFamily: {
-        sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+        sans: ['"Inter"', 'system-ui', 'sans-serif'],
         mono: ['"JetBrains Mono"', 'monospace'],
       },
       colors: {
@@ -56,6 +56,11 @@ export default {
           foreground: "hsl(var(--gold-foreground))",
           muted: "hsl(var(--gold-muted))",
         },
+        teal: {
+          DEFAULT: "hsl(var(--teal))",
+          foreground: "hsl(var(--teal-foreground))",
+        },
+        decline: "hsl(var(--decline))",
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
@@ -73,6 +78,8 @@ export default {
           4: "hsl(var(--chart-4))",
           5: "hsl(var(--chart-5))",
           gold: "hsl(var(--chart-gold))",
+          export: "hsl(var(--chart-export))",
+          import: "hsl(var(--chart-import))",
         },
       },
       borderRadius: {

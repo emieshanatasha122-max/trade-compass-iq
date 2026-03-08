@@ -4,7 +4,6 @@ import { COUNTRY_CODE_MAP } from '@/data/mockTradeData';
 
 const GEO_URL = 'https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json';
 
-// Approximate country centroids for markers & flow lines
 const COUNTRY_COORDS: Record<string, [number, number]> = {
   SGP: [103.8, 1.35],
   CHN: [104.2, 35.9],
@@ -20,7 +19,6 @@ const COUNTRY_COORDS: Record<string, [number, number]> = {
 
 const MALAYSIA_COORDS: [number, number] = [101.7, 3.1];
 
-// ISO 3166-1 numeric → alpha-3 mapping for topojson
 const NUM_TO_ALPHA3: Record<string, string> = {
   '702': 'SGP', '156': 'CHN', '840': 'USA', '392': 'JPN',
   '764': 'THA', '410': 'KOR', '356': 'IND', '036': 'AUS',
@@ -46,15 +44,14 @@ export default function WorldMap({ destinations }: WorldMapProps) {
 
   const getCountryFill = (geoId: string) => {
     const alpha3 = NUM_TO_ALPHA3[geoId];
-    if (alpha3 === 'MYS') return 'hsl(187, 92%, 55%)';
+    if (alpha3 === 'MYS') return 'hsl(187, 72%, 42%)';
     if (alpha3 && destinations[alpha3]) {
       const intensity = Math.max(0.15, destinations[alpha3].value / maxValue);
-      return `hsla(187, 92%, 55%, ${intensity})`;
+      return `hsla(187, 72%, 42%, ${intensity})`;
     }
-    return 'hsl(222, 30%, 20%)';
+    return 'hsl(var(--muted))';
   };
 
-  // Top destinations for flow lines
   const topDest = useMemo(() => {
     return Object.entries(destinations)
       .filter(([code]) => COUNTRY_COORDS[code])
@@ -78,11 +75,11 @@ export default function WorldMap({ destinations }: WorldMapProps) {
                   key={geo.rsmKey}
                   geography={geo}
                   fill={getCountryFill(String(geoId))}
-                  stroke="hsl(222, 30%, 25%)"
+                  stroke="hsl(var(--border))"
                   strokeWidth={0.4}
                   style={{
                     default: { outline: 'none' },
-                    hover: { fill: 'hsl(187, 70%, 45%)', outline: 'none', cursor: 'pointer' },
+                    hover: { fill: 'hsl(187, 60%, 45%)', outline: 'none', cursor: 'pointer' },
                     pressed: { outline: 'none' },
                   }}
                 />
@@ -91,33 +88,31 @@ export default function WorldMap({ destinations }: WorldMapProps) {
           }
         </Geographies>
 
-        {/* Flow lines from Malaysia */}
+        {/* Flow lines - thickness based on value */}
         {topDest.map(([code, data]) => (
           <Line
             key={code}
             from={MALAYSIA_COORDS}
             to={COUNTRY_COORDS[code]}
-            stroke="hsl(187, 92%, 55%)"
-            strokeWidth={1}
-            strokeOpacity={0.4}
+            stroke="hsl(187, 72%, 42%)"
+            strokeWidth={Math.max(0.8, (data.value / maxValue) * 3)}
+            strokeOpacity={0.35}
             strokeLinecap="round"
           />
         ))}
 
-        {/* Malaysia marker */}
         <Marker coordinates={MALAYSIA_COORDS}>
-          <circle r={4} fill="hsl(187, 92%, 55%)" />
-          <circle r={8} fill="hsl(187, 92%, 55%)" opacity={0.2} />
+          <circle r={4} fill="hsl(187, 72%, 42%)" />
+          <circle r={8} fill="hsl(187, 72%, 42%)" opacity={0.2} />
         </Marker>
 
-        {/* Destination markers with labels */}
         {topDest.map(([code, data]) => (
           <Marker key={code} coordinates={COUNTRY_COORDS[code]}>
-            <circle r={3} fill="hsl(42, 78%, 55%)" />
+            <circle r={3} fill="hsl(42, 70%, 50%)" />
             <text
               textAnchor="middle"
               y={-8}
-              style={{ fontSize: 8, fill: 'hsl(210, 40%, 80%)', fontFamily: 'Plus Jakarta Sans' }}
+              style={{ fontSize: 8, fill: 'hsl(var(--muted-foreground))', fontFamily: 'Inter' }}
             >
               {code} {formatRM(data.value)}
             </text>
