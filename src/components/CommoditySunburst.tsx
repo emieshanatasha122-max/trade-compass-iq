@@ -96,13 +96,15 @@ export default function CommoditySunburst({ data }: Props) {
             r0: '55%',
             r: '90%',
             label: {
-              show: true,
-              fontSize: 9,
-              color: 'rgba(255,255,255,0.8)',
-              position: 'outside',
-              rotate: 'tangential',
-              overflow: 'truncate',
-              width: 60,
+              show: false,
+            },
+            emphasis: {
+              label: {
+                show: true,
+                fontSize: 9,
+                color: 'rgba(255,255,255,0.9)',
+                fontWeight: 500,
+              },
             },
             itemStyle: { borderWidth: 1, borderColor: 'hsl(222, 47%, 11%)' },
           },
