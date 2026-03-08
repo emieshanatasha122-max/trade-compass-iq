@@ -2,18 +2,17 @@ import React, { useMemo } from 'react';
 import ReactECharts from 'echarts-for-react';
 import type { TradeRecord } from '@/data/mockTradeData';
 
-const SUB_CATEGORIES: Record<string, string[]> = {
-  'Elektrikal & Elektronik': ['Semikonduktor', 'Papan Litar', 'Peralatan Elektrik'],
-  'Minyak Sawit': ['Minyak Mentah', 'Minyak Olahan', 'Oleokimia'],
-  'Petroleum': ['Minyak Mentah', 'Gas Asli', 'Produk Petroleum'],
-  'Jentera': ['Jentera Industri', 'Alat Ganti', 'Peralatan Berat'],
-  'Getah': ['Getah Asli', 'Sarung Tangan', 'Produk Getah'],
-  'Kimia': ['Kimia Organik', 'Kimia Tak Organik', 'Baja'],
-  'Kayu': ['Kayu Balak', 'Papan Lapis', 'Perabot'],
-  'Tekstil': ['Fabrik', 'Pakaian', 'Benang'],
-  'Logam': ['Besi & Keluli', 'Aluminium', 'Tembaga'],
-  'Makanan': ['Makanan Laut', 'Makanan Diproses', 'Minuman'],
-};
+function getParentCategory(name: string): string {
+  const lower = name.toLowerCase();
+  if (['elektrik', 'elektronik', 'litar'].some(k => lower.includes(k))) return 'E&E';
+  if (['kayu', 'perabut', 'rotan'].some(k => lower.includes(k))) return 'Kayu & Perabot';
+  if (['kelapa sawit', 'oleokimia', 'minyak sawit'].some(k => lower.includes(k))) return 'Minyak & Lemak';
+  if (['mesin', 'alat ganti', 'logam', 'motokar', 'jentera'].some(k => lower.includes(k))) return 'Jentera & Logam';
+  if (['pakaian', 'kekemasan', 'tekstil'].some(k => lower.includes(k))) return 'Tekstil & Pakaian';
+  return 'Lain-lain';
+}
+
+const PARENT_ORDER = ['E&E', 'Minyak & Lemak', 'Jentera & Logam', 'Kayu & Perabot', 'Tekstil & Pakaian', 'Lain-lain'];
 
 const COLORS = [
   '#1ab5c5', '#2db89a', '#3b82f6', '#14b8a6', '#6366f1',
@@ -26,34 +25,29 @@ interface Props {
 
 export default function CommoditySunburst({ data }: Props) {
   const sunburstData = useMemo(() => {
-    const commodityMap: Record<string, number> = {};
+    // Group original commodities into parent categories
+    const parentMap: Record<string, Record<string, number>> = {};
     data.forEach(r => {
-      commodityMap[r.komoditiUtama] = (commodityMap[r.komoditiUtama] || 0) + r.jumlahDaganganRM;
+      const parent = getParentCategory(r.komoditiUtama);
+      if (!parentMap[parent]) parentMap[parent] = {};
+      parentMap[parent][r.komoditiUtama] = (parentMap[parent][r.komoditiUtama] || 0) + r.jumlahDaganganRM;
     });
 
-    const total = Object.values(commodityMap).reduce((a, b) => a + b, 0);
-
-    return Object.entries(commodityMap)
-      .sort((a, b) => b[1] - a[1])
-      .map(([name, value], i) => {
-        const subs = SUB_CATEGORIES[name] || ['Lain-lain'];
+    return PARENT_ORDER
+      .filter(p => parentMap[p])
+      .map((parent, i) => {
+        const children = Object.entries(parentMap[parent]).sort((a, b) => b[1] - a[1]);
+        const parentValue = children.reduce((s, [, v]) => s + v, 0);
         const color = COLORS[i % COLORS.length];
-        // Distribute value across sub-categories with variation
-        const subTotal = subs.length;
-        const weights = subs.map((_, j) => 1 / (j + 1));
-        const weightSum = weights.reduce((a, b) => a + b, 0);
 
         return {
-          name,
-          value,
+          name: parent,
+          value: parentValue,
           itemStyle: { color },
-          children: subs.map((sub, j) => ({
-            name: sub,
-            value: Math.round(value * (weights[j] / weightSum)),
-            itemStyle: {
-              color,
-              opacity: 0.6 + (0.4 * (1 - j / subTotal)),
-            },
+          children: children.map(([name, value], j) => ({
+            name,
+            value,
+            itemStyle: { color, opacity: 0.55 + (0.45 * (1 - j / children.length)) },
           })),
         };
       });
@@ -102,13 +96,15 @@ export default function CommoditySunburst({ data }: Props) {
             r0: '55%',
             r: '90%',
             label: {
-              show: true,
-              fontSize: 9,
-              color: 'rgba(255,255,255,0.8)',
-              position: 'outside',
-              rotate: 'tangential',
-              overflow: 'truncate',
-              width: 60,
+              show: false,
+            },
+            emphasis: {
+              label: {
+                show: true,
+                fontSize: 9,
+                color: 'rgba(255,255,255,0.9)',
+                fontWeight: 500,
+              },
             },
             itemStyle: { borderWidth: 1, borderColor: 'hsl(222, 47%, 11%)' },
           },
