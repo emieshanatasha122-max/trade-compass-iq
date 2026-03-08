@@ -38,23 +38,6 @@ function SectionHeader({ title, description, icon: Icon }: { title: string; desc
   );
 }
 
-// Custom treemap content
-const TreemapContent = (props: any) => {
-  const { x, y, width, height, name, value, index } = props;
-  if (width < 40 || height < 30) return null;
-  return (
-    <g>
-      <rect x={x} y={y} width={width} height={height} rx={4}
-        fill={COLORS[index % COLORS.length]} fillOpacity={0.85} stroke="hsl(var(--card))" strokeWidth={2} />
-      {width > 60 && height > 40 && (
-        <>
-          <text x={x + 8} y={y + 18} fontSize={11} fontWeight={600} fill="#fff">{name}</text>
-          <text x={x + 8} y={y + 32} fontSize={9} fill="rgba(255,255,255,0.7)">{formatRM(value)}</text>
-        </>
-      )}
-    </g>
-  );
-};
 
 export default function Overview() {
   const { filteredData } = useFilters();
