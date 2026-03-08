@@ -67,14 +67,6 @@ export default function Overview() {
       .map(([year, vals]) => ({ year: Number(year), export: vals.export, import: vals.import, total: vals.export + vals.import }));
   }, [filteredData]);
 
-  // State treemap data
-  const stateTreemap = useMemo(() => {
-    const map: Record<string, number> = {};
-    filteredData.forEach(r => { map[r.negeri] = (map[r.negeri] || 0) + r.jumlahDaganganRM; });
-    return Object.entries(map)
-      .sort((a, b) => b[1] - a[1])
-      .map(([name, value]) => ({ name, value }));
-  }, [filteredData]);
 
   // Commodity data (top 10)
   const commodityData = useMemo(() => {
