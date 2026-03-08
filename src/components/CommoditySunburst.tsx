@@ -2,17 +2,21 @@ import React, { useMemo } from 'react';
 import ReactECharts from 'echarts-for-react';
 import type { TradeRecord } from '@/data/mockTradeData';
 
+const CATEGORY_RULES: { category: string; keywords: string[] }[] = [
+  { category: 'E&E', keywords: ['elektrik', 'elektronik', 'litar'] },
+  { category: 'Chemicals & Fuels', keywords: ['petroleum', 'oleokimia', 'kimia'] },
+  { category: 'Wood & Furniture', keywords: ['kayu', 'perabut', 'gergaji'] },
+];
+
 function getParentCategory(name: string): string {
   const lower = name.toLowerCase();
-  if (['elektrik', 'elektronik', 'litar'].some(k => lower.includes(k))) return 'E&E';
-  if (['kayu', 'perabut', 'rotan'].some(k => lower.includes(k))) return 'Kayu & Perabot';
-  if (['kelapa sawit', 'oleokimia', 'minyak sawit'].some(k => lower.includes(k))) return 'Minyak & Lemak';
-  if (['mesin', 'alat ganti', 'logam', 'motokar', 'jentera'].some(k => lower.includes(k))) return 'Jentera & Logam';
-  if (['pakaian', 'kekemasan', 'tekstil'].some(k => lower.includes(k))) return 'Tekstil & Pakaian';
-  return 'Lain-lain';
+  for (const rule of CATEGORY_RULES) {
+    if (rule.keywords.some(k => lower.includes(k))) return rule.category;
+  }
+  return 'Others';
 }
 
-const PARENT_ORDER = ['E&E', 'Minyak & Lemak', 'Jentera & Logam', 'Kayu & Perabot', 'Tekstil & Pakaian', 'Lain-lain'];
+const PARENT_ORDER = ['E&E', 'Chemicals & Fuels', 'Wood & Furniture', 'Others'];
 
 const COLORS = [
   '#1ab5c5', '#2db89a', '#3b82f6', '#14b8a6', '#6366f1',
