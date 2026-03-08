@@ -6,8 +6,9 @@ import InfoTooltip from '@/components/InfoTooltip';
 import WorldMap from '@/components/WorldMap';
 import {
   XAxis, YAxis, Tooltip, ResponsiveContainer,
-  PieChart, Pie, Cell, CartesianGrid, LineChart, Line, Legend, Treemap
+  PieChart, Pie, Cell, CartesianGrid, LineChart, Line, Legend
 } from 'recharts';
+import StateFlagGrid from '@/components/StateFlagGrid';
 import CommoditySunburst from '@/components/CommoditySunburst';
 import { TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight, Download, Globe, Building2, Package, MapPin } from 'lucide-react';
 import { motion } from 'framer-motion';
