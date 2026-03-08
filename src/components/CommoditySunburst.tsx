@@ -20,18 +20,19 @@ function getSITCCategory(name: string): { category: string; label: string } {
   return { category: 'SITC 9', label: 'Lain-lain' };
 }
 
-const PARENT_ORDER = ['SITC 7', 'SITC 0-1', 'SITC 2-4', 'SITC 3', 'SITC 5', 'SITC 6', 'SITC 8', 'SITC 9'];
+// Strict numerical order: SITC 0-1 starts at 12 o'clock, ending with SITC 9
+const PARENT_ORDER = ['SITC 0-1', 'SITC 2-4', 'SITC 3', 'SITC 5', 'SITC 6', 'SITC 7', 'SITC 8', 'SITC 9'];
 
-// Sequential teal-to-navy palette
+// Light teal → deep navy gradient following SITC 0→9 progression
 const COLORS: Record<string, string> = {
-  'SITC 7': '#0d9488',
-  'SITC 0-1': '#14b8a6',
+  'SITC 0-1': '#5eead4',
   'SITC 2-4': '#2dd4bf',
-  'SITC 3': '#0e7490',
-  'SITC 5': '#0369a1',
-  'SITC 6': '#1e40af',
-  'SITC 8': '#1e3a5f',
-  'SITC 9': '#334155',
+  'SITC 3': '#14b8a6',
+  'SITC 5': '#0d9488',
+  'SITC 6': '#0e7490',
+  'SITC 7': '#0369a1',
+  'SITC 8': '#1e40af',
+  'SITC 9': '#1e3a5f',
 };
 
 interface Props {
