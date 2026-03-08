@@ -1,141 +1,156 @@
-import React, { useMemo } from 'react';
-import ReactECharts from 'echarts-for-react';
+import React, { useMemo, useState } from 'react';
 import type { TradeRecord } from '@/data/mockTradeData';
+import { ChevronRight, ChevronLeft } from 'lucide-react';
 
-const SITC_RULES: { category: string; label: string; keywords: string[] }[] = [
-  { category: 'SITC 0-1', label: 'Makanan & Tembakau', keywords: ['makanan', 'tembakau', 'minuman', 'ikan', 'sayur', 'buah', 'gula', 'kopi', 'teh'] },
-  { category: 'SITC 2-4', label: 'Bahan Mentah & Minyak/Lemak', keywords: ['getah', 'kelapa sawit', 'minyak sawit', 'oleokimia', 'bijih', 'kulit'] },
-  { category: 'SITC 3', label: 'Bahan Api Mineral', keywords: ['petroleum', 'gas asli', 'arang batu', 'minyak mentah'] },
-  { category: 'SITC 5', label: 'Bahan Kimia', keywords: ['kimia', 'farmaseutikal', 'baja', 'racun'] },
-  { category: 'SITC 6', label: 'Barang Dikilang (Logam/Kayu)', keywords: ['logam', 'kayu', 'gergaji', 'perabut', 'rotan', 'kertas', 'simen', 'kaca'] },
-  { category: 'SITC 7', label: 'Jentera & Alat Pengangkutan', keywords: ['elektrik', 'elektronik', 'litar', 'jentera', 'mesin', 'alat ganti', 'motokar', 'kapal'] },
-  { category: 'SITC 8', label: 'Pelbagai Barang Dikilang', keywords: ['pakaian', 'tekstil', 'kasut', 'kekemasan', 'mainan', 'sukan', 'optik'] },
+const SITC_RULES: { code: string; label: string; keywords: string[] }[] = [
+  { code: 'SITC 0', label: 'Makanan & Binatang Hidup', keywords: ['makanan', 'ikan', 'sayur', 'buah', 'gula', 'kopi', 'teh'] },
+  { code: 'SITC 1', label: 'Minuman & Tembakau', keywords: ['tembakau', 'minuman'] },
+  { code: 'SITC 2', label: 'Bahan Mentah', keywords: ['getah', 'bijih', 'kulit'] },
+  { code: 'SITC 3', label: 'Bahan Api Mineral', keywords: ['petroleum', 'gas asli', 'arang batu', 'minyak mentah'] },
+  { code: 'SITC 4', label: 'Minyak & Lemak', keywords: ['kelapa sawit', 'minyak sawit', 'oleokimia'] },
+  { code: 'SITC 5', label: 'Bahan Kimia', keywords: ['kimia', 'farmaseutikal', 'baja', 'racun'] },
+  { code: 'SITC 6', label: 'Barang Dikilang', keywords: ['logam', 'kayu', 'gergaji', 'perabut', 'rotan', 'kertas', 'simen', 'kaca'] },
+  { code: 'SITC 7', label: 'Jentera & Pengangkutan', keywords: ['elektrik', 'elektronik', 'litar', 'jentera', 'mesin', 'alat ganti', 'motokar', 'kapal'] },
+  { code: 'SITC 8', label: 'Pelbagai Barang Dikilang', keywords: ['pakaian', 'tekstil', 'kasut', 'kekemasan', 'mainan', 'sukan', 'optik'] },
+  { code: 'SITC 9', label: 'Lain-lain', keywords: [] },
 ];
 
-function getSITCCategory(name: string): { category: string; label: string } {
+const COLORS = [
+  'hsl(174, 60%, 70%)', // SITC 0
+  'hsl(174, 55%, 60%)', // SITC 1
+  'hsl(174, 50%, 50%)', // SITC 2
+  'hsl(180, 55%, 45%)', // SITC 3
+  'hsl(185, 55%, 40%)', // SITC 4
+  'hsl(190, 60%, 38%)', // SITC 5
+  'hsl(200, 60%, 35%)', // SITC 6
+  'hsl(210, 65%, 35%)', // SITC 7
+  'hsl(220, 60%, 35%)', // SITC 8
+  'hsl(215, 40%, 30%)', // SITC 9
+];
+
+function getSITCCode(name: string): string {
   const lower = name.toLowerCase();
   for (const rule of SITC_RULES) {
-    if (rule.keywords.some(k => lower.includes(k))) return { category: rule.category, label: rule.label };
+    if (rule.keywords.length > 0 && rule.keywords.some(k => lower.includes(k))) return rule.code;
   }
-  return { category: 'SITC 9', label: 'Lain-lain' };
+  return 'SITC 9';
 }
 
-// Strict numerical order: SITC 0-1 starts at 12 o'clock, ending with SITC 9
-const PARENT_ORDER = ['SITC 0-1', 'SITC 2-4', 'SITC 3', 'SITC 5', 'SITC 6', 'SITC 7', 'SITC 8', 'SITC 9'];
-
-// Light teal → deep navy gradient following SITC 0→9 progression
-const COLORS: Record<string, string> = {
-  'SITC 0-1': '#5eead4',
-  'SITC 2-4': '#2dd4bf',
-  'SITC 3': '#14b8a6',
-  'SITC 5': '#0d9488',
-  'SITC 6': '#0e7490',
-  'SITC 7': '#0369a1',
-  'SITC 8': '#1e40af',
-  'SITC 9': '#1e3a5f',
-};
+function formatRM(value: number): string {
+  if (value >= 1e12) return `RM ${(value / 1e12).toFixed(1)}T`;
+  if (value >= 1e9) return `RM ${(value / 1e9).toFixed(1)}B`;
+  if (value >= 1e6) return `RM ${(value / 1e6).toFixed(1)}M`;
+  if (value >= 1e3) return `RM ${(value / 1e3).toFixed(1)}K`;
+  return `RM ${value.toLocaleString()}`;
+}
 
 interface Props {
   data: TradeRecord[];
 }
 
 export default function CommoditySunburst({ data }: Props) {
-  const sunburstData = useMemo(() => {
-    const parentMap: Record<string, { label: string; children: Record<string, number> }> = {};
+  const [drillCode, setDrillCode] = useState<string | null>(null);
+
+  const sitcData = useMemo(() => {
+    const map: Record<string, { label: string; children: Record<string, number> }> = {};
+    SITC_RULES.forEach(r => { map[r.code] = { label: r.label, children: {} }; });
 
     data.forEach(r => {
-      const { category, label } = getSITCCategory(r.komoditiUtama);
-      if (!parentMap[category]) parentMap[category] = { label, children: {} };
-      parentMap[category].children[r.komoditiUtama] =
-        (parentMap[category].children[r.komoditiUtama] || 0) + r.jumlahDaganganRM;
+      const code = getSITCCode(r.komoditiUtama);
+      map[code].children[r.komoditiUtama] = (map[code].children[r.komoditiUtama] || 0) + r.jumlahDaganganRM;
     });
 
-    return PARENT_ORDER
-      .filter(p => parentMap[p])
-      .map(cat => {
-        const { label, children } = parentMap[cat];
-        const entries = Object.entries(children).sort((a, b) => b[1] - a[1]);
-        const parentValue = entries.reduce((s, [, v]) => s + v, 0);
-        const color = COLORS[cat] || '#475569';
-
-        return {
-          name: `${cat}\n${label}`,
-          value: parentValue,
-          itemStyle: { color },
-          children: entries.map(([name, value], j) => ({
-            name,
-            value,
-            itemStyle: { color, opacity: 0.5 + 0.5 * (1 - j / Math.max(entries.length, 1)) },
-          })),
-        };
-      });
+    return SITC_RULES.map((rule, i) => {
+      const entry = map[rule.code];
+      const children = Object.entries(entry.children)
+        .sort((a, b) => b[1] - a[1])
+        .map(([name, value]) => ({ name, value }));
+      const total = children.reduce((s, c) => s + c.value, 0);
+      return { code: rule.code, label: entry.label, total, children, color: COLORS[i] };
+    });
   }, [data]);
 
-  const option = useMemo(() => ({
-    tooltip: {
-      trigger: 'item',
-      formatter: (params: any) => {
-        const val = params.value;
-        const formatted = val >= 1e12 ? `RM ${(val / 1e12).toFixed(1)}T`
-          : val >= 1e9 ? `RM ${(val / 1e9).toFixed(1)}B`
-          : val >= 1e6 ? `RM ${(val / 1e6).toFixed(1)}M`
-          : `RM ${val.toLocaleString()}`;
-        const pct = params.percent ? `${params.percent.toFixed(1)}%` : '';
-        return `<strong>${params.name}</strong><br/>${formatted} ${pct ? `(${pct})` : ''}`;
-      },
-      backgroundColor: 'hsl(222, 47%, 16%)',
-      borderColor: 'hsl(217, 33%, 25%)',
-      textStyle: { color: '#e2e8f0', fontSize: 12 },
-    },
-    series: [
-      {
-        type: 'sunburst',
-        data: sunburstData,
-        radius: ['15%', '90%'],
-        sort: null,
-        startAngle: 90,
-        emphasis: { focus: 'ancestor' },
-        levels: [
-          {},
-          {
-            r0: '15%',
-            r: '55%',
-            label: {
-              show: true,
-              fontSize: 9,
-              fontWeight: 600,
-              color: '#fff',
-              rotate: 'tangential',
-              overflow: 'truncate',
-              width: 70,
-              minAngle: 10,
-            },
-            itemStyle: { borderWidth: 2, borderColor: 'hsl(222, 47%, 11%)' },
-          },
-          {
-            r0: '55%',
-            r: '90%',
-            label: { show: false },
-            emphasis: {
-              label: {
-                show: true,
-                fontSize: 9,
-                color: 'rgba(255,255,255,0.9)',
-                fontWeight: 500,
-              },
-            },
-            itemStyle: { borderWidth: 1, borderColor: 'hsl(222, 47%, 11%)' },
-          },
-        ],
-      },
-    ],
-  }), [sunburstData]);
+  const maxTotal = useMemo(() => Math.max(...sitcData.map(d => d.total), 1), [sitcData]);
+
+  const drillData = useMemo(() => {
+    if (!drillCode) return null;
+    const item = sitcData.find(d => d.code === drillCode);
+    if (!item || item.children.length === 0) return null;
+    const maxChild = Math.max(...item.children.map(c => c.value), 1);
+    return { ...item, maxChild };
+  }, [drillCode, sitcData]);
+
+  if (drillData) {
+    return (
+      <div className="space-y-3">
+        <button
+          onClick={() => setDrillCode(null)}
+          className="flex items-center gap-1.5 text-xs font-medium text-primary hover:underline"
+        >
+          <ChevronLeft className="w-3.5 h-3.5" />
+          Kembali ke SITC 0–9
+        </button>
+        <div className="flex items-center gap-2 mb-1">
+          <span className="w-3 h-3 rounded-sm" style={{ background: drillData.color }} />
+          <span className="text-sm font-bold text-foreground">{drillData.code}: {drillData.label}</span>
+          <span className="text-xs text-muted-foreground ml-auto">{formatRM(drillData.total)}</span>
+        </div>
+        <div className="space-y-2">
+          {drillData.children.map(child => {
+            const pct = drillData.maxChild > 0 ? (child.value / drillData.maxChild) * 100 : 0;
+            return (
+              <div key={child.name} className="group">
+                <div className="flex items-center justify-between mb-0.5">
+                  <span className="text-xs text-foreground truncate max-w-[60%]">{child.name}</span>
+                  <span className="text-[10px] text-muted-foreground font-medium">{formatRM(child.value)}</span>
+                </div>
+                <div className="h-5 rounded bg-muted/40 overflow-hidden">
+                  <div
+                    className="h-full rounded transition-all duration-500"
+                    style={{ width: `${Math.max(pct, 1)}%`, background: drillData.color, opacity: 0.85 }}
+                  />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <ReactECharts
-      option={option}
-      style={{ height: '420px', width: '100%' }}
-      opts={{ renderer: 'canvas' }}
-    />
+    <div className="space-y-2">
+      {sitcData.map((item, i) => {
+        const pct = maxTotal > 0 ? (item.total / maxTotal) * 100 : 0;
+        const isEmpty = item.total === 0;
+        return (
+          <div
+            key={item.code}
+            className={`group ${isEmpty ? 'opacity-50' : 'cursor-pointer'}`}
+            onClick={() => !isEmpty && setDrillCode(item.code)}
+          >
+            <div className="flex items-center justify-between mb-0.5">
+              <div className="flex items-center gap-2 min-w-0">
+                <span className="w-3 h-3 rounded-sm shrink-0" style={{ background: item.color }} />
+                <span className="text-xs font-semibold text-foreground whitespace-nowrap">{item.code}</span>
+                <span className="text-[10px] text-muted-foreground truncate">{item.label}</span>
+              </div>
+              <div className="flex items-center gap-1.5 shrink-0">
+                <span className="text-[10px] text-muted-foreground font-medium">
+                  {isEmpty ? '–' : formatRM(item.total)}
+                </span>
+                {!isEmpty && <ChevronRight className="w-3 h-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />}
+              </div>
+            </div>
+            <div className="h-5 rounded bg-muted/40 overflow-hidden">
+              <div
+                className="h-full rounded transition-all duration-500"
+                style={{ width: `${Math.max(pct, isEmpty ? 0.5 : 1)}%`, background: item.color }}
+              />
+            </div>
+          </div>
+        );
+      })}
+    </div>
   );
 }
