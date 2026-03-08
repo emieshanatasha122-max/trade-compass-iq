@@ -188,3 +188,27 @@
     scrollbar-color: hsl(var(--muted)) transparent;
   }
 }
+
+/* Flag waving animation */
+@keyframes flag-wave {
+  0% {
+    transform: perspective(400px) rotateY(0deg) scaleX(1);
+  }
+  25% {
+    transform: perspective(400px) rotateY(1.5deg) scaleX(1.005);
+  }
+  50% {
+    transform: perspective(400px) rotateY(0deg) scaleX(1);
+  }
+  75% {
+    transform: perspective(400px) rotateY(-1.5deg) scaleX(1.005);
+  }
+  100% {
+    transform: perspective(400px) rotateY(0deg) scaleX(1);
+  }
+}
+
+.flag-wave {
+  animation: flag-wave 4s ease-in-out infinite;
+  transform-origin: left center;
+}
