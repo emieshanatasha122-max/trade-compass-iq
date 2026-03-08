@@ -92,7 +92,8 @@ export default function CommoditySunburst({ data }: Props) {
         type: 'sunburst',
         data: sunburstData,
         radius: ['15%', '90%'],
-        sort: undefined,
+        sort: null,
+        startAngle: 90,
         emphasis: { focus: 'ancestor' },
         levels: [
           {},
@@ -107,6 +108,7 @@ export default function CommoditySunburst({ data }: Props) {
               rotate: 'tangential',
               overflow: 'truncate',
               width: 70,
+              minAngle: 10,
             },
             itemStyle: { borderWidth: 2, borderColor: 'hsl(222, 47%, 11%)' },
           },
