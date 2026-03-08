@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import type { TradeRecord } from '@/data/mockTradeData';
 import { useLanguage, ENTERPRISE_LABEL_MAP } from '@/contexts/LanguageContext';
-import { ChevronRight, ChevronLeft } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const SITC_RULES: { code: string; label: string; keywords: string[] }[] = [
   { code: 'SITC 0', label: 'Makanan & Binatang Hidup', keywords: ['makanan', 'ikan', 'sayur', 'buah', 'gula', 'kopi', 'teh'] },
@@ -45,22 +45,19 @@ function formatRM(value: number): string {
   return `RM ${value.toLocaleString()}`;
 }
 
-type DrillLevel = 'negeri' | 'kawasan' | 'saiz';
-const DRILL_LABELS: Record<DrillLevel, string> = {
-  negeri: 'Negeri',
-  kawasan: 'Kawasan',
-  saiz: 'Saiz Syarikat',
-};
-const DRILL_ORDER: DrillLevel[] = ['negeri', 'kawasan', 'saiz'];
-
 interface Props {
   data: TradeRecord[];
 }
 
+interface NegeriEntry {
+  name: string;
+  value: number;
+  kawasan: { name: string; value: number }[];
+}
+
 export default function CommoditySunburst({ data }: Props) {
-  const [drillCode, setDrillCode] = useState<string | null>(null);
-  const [drillLevel, setDrillLevel] = useState<DrillLevel>('negeri');
-  const { t } = useLanguage();
+  const [expandedSITC, setExpandedSITC] = useState<string | null>(null);
+  const [expandedNegeri, setExpandedNegeri] = useState<Record<string, string | null>>({});
 
   const sitcData = useMemo(() => {
     const map: Record<string, TradeRecord[]> = {};
@@ -73,113 +70,171 @@ export default function CommoditySunburst({ data }: Props) {
     return SITC_RULES.map((rule, i) => {
       const records = map[rule.code];
       const total = records.reduce((s, r) => s + r.jumlahDaganganRM, 0);
-      return { code: rule.code, label: rule.label, total, records, color: COLORS[i] };
+
+      // Group by negeri
+      const negeriMap: Record<string, { value: number; kawasanMap: Record<string, number> }> = {};
+      records.forEach(r => {
+        if (!negeriMap[r.negeri]) negeriMap[r.negeri] = { value: 0, kawasanMap: {} };
+        negeriMap[r.negeri].value += r.jumlahDaganganRM;
+        negeriMap[r.negeri].kawasanMap[r.kawasan] = (negeriMap[r.negeri].kawasanMap[r.kawasan] || 0) + r.jumlahDaganganRM;
+      });
+
+      const negeri: NegeriEntry[] = Object.entries(negeriMap)
+        .sort((a, b) => b[1].value - a[1].value)
+        .map(([name, d]) => ({
+          name,
+          value: d.value,
+          kawasan: Object.entries(d.kawasanMap).sort((a, b) => b[1] - a[1]).map(([kn, kv]) => ({ name: kn, value: kv })),
+        }));
+
+      return { code: rule.code, label: rule.label, total, negeri, color: COLORS[i] };
     });
   }, [data]);
 
-  const drillData = useMemo(() => {
-    if (!drillCode) return null;
-    const item = sitcData.find(d => d.code === drillCode);
-    if (!item) return null;
-
-    const grouped: Record<string, number> = {};
-    item.records.forEach(r => {
-      let key: string;
-      if (drillLevel === 'negeri') key = r.negeri;
-      else if (drillLevel === 'kawasan') key = r.kawasan;
-      else key = t(ENTERPRISE_LABEL_MAP[r.keluasanSyarikat] || r.keluasanSyarikat);
-      grouped[key] = (grouped[key] || 0) + r.jumlahDaganganRM;
-    });
-
-    const entries = Object.entries(grouped).sort((a, b) => b[1] - a[1]);
-    const max = Math.max(...entries.map(e => e[1]), 1);
-    return { ...item, entries, max };
-  }, [drillCode, drillLevel, sitcData, t]);
-
-  if (drillData) {
-    const colorIdx = SITC_RULES.findIndex(r => r.code === drillCode);
-    const color = COLORS[colorIdx >= 0 ? colorIdx : 9];
-
-    return (
-      <div className="space-y-3">
-        <button
-          onClick={() => { setDrillCode(null); setDrillLevel('negeri'); }}
-          className="flex items-center gap-1.5 text-xs font-medium text-primary hover:underline"
-        >
-          <ChevronLeft className="w-3.5 h-3.5" />
-          Kembali ke SITC 0–9
-        </button>
-        <div className="flex items-center gap-2 mb-1">
-          <span className="w-3 h-3 rounded-sm shrink-0" style={{ background: color }} />
-          <span className="text-sm font-bold text-foreground">{drillData.code}: {drillData.label}</span>
-          <span className="text-xs text-muted-foreground ml-auto">{formatRM(drillData.total)}</span>
-        </div>
-
-        {/* Drill level tabs */}
-        <div className="flex gap-1 border-b border-border pb-1">
-          {DRILL_ORDER.map(level => (
-            <button
-              key={level}
-              onClick={() => setDrillLevel(level)}
-              className={`px-3 py-1 text-[11px] font-medium rounded-t transition-colors ${
-                drillLevel === level
-                  ? 'bg-primary/10 text-primary border-b-2 border-primary'
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              {DRILL_LABELS[level]}
-            </button>
-          ))}
-        </div>
-
-        <div className="space-y-2 max-h-[360px] overflow-y-auto pr-1">
-          {drillData.entries.map(([name, value]) => {
-            const pct = (value / drillData.max) * 100;
-            return (
-              <div key={name}>
-                <div className="flex items-center justify-between mb-0.5">
-                  <span className="text-xs text-foreground truncate max-w-[60%]">{name}</span>
-                  <span className="text-[10px] text-muted-foreground font-medium">{formatRM(value)}</span>
-                </div>
-                <div className="h-5 rounded bg-muted/40 overflow-hidden">
-                  <div
-                    className="h-full rounded transition-all duration-500"
-                    style={{ width: `${Math.max(pct, 1)}%`, background: color, opacity: 0.85 }}
-                  />
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    );
-  }
+  const globalMax = useMemo(() => Math.max(...sitcData.map(d => d.total), 1), [sitcData]);
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-      {sitcData.map(item => {
+    <div className="space-y-1">
+      {sitcData.map((item, idx) => {
         const isEmpty = item.total === 0;
+        const isExpanded = expandedSITC === item.code;
+        const negeriMax = Math.max(...item.negeri.map(n => n.value), 1);
+
         return (
-          <div
-            key={item.code}
-            onClick={() => !isEmpty && setDrillCode(item.code)}
-            className={`rounded-lg border bg-card p-4 transition-shadow ${
-              isEmpty ? 'opacity-50' : 'cursor-pointer hover:shadow-md hover:border-primary/30'
-            }`}
-          >
-            <div className="flex items-center gap-2 mb-2">
-              <span className="w-3 h-3 rounded-sm shrink-0" style={{ background: item.color }} />
-              <span className="text-xs font-bold text-foreground">{item.code}</span>
-            </div>
-            <p className="text-[11px] text-muted-foreground leading-snug mb-3 line-clamp-2 min-h-[2.5em]">
-              {item.label}
-            </p>
-            <p className="text-base font-bold text-foreground">{isEmpty ? '–' : formatRM(item.total)}</p>
-            {!isEmpty && (
-              <div className="flex items-center gap-1 mt-2 text-[10px] text-primary font-medium">
-                Lihat pecahan <ChevronRight className="w-3 h-3" />
+          <div key={item.code} className="group">
+            {/* SITC Root Row */}
+            <div
+              onClick={() => !isEmpty && setExpandedSITC(isExpanded ? null : item.code)}
+              className={`flex items-center gap-3 py-2.5 px-3 rounded-lg transition-colors ${
+                isEmpty ? 'opacity-40' : 'cursor-pointer hover:bg-muted/50'
+              } ${isExpanded ? 'bg-muted/60' : ''}`}
+            >
+              {/* Color dot + connector */}
+              <div className="flex items-center gap-2 shrink-0">
+                <span className="w-3 h-3 rounded-full border-2 shrink-0" style={{ borderColor: item.color, background: isExpanded ? item.color : 'transparent' }} />
               </div>
-            )}
+
+              {/* Label */}
+              <div className="min-w-[200px] max-w-[260px] shrink-0">
+                <span className="text-xs font-bold text-foreground">{item.code}</span>
+                <span className="text-[10px] text-muted-foreground ml-1.5">{item.label}</span>
+              </div>
+
+              {/* Bar + Value */}
+              <div className="flex-1 flex items-center gap-3">
+                <div className="flex-1 h-6 rounded bg-muted/30 overflow-hidden">
+                  <motion.div
+                    className="h-full rounded"
+                    style={{ background: item.color }}
+                    initial={{ width: 0 }}
+                    animate={{ width: `${Math.max((item.total / globalMax) * 100, isEmpty ? 0.3 : 0.8)}%` }}
+                    transition={{ duration: 0.6, delay: idx * 0.04 }}
+                  />
+                </div>
+                <span className="text-xs font-semibold text-foreground w-[80px] text-right shrink-0">
+                  {isEmpty ? '–' : formatRM(item.total)}
+                </span>
+              </div>
+            </div>
+
+            {/* Expanded Negeri branches */}
+            <AnimatePresence>
+              {isExpanded && !isEmpty && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="overflow-hidden"
+                >
+                  <div className="ml-4 border-l-2 border-border/60 pl-0">
+                    {item.negeri.map((neg, nIdx) => {
+                      const negKey = `${item.code}::${neg.name}`;
+                      const isNegExpanded = expandedNegeri[item.code] === neg.name;
+                      const kawasanMax = Math.max(...neg.kawasan.map(k => k.value), 1);
+
+                      return (
+                        <div key={neg.name}>
+                          {/* Negeri row */}
+                          <div
+                            onClick={() => setExpandedNegeri(prev => ({
+                              ...prev,
+                              [item.code]: isNegExpanded ? null : neg.name,
+                            }))}
+                            className="flex items-center gap-2 py-1.5 pl-3 pr-3 cursor-pointer hover:bg-muted/30 rounded-r transition-colors"
+                          >
+                            {/* Branch connector */}
+                            <div className="flex items-center gap-1.5 shrink-0">
+                              <span className="w-4 h-px" style={{ background: item.color, opacity: 0.5 }} />
+                              <span
+                                className="w-2 h-2 rounded-full shrink-0"
+                                style={{ background: isNegExpanded ? item.color : 'transparent', border: `1.5px solid ${item.color}` }}
+                              />
+                            </div>
+
+                            {/* Negeri label */}
+                            <span className="text-[11px] font-medium text-foreground w-[120px] shrink-0 truncate">{neg.name}</span>
+
+                            {/* Bar */}
+                            <div className="flex-1 flex items-center gap-2">
+                              <div className="flex-1 h-4 rounded bg-muted/25 overflow-hidden">
+                                <motion.div
+                                  className="h-full rounded"
+                                  style={{ background: item.color, opacity: 0.7 }}
+                                  initial={{ width: 0 }}
+                                  animate={{ width: `${Math.max((neg.value / negeriMax) * 100, 1)}%` }}
+                                  transition={{ duration: 0.4, delay: nIdx * 0.03 }}
+                                />
+                              </div>
+                              <span className="text-[10px] font-medium text-muted-foreground w-[70px] text-right shrink-0">
+                                {formatRM(neg.value)}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Kawasan drill-down */}
+                          <AnimatePresence>
+                            {isNegExpanded && (
+                              <motion.div
+                                initial={{ height: 0, opacity: 0 }}
+                                animate={{ height: 'auto', opacity: 1 }}
+                                exit={{ height: 0, opacity: 0 }}
+                                transition={{ duration: 0.25 }}
+                                className="overflow-hidden"
+                              >
+                                <div className="ml-[30px] border-l border-border/40 pl-0">
+                                  {neg.kawasan.map((kw, kIdx) => (
+                                    <div key={kw.name} className="flex items-center gap-2 py-1 pl-3 pr-3">
+                                      <span className="w-3 h-px" style={{ background: item.color, opacity: 0.35 }} />
+                                      <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: item.color, opacity: 0.6 }} />
+                                      <span className="text-[10px] text-muted-foreground w-[90px] shrink-0 truncate">{kw.name}</span>
+                                      <div className="flex-1 flex items-center gap-2">
+                                        <div className="flex-1 h-3 rounded bg-muted/20 overflow-hidden">
+                                          <motion.div
+                                            className="h-full rounded"
+                                            style={{ background: item.color, opacity: 0.5 }}
+                                            initial={{ width: 0 }}
+                                            animate={{ width: `${Math.max((kw.value / kawasanMax) * 100, 1)}%` }}
+                                            transition={{ duration: 0.3, delay: kIdx * 0.04 }}
+                                          />
+                                        </div>
+                                        <span className="text-[9px] text-muted-foreground w-[60px] text-right shrink-0">
+                                          {formatRM(kw.value)}
+                                        </span>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         );
       })}
