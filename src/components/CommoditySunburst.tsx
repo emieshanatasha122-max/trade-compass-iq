@@ -25,34 +25,29 @@ interface Props {
 
 export default function CommoditySunburst({ data }: Props) {
   const sunburstData = useMemo(() => {
-    const commodityMap: Record<string, number> = {};
+    // Group original commodities into parent categories
+    const parentMap: Record<string, Record<string, number>> = {};
     data.forEach(r => {
-      commodityMap[r.komoditiUtama] = (commodityMap[r.komoditiUtama] || 0) + r.jumlahDaganganRM;
+      const parent = getParentCategory(r.komoditiUtama);
+      if (!parentMap[parent]) parentMap[parent] = {};
+      parentMap[parent][r.komoditiUtama] = (parentMap[parent][r.komoditiUtama] || 0) + r.jumlahDaganganRM;
     });
 
-    const total = Object.values(commodityMap).reduce((a, b) => a + b, 0);
-
-    return Object.entries(commodityMap)
-      .sort((a, b) => b[1] - a[1])
-      .map(([name, value], i) => {
-        const subs = SUB_CATEGORIES[name] || ['Lain-lain'];
+    return PARENT_ORDER
+      .filter(p => parentMap[p])
+      .map((parent, i) => {
+        const children = Object.entries(parentMap[parent]).sort((a, b) => b[1] - a[1]);
+        const parentValue = children.reduce((s, [, v]) => s + v, 0);
         const color = COLORS[i % COLORS.length];
-        // Distribute value across sub-categories with variation
-        const subTotal = subs.length;
-        const weights = subs.map((_, j) => 1 / (j + 1));
-        const weightSum = weights.reduce((a, b) => a + b, 0);
 
         return {
-          name,
-          value,
+          name: parent,
+          value: parentValue,
           itemStyle: { color },
-          children: subs.map((sub, j) => ({
-            name: sub,
-            value: Math.round(value * (weights[j] / weightSum)),
-            itemStyle: {
-              color,
-              opacity: 0.6 + (0.4 * (1 - j / subTotal)),
-            },
+          children: children.map(([name, value], j) => ({
+            name,
+            value,
+            itemStyle: { color, opacity: 0.55 + (0.45 * (1 - j / children.length)) },
           })),
         };
       });
