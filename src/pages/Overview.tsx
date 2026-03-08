@@ -212,23 +212,11 @@ export default function Overview() {
         </div>
       </section>
 
-      {/* Section 4: Commodity Structure */}
+      {/* Section 4: Commodity Structure (Sunburst) */}
       <section>
         <SectionHeader title={t('commodityStructure')} description={t('commodityStructureDesc')} icon={Package} />
         <div className="chart-container">
-          <ResponsiveContainer width="100%" height={350}>
-            <BarChart data={commodityData} layout="vertical" margin={{ left: 10, right: 20, top: 5, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-              <XAxis type="number" tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} tickFormatter={v => formatRM(v)} />
-              <YAxis type="category" dataKey="name" tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} width={120} />
-              <Tooltip contentStyle={tooltipStyle} formatter={(value: number) => [formatRM(value), t('tradeValue')]} />
-              <Bar dataKey="value" radius={[0, 4, 4, 0]}>
-                {commodityData.map((_, i) => (
-                  <Cell key={i} fill={COLORS[i % COLORS.length]} />
-                ))}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
+          <CommoditySunburst data={filteredData} />
         </div>
       </section>
 
