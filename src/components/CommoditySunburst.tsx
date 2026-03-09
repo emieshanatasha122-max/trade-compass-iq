@@ -12,15 +12,15 @@ const SITC_ICONS = [Utensils, Wine, Leaf, Fuel, Droplets, FlaskConical, Hammer, 
 const SITC_LANG_KEYS = ['sitc0','sitc1','sitc2','sitc3','sitc4','sitc5','sitc6','sitc7','sitc8','sitc9'];
 
 const SITC_RULES: { code: string; num: number; keywords: string[] }[] = [
-  { code: 'SITC 0', num: 0, keywords: ['makanan', 'ikan', 'sayur', 'buah', 'gula', 'kopi', 'teh'] },
-  { code: 'SITC 1', num: 1, keywords: ['tembakau', 'minuman'] },
-  { code: 'SITC 2', num: 2, keywords: ['getah', 'bijih', 'kulit'] },
-  { code: 'SITC 3', num: 3, keywords: ['petroleum', 'gas asli', 'arang batu', 'minyak mentah'] },
-  { code: 'SITC 4', num: 4, keywords: ['kelapa sawit', 'minyak sawit', 'oleokimia'] },
-  { code: 'SITC 5', num: 5, keywords: ['kimia', 'farmaseutikal', 'baja', 'racun'] },
-  { code: 'SITC 6', num: 6, keywords: ['logam', 'kayu', 'gergaji', 'perabut', 'rotan', 'kertas', 'simen', 'kaca'] },
-  { code: 'SITC 7', num: 7, keywords: ['elektrik', 'elektronik', 'litar', 'jentera', 'mesin', 'alat ganti', 'motokar', 'kapal'] },
-  { code: 'SITC 8', num: 8, keywords: ['pakaian', 'tekstil', 'kasut', 'kekemasan', 'mainan', 'sukan', 'optik'] },
+  { code: 'SITC 0', num: 0, keywords: ['makanan', 'ikan', 'sayur', 'buah', 'gula', 'kopi', 'teh', 'beras', 'daging', 'susu', 'telur', 'rempah', 'gandum'] },
+  { code: 'SITC 1', num: 1, keywords: ['tembakau', 'minuman', 'rokok'] },
+  { code: 'SITC 2', num: 2, keywords: ['getah asli', 'bijih', 'kulit', 'bulu', 'kayu kumai', 'kayu balak', 'sisa logam'] },
+  { code: 'SITC 3', num: 3, keywords: ['petroleum', 'gas asli', 'arang batu', 'minyak mentah', 'lng', 'gas cecair'] },
+  { code: 'SITC 4', num: 4, keywords: ['kelapa sawit', 'minyak sawit', 'oleokimia', 'minyak kelapa', 'lemak'] },
+  { code: 'SITC 5', num: 5, keywords: ['kimia', 'farmaseutikal', 'baja', 'racun', 'plastik', 'polimer'] },
+  { code: 'SITC 6', num: 6, keywords: ['logam', 'kayu gergaji', 'perabut', 'rotan', 'kertas', 'simen', 'kaca', 'besi', 'keluli', 'tembaga', 'aluminium', 'getah dikilang', 'permaidani'] },
+  { code: 'SITC 7', num: 7, keywords: ['elektrik', 'elektronik', 'litar', 'jentera', 'mesin', 'alat ganti', 'motokar', 'kapal', 'telekomunikasi', 'pendingin', 'pemprosesan data', 'piezo', 'pengangkutan', 'kelengkapan pejabat'] },
+  { code: 'SITC 8', num: 8, keywords: ['pakaian', 'tekstil', 'kasut', 'kekemasan', 'mainan', 'sukan', 'optik', 'jam', 'kemas', 'permata', 'perabot', 'alat muzik', 'fotografi'] },
   { code: 'SITC 9', num: 9, keywords: [] },
 ];
 
