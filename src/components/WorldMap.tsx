@@ -6,6 +6,7 @@ import {
   Marker,
   Line,
   ZoomableGroup,
+  Graticule,
 } from 'react-simple-maps';
 import { ALPHA2_TO_ALPHA3 } from '@/data/tradeDataLoader';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -373,15 +374,15 @@ export default function WorldMap({ destinations, allCountries }: WorldMapProps) 
         </div>
       </div>
 
-      {/* ─── Controls: Zoom + Reset ─── */}
+      {/* ─── Controls: Zoom + Reset (Bilingual) ─── */}
       <div className="absolute top-3 right-3 z-20 flex flex-col gap-1">
-        <button onClick={handleZoomIn} className="w-8 h-8 rounded-lg bg-card/90 backdrop-blur-sm border border-border flex items-center justify-center text-foreground hover:bg-accent/10 transition-colors shadow-sm">
+        <button onClick={handleZoomIn} className="w-8 h-8 rounded-lg bg-card/90 backdrop-blur-sm border border-border flex items-center justify-center text-foreground hover:bg-accent/10 transition-colors shadow-sm" title={lang === 'bm' ? 'Zum Masuk' : 'Zoom In'}>
           <ZoomIn className="w-4 h-4" />
         </button>
-        <button onClick={handleZoomOut} className="w-8 h-8 rounded-lg bg-card/90 backdrop-blur-sm border border-border flex items-center justify-center text-foreground hover:bg-accent/10 transition-colors shadow-sm">
+        <button onClick={handleZoomOut} className="w-8 h-8 rounded-lg bg-card/90 backdrop-blur-sm border border-border flex items-center justify-center text-foreground hover:bg-accent/10 transition-colors shadow-sm" title={lang === 'bm' ? 'Zum Keluar' : 'Zoom Out'}>
           <ZoomOut className="w-4 h-4" />
         </button>
-        <button onClick={handleReset} className="w-8 h-8 rounded-lg bg-card/90 backdrop-blur-sm border border-border flex items-center justify-center text-foreground hover:bg-accent/10 transition-colors shadow-sm" title={lang === 'bm' ? 'Set Semula' : 'Reset View'}>
+        <button onClick={handleReset} className="w-8 h-8 rounded-lg bg-card/90 backdrop-blur-sm border border-border flex items-center justify-center text-foreground hover:bg-accent/10 transition-colors shadow-sm" title={lang === 'bm' ? 'Set Semula / Reset' : 'Reset View'}>
           <RotateCcw className="w-3.5 h-3.5" />
         </button>
       </div>
@@ -461,6 +462,24 @@ export default function WorldMap({ destinations, allCountries }: WorldMapProps) 
         </div>
       </div>
 
+      {/* ─── Compass Rose ─── */}
+      <div className="absolute bottom-3 left-3 z-10 opacity-40">
+        <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="24" cy="24" r="22" stroke="currentColor" strokeWidth="0.5" className="text-muted-foreground" />
+          {/* North arrow */}
+          <polygon points="24,4 21,20 27,20" className="fill-muted-foreground" />
+          <polygon points="24,4 21,20 24,17" className="fill-foreground/60" />
+          {/* South */}
+          <polygon points="24,44 21,28 27,28" className="fill-muted-foreground/40" />
+          {/* East */}
+          <polygon points="44,24 28,21 28,27" className="fill-muted-foreground/40" />
+          {/* West */}
+          <polygon points="4,24 20,21 20,27" className="fill-muted-foreground/40" />
+          {/* N label */}
+          <text x="24" y="3" textAnchor="middle" className="fill-foreground dark:fill-white" style={{ fontSize: '6px', fontWeight: 700 }}>N</text>
+        </svg>
+      </div>
+
       {/* ─── Map ─── */}
       <ComposableMap
         projection="geoNaturalEarth1"
@@ -474,8 +493,11 @@ export default function WorldMap({ destinations, allCountries }: WorldMapProps) 
           minZoom={1}
           maxZoom={8}
         >
-          {/* Ocean */}
-          <rect x={-1000} y={-600} width={3000} height={1800} className="fill-secondary/30 dark:fill-[#0B1F3B]" />
+          {/* Ocean - Deep Blue (dark) / Light Azure (light) */}
+          <rect x={-1000} y={-600} width={3000} height={1800} className="fill-[hsl(210,60%,88%)] dark:fill-[hsl(215,50%,15%)]" />
+
+          {/* Graticule grid */}
+          <Graticule stroke="currentColor" strokeWidth={0.3} strokeDasharray="4 4" className="text-[hsla(210,20%,50%,0.15)] dark:text-[hsla(210,30%,60%,0.1)]" />
 
           <Geographies geography={GEO_URL}>
             {({ geographies }) =>
