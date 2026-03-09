@@ -531,9 +531,10 @@ export default function WorldMap({ destinations, allCountries }: WorldMapProps) 
                     key={geo.rsmKey}
                     geography={geo}
                     fill={fill}
-                    stroke={isDarkMode ? 'hsla(220,20%,35%,0.4)' : 'hsla(220,20%,70%,0.5)'}
-                    strokeWidth={0.4}
+                    stroke={isDarkMode ? '#FFFFFF' : '#333333'}
+                    strokeWidth={0.5}
                     opacity={isDimmed ? 0.3 : 1}
+                    filter="url(#countryDepth)"
                     onMouseEnter={() => { if (alpha3 && normalizedDest[alpha3]) setHoveredCountry(alpha3); }}
                     onMouseLeave={() => setHoveredCountry(null)}
                     style={{
