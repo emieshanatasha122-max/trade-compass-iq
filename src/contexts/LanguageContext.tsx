@@ -13,40 +13,52 @@ const translations: Translations = {
   publications: { bm: 'Penerbitan', en: 'Publications' },
 
   // Section 1: Trade Overview
-  tradeOverview: { bm: 'Gambaran Dagangan', en: 'Trade Overview Snapshot' },
+  tradeOverview: { bm: 'Gambaran Dagangan', en: 'Trade Overview' },
   tradeOverviewDesc: { bm: 'Gambaran ringkas prestasi dagangan keseluruhan Malaysia.', en: 'A quick snapshot of Malaysia\'s overall trade performance.' },
   totalTradeValue: { bm: 'Jumlah Nilai Dagangan', en: 'Total Trade Value' },
   totalExportValue: { bm: 'Jumlah Nilai Eksport', en: 'Total Export Value' },
   totalImportValue: { bm: 'Jumlah Nilai Import', en: 'Total Import Value' },
   topTradingState: { bm: 'Negeri Dagangan Teratas', en: 'Top Trading State' },
-  topState: { bm: 'Negeri Teratas', en: 'Top State' },
-  topCommodity: { bm: 'Komoditi Teratas', en: 'Top Commodity' },
-  smeContribution: { bm: 'Sumbangan PKS', en: 'SME Contribution' },
+  topSITCCategory: { bm: 'Komoditi SITC Teratas', en: 'Top SITC Category' },
+  mainEnterpriseSize: { bm: 'Saiz Perusahaan Utama', en: 'Main Enterprise Size' },
   tooltipTotalTrade: { bm: 'Jumlah Nilai Dagangan mewakili gabungan nilai eksport dan import Malaysia.', en: 'Total Trade Value represents the combined value of Malaysia\'s exports and imports.' },
   tooltipExport: { bm: 'Jumlah nilai barangan yang dieksport oleh Malaysia.', en: 'Total value of goods exported by Malaysia.' },
   tooltipImport: { bm: 'Jumlah nilai barangan yang diimport oleh Malaysia.', en: 'Total value of goods imported by Malaysia.' },
   tooltipTopState: { bm: 'Negeri yang menyumbang paling besar kepada dagangan.', en: 'The state contributing the most to trade value.' },
+  tooltipTopSITC: { bm: 'Kategori komoditi dengan nilai dagangan tertinggi.', en: 'Commodity category with the highest trade value.' },
+  tooltipMainEnterprise: { bm: 'Saiz perusahaan yang menyumbang paling besar.', en: 'Enterprise size contributing the most to trade.' },
 
-  // Section 2: Trade Trends
-  tradeTrends: { bm: 'Trend Dagangan', en: 'Trade Trends Over Time' },
-  tradeTrendsDesc: { bm: 'Bahagian ini menunjukkan bagaimana aktiviti dagangan Malaysia berubah dari tahun ke tahun, membantu mengenal pasti trend jangka panjang.', en: 'This section shows how Malaysia\'s trade activity evolves over time, helping users identify long-term trends.' },
-
-  // Section 3: State Activity
-  stateActivity: { bm: 'Aktiviti Dagangan Negeri', en: 'Trade Activity by State' },
-  stateActivityDesc: { bm: 'Visualisasi ini menyerlahkan negeri mana yang memainkan peranan terbesar dalam dagangan antarabangsa Malaysia.', en: 'This visualization highlights which states play the biggest role in Malaysia\'s international trade.' },
-
-  // Section 4: Commodity
-  commodityStructure: { bm: 'Struktur Komoditi', en: 'Commodity Structure' },
-  commodityStructureDesc: { bm: 'Bahagian ini menunjukkan industri mana yang menyumbang paling banyak kepada ekonomi dagangan Malaysia.', en: 'This section shows which industries contribute most to Malaysia\'s trade economy.' },
-
-  // Section 5: Global Trade
-  globalTradeMap: { bm: 'Hubungan Dagangan Global', en: 'Global Trade Connections' },
+  // Section 2: Global Trade Map
+  globalTradeMap: { bm: 'Pemetaan Dagangan Global', en: 'Global Trade Mapping' },
   globalTradeMapDesc: { bm: 'Peta ini menggambarkan hubungan dagangan global Malaysia dan destinasi eksport utama.', en: 'This map illustrates Malaysia\'s global trade connections and major export destinations.' },
 
-  // Section 6: Enterprise
+  // Section 3: Trade Trends
+  tradeTrends: { bm: 'Analisis Trend Dagangan', en: 'Trade Trend Analysis' },
+  tradeTrendsDesc: { bm: 'Bahagian ini menunjukkan bagaimana aktiviti dagangan Malaysia berubah dari semasa ke semasa.', en: 'This section shows how Malaysia\'s trade activity changes over time.' },
+  monthlyTrend: { bm: 'Trend Bulanan', en: 'Monthly Trend' },
+  yearlyTrend: { bm: 'Trend Tahunan', en: 'Yearly Trend' },
+
+  // Section 4: State Trade
+  stateActivity: { bm: 'Dagangan Mengikut Negeri', en: 'Trade by State' },
+  stateActivityDesc: { bm: 'Visualisasi ini menyerlahkan negeri mana yang memainkan peranan terbesar dalam dagangan antarabangsa Malaysia.', en: 'This visualization highlights which states play the biggest role in Malaysia\'s international trade.' },
+
+  // Section 5: Commodity
+  commodityStructure: { bm: 'Analisis Komoditi', en: 'Commodity Analysis' },
+  commodityStructureDesc: { bm: 'Bahagian ini menunjukkan kategori komoditi teratas mengikut nilai dagangan.', en: 'This section shows the top commodity categories by trade value.' },
+  topCommodities: { bm: 'Komoditi Teratas', en: 'Top Commodities' },
+
+  // Section 6: Enterprise + Region
   enterpriseParticipation: { bm: 'Penyertaan Perusahaan', en: 'Enterprise Participation' },
-  enterpriseParticipationDesc: { bm: 'Bahagian ini menunjukkan bagaimana syarikat pelbagai saiz mengambil bahagian dalam dagangan antarabangsa.', en: 'This section shows how companies of different sizes participate in international trade.' },
-  enterpriseStructure: { bm: 'Keluasan Syarikat', en: 'Enterprise Size Distribution' },
+  enterpriseParticipationDesc: { bm: 'Bahagian ini menunjukkan bagaimana syarikat pelbagai saiz mengambil bahagian dalam dagangan.', en: 'This section shows how companies of different sizes participate in trade.' },
+  enterpriseStructure: { bm: 'Taburan Keluasan Syarikat', en: 'Enterprise Size Distribution' },
+  economicRegion: { bm: 'Taburan Kawasan Ekonomi', en: 'Economic Region Distribution' },
+  economicRegionDesc: { bm: 'Taburan dagangan mengikut kawasan ekonomi.', en: 'Trade distribution by economic region.' },
+
+  // Section 7: Rankings
+  topTradeRankings: { bm: 'Kedudukan Dagangan Teratas', en: 'Top Trade Rankings' },
+  topTradeRankingsDesc: { bm: 'Negara dan komoditi teratas mengikut nilai dagangan.', en: 'Top countries and commodities by trade value.' },
+  top10Countries: { bm: '10 Negara Dagangan Teratas', en: 'Top 10 Trading Countries' },
+  top10Commodities: { bm: '10 Komoditi Teratas', en: 'Top 10 Commodity Products' },
 
   // Existing
   tradeByState: { bm: 'Analisis Dagangan Negeri', en: 'Trade by State' },
@@ -66,7 +78,7 @@ const translations: Translations = {
   readMore: { bm: 'Baca Lagi', en: 'Read More' },
   mediaStatement: { bm: 'Kenyataan Media', en: 'Media Statement' },
   annualBook: { bm: 'Buku Tahunan', en: 'Annual Book' },
-  askAboutTrade: { bm: 'Tanya saya tentang data dagangan! Ask me about trade data!', en: 'Ask me about trade data! Tanya saya tentang data dagangan!' },
+  askAboutTrade: { bm: 'Tanya saya tentang data dagangan!', en: 'Ask me about trade data!' },
   shareOfTrade: { bm: 'Bahagian Dagangan', en: 'Share of Trade' },
 
   // Enterprise size labels
@@ -76,14 +88,19 @@ const translations: Translations = {
   smeMedium: { bm: 'PKS Sederhana', en: 'Medium SMEs' },
   agents: { bm: 'Ejen Perdagangan', en: 'Trading Agents' },
 
+  // Region labels
+  semenanjung: { bm: 'Semenanjung Malaysia', en: 'Peninsular Malaysia' },
+  sabah: { bm: 'Sabah', en: 'Sabah' },
+  sarawak: { bm: 'Sarawak', en: 'Sarawak' },
+  zonBebas: { bm: 'Zon Bebas', en: 'Free Zone' },
+
   // Tooltips
   tooltipSupra: { bm: 'Supra merujuk kepada dagangan yang tidak dapat dikenalpasti negeri asalnya.', en: 'Supra refers to trade that cannot be attributed to a specific state of origin.' },
   tooltipAgent: { bm: 'Ejen Perdagangan merujuk kepada syarikat yang bertindak sebagai perantara dalam urus niaga dagangan.', en: 'Trading Agents refer to companies acting as intermediaries in trade transactions.' },
-  tooltipNES: { bm: 'NES bermaksud "Tidak Dinyatakan di Tempat Lain" — negara yang tidak diklasifikasikan secara khusus.', en: 'NES means "Not Elsewhere Specified" — countries not specifically classified.' },
-  tooltipExportIntensity: { bm: 'Keamatan warna menunjukkan jumlah nilai eksport Malaysia ke setiap negara. Garisan yang lebih tebal menunjukkan nilai dagangan yang lebih tinggi.', en: 'Color intensity shows total Malaysian export value to each country. Thicker lines represent higher trade values.' },
+  tooltipNES: { bm: 'NES bermaksud "Tidak Dinyatakan di Tempat Lain".', en: 'NES means "Not Elsewhere Specified".' },
+  tooltipExportIntensity: { bm: 'Keamatan warna menunjukkan jumlah nilai eksport Malaysia ke setiap negara.', en: 'Color intensity shows total Malaysian export value to each country.' },
 
   exportIntensity: { bm: 'Keamatan Eksport', en: 'Export Intensity' },
-  stateAnalysis: { bm: 'Analisis Dagangan Negeri', en: 'State Trade Analysis' },
   storyEnd: { bm: 'Data → Wawasan → Pemahaman Ekonomi Lebih Baik', en: 'Data → Insight → Better Economic Understanding' },
   loadingData: { bm: 'Memuatkan data dagangan...', en: 'Loading trade data...' },
 
@@ -99,7 +116,6 @@ const translations: Translations = {
   sitc8: { bm: 'Pelbagai Barang Dikilang', en: 'Miscellaneous Manufactured Articles' },
   sitc9: { bm: 'Lain-lain Komoditi', en: 'Other Commodities' },
 
-  // Radar tooltip labels
   radarTotalTrade: { bm: 'Jumlah Dagangan', en: 'Total Trade' },
   radarContribution: { bm: 'Sumbangan', en: 'Contribution' },
   radarTopAttributes: { bm: 'Atribut Utama', en: 'Top Attributes' },
