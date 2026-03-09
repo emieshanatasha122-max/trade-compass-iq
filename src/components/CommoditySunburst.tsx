@@ -186,20 +186,23 @@ export default function CommoditySunburst({ data }: Props) {
             );
           })}
 
-          {/* Scale labels */}
-          {gridLabels.map((gl, i) => (
-            <text
-              key={i}
-              x={CX + 6}
-              y={CY - gl.r + 4}
-              fontSize="11"
-              fontWeight={500}
-              fill="hsl(var(--muted-foreground))"
-              opacity={0.7}
-            >
-              {gl.value}
-            </text>
-          ))}
+          {/* Scale labels at 45° angle (between SITC 1 and SITC 2) */}
+          {gridLabels.map((gl, i) => {
+            const [sx, sy] = polarToXY(135, gl.r);
+            return (
+              <text
+                key={i}
+                x={sx + 6}
+                y={sy - 4}
+                fontSize="9"
+                fontWeight={400}
+                fill="hsl(var(--muted-foreground))"
+                opacity={0.45}
+              >
+                {gl.value}
+              </text>
+            );
+          })}
 
           {/* Data polygon */}
           <motion.path
