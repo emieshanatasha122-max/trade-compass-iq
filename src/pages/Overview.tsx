@@ -222,11 +222,17 @@ export default function Overview() {
         </div>
       </section>
 
-      {/* SECTION 4: Trade by State - Horizontal Bar */}
+      {/* SECTION 4: Trade by State - Flags + Stacked Area */}
       <section>
         <SectionHeader title={t('stateActivity')} description={t('stateActivityDesc')} icon={MapPin} />
+        <div className="chart-container mb-4">
+          <StateFlagGrid data={filteredData} />
+        </div>
         <div className="chart-container">
-          <StateBarChart data={filteredData} />
+          <h3 className="text-sm font-semibold text-foreground mb-3">
+            {lang === 'bm' ? 'Graf Garis Komponen Mengikut Negeri' : 'Stacked Area Chart by State'}
+          </h3>
+          <StateStackedAreaChart data={filteredData} />
         </div>
       </section>
 
