@@ -146,8 +146,8 @@ const COUNTRY_NAMES: Record<string, { bm: string; en: string }> = {
 };
 
 const MALAYSIA_COORDS: [number, number] = [101.7, 3.1];
-const DEFAULT_CENTER: [number, number] = [50, 10];
-const DEFAULT_ZOOM = 1.5;
+const DEFAULT_CENTER: [number, number] = [30, 5];
+const DEFAULT_ZOOM = 1;
 
 export interface DestData {
   value: number;
