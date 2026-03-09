@@ -87,32 +87,24 @@ export default function Overview() {
     }
   }, [filteredData, trendMode]);
 
-  // Export destinations with economic region
+  // Destinations with export/import split
   const exportDestinations = useMemo(() => {
-    const map: Record<string, { value: number; code: string; topCommodity?: string; kawasanEkonomi?: string }> = {};
+    const map: Record<string, { value: number; code: string; topCommodity?: string; exportValue: number; importValue: number }> = {};
     const commodityMap: Record<string, Record<string, number>> = {};
-    const regionMap: Record<string, Record<string, number>> = {};
     filteredData
       .filter(r => r.kodDestinasiEksportImport && r.kodDestinasiEksportImport !== 'MY')
       .forEach(r => {
         const code = r.kodDestinasiEksportImport;
-        const name = r.jenisDagangan === 'Eksport' ? r.destinasiEksport : r.negaraAsal;
-        if (!map[code]) map[code] = { value: 0, code };
+        if (!map[code]) map[code] = { value: 0, code, exportValue: 0, importValue: 0 };
         map[code].value += r.jumlahDaganganRM;
+        if (r.jenisDagangan === 'Eksport') map[code].exportValue += r.jumlahDaganganRM;
+        else map[code].importValue += r.jumlahDaganganRM;
         if (!commodityMap[code]) commodityMap[code] = {};
         commodityMap[code][r.komoditiUtama] = (commodityMap[code][r.komoditiUtama] || 0) + r.jumlahDaganganRM;
-        if (r.kawasanEkonomi) {
-          if (!regionMap[code]) regionMap[code] = {};
-          regionMap[code][r.kawasanEkonomi] = (regionMap[code][r.kawasanEkonomi] || 0) + r.jumlahDaganganRM;
-        }
       });
     Object.entries(commodityMap).forEach(([code, comms]) => {
       const top = Object.entries(comms).sort((a, b) => b[1] - a[1])[0];
       if (top && map[code]) map[code].topCommodity = top[0].length > 30 ? top[0].slice(0, 30) + '…' : top[0];
-    });
-    Object.entries(regionMap).forEach(([code, regions]) => {
-      const top = Object.entries(regions).sort((a, b) => b[1] - a[1])[0];
-      if (top && map[code]) map[code].kawasanEkonomi = top[0];
     });
     return map;
   }, [filteredData]);
