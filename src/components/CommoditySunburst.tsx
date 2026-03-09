@@ -186,23 +186,7 @@ export default function CommoditySunburst({ data }: Props) {
             );
           })}
 
-          {/* Scale labels at 45° angle (between SITC 1 and SITC 2) */}
-          {gridLabels.map((gl, i) => {
-            const [sx, sy] = polarToXY(135, gl.r);
-            return (
-              <text
-                key={i}
-                x={sx + 6}
-                y={sy - 4}
-                fontSize="9"
-                fontWeight={400}
-                fill="hsl(var(--muted-foreground))"
-                opacity={0.45}
-              >
-                {gl.value}
-              </text>
-            );
-          })}
+          {/* Scale labels hidden for minimalist look - values shown in tooltips */}
 
           {/* Data polygon */}
           <motion.path
