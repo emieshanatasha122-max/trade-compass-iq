@@ -462,6 +462,24 @@ export default function WorldMap({ destinations, allCountries }: WorldMapProps) 
         </div>
       </div>
 
+      {/* ─── Compass Rose ─── */}
+      <div className="absolute bottom-3 left-3 z-10 opacity-40">
+        <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="24" cy="24" r="22" stroke="currentColor" strokeWidth="0.5" className="text-muted-foreground" />
+          {/* North arrow */}
+          <polygon points="24,4 21,20 27,20" className="fill-muted-foreground" />
+          <polygon points="24,4 21,20 24,17" className="fill-foreground/60" />
+          {/* South */}
+          <polygon points="24,44 21,28 27,28" className="fill-muted-foreground/40" />
+          {/* East */}
+          <polygon points="44,24 28,21 28,27" className="fill-muted-foreground/40" />
+          {/* West */}
+          <polygon points="4,24 20,21 20,27" className="fill-muted-foreground/40" />
+          {/* N label */}
+          <text x="24" y="3" textAnchor="middle" className="fill-foreground dark:fill-white" style={{ fontSize: '6px', fontWeight: 700 }}>N</text>
+        </svg>
+      </div>
+
       {/* ─── Map ─── */}
       <ComposableMap
         projection="geoNaturalEarth1"
