@@ -87,25 +87,48 @@ export default function Overview() {
     }
   }, [filteredData, trendMode]);
 
-  // Export destinations
+  // Export destinations with economic region
   const exportDestinations = useMemo(() => {
-    const map: Record<string, { value: number; code: string; topCommodity?: string }> = {};
+    const map: Record<string, { value: number; code: string; topCommodity?: string; kawasanEkonomi?: string }> = {};
     const commodityMap: Record<string, Record<string, number>> = {};
+    const regionMap: Record<string, Record<string, number>> = {};
     filteredData
-      .filter(r => r.jenisDagangan === 'Eksport' && r.kodDestinasiEksportImport && r.kodDestinasiEksportImport !== 'MY')
+      .filter(r => r.kodDestinasiEksportImport && r.kodDestinasiEksportImport !== 'MY')
       .forEach(r => {
         const code = r.kodDestinasiEksportImport;
+        const name = r.jenisDagangan === 'Eksport' ? r.destinasiEksport : r.negaraAsal;
         if (!map[code]) map[code] = { value: 0, code };
         map[code].value += r.jumlahDaganganRM;
         if (!commodityMap[code]) commodityMap[code] = {};
         commodityMap[code][r.komoditiUtama] = (commodityMap[code][r.komoditiUtama] || 0) + r.jumlahDaganganRM;
+        if (r.kawasanEkonomi) {
+          if (!regionMap[code]) regionMap[code] = {};
+          regionMap[code][r.kawasanEkonomi] = (regionMap[code][r.kawasanEkonomi] || 0) + r.jumlahDaganganRM;
+        }
       });
-    // Attach top commodity per country
     Object.entries(commodityMap).forEach(([code, comms]) => {
       const top = Object.entries(comms).sort((a, b) => b[1] - a[1])[0];
       if (top && map[code]) map[code].topCommodity = top[0].length > 30 ? top[0].slice(0, 30) + '…' : top[0];
     });
+    Object.entries(regionMap).forEach(([code, regions]) => {
+      const top = Object.entries(regions).sort((a, b) => b[1] - a[1])[0];
+      if (top && map[code]) map[code].kawasanEkonomi = top[0];
+    });
     return map;
+  }, [filteredData]);
+
+  // Full country list for map filter (all unique countries from data)
+  const allCountries = useMemo(() => {
+    const set = new Map<string, string>();
+    filteredData.forEach(r => {
+      if (r.jenisDagangan === 'Eksport' && r.kodDestinasiEksportImport && r.kodDestinasiEksportImport !== 'MY') {
+        set.set(r.kodDestinasiEksportImport, r.destinasiEksport);
+      }
+      if (r.jenisDagangan === 'Import' && r.kodDestinasiEksportImport && r.kodDestinasiEksportImport !== 'MY') {
+        set.set(r.kodDestinasiEksportImport, r.negaraAsal);
+      }
+    });
+    return Array.from(set.entries()).map(([code, name]) => ({ code, name })).sort((a, b) => a.name.localeCompare(b.name));
   }, [filteredData]);
 
   const kpis = [
