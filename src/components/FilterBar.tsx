@@ -3,14 +3,10 @@ import { useFilters } from '@/contexts/FilterContext';
 import { useLanguage, ENTERPRISE_LABEL_MAP } from '@/contexts/LanguageContext';
 import { Filter } from 'lucide-react';
 
-const YEARS = Array.from({ length: 11 }, (_, i) => 2014 + i);
 const MONTHS = Array.from({ length: 12 }, (_, i) => i + 1);
-const NEGERI = ['Selangor', 'Johor', 'Pulau Pinang', 'Sarawak', 'Sabah', 'Perak', 'Kedah', 'Pahang', 'Kelantan', 'Terengganu', 'Melaka', 'Negeri Sembilan', 'Perlis', 'W.P. Kuala Lumpur', 'W.P. Labuan', 'Supra'];
-const KOMODITI = ['Elektrikal & Elektronik', 'Minyak Sawit', 'Petroleum', 'Jentera', 'Getah', 'Kimia', 'Kayu', 'Tekstil', 'Logam', 'Makanan'];
-const KELUASAN_KEYS = ['LARGE', 'SME_MICRO', 'SME_SMALL', 'SME_MEDIUM', 'AGENTS'];
 
 export default function FilterBar() {
-  const { filters, setFilter } = useFilters();
+  const { filters, setFilter, uniqueNegeri, uniqueKomoditi, uniqueKeluasan, uniqueYears } = useFilters();
   const { t } = useLanguage();
 
   const selectClass = "bg-card text-foreground border border-border rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-primary transition-colors";
@@ -24,7 +20,7 @@ export default function FilterBar() {
 
       <select value={filters.tahun} onChange={e => setFilter('tahun', e.target.value)} className={selectClass}>
         <option value="all">{t('year')} - {t('all')}</option>
-        {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
+        {uniqueYears.map(y => <option key={y} value={y}>{y}</option>)}
       </select>
 
       <select value={filters.bulan} onChange={e => setFilter('bulan', e.target.value)} className={selectClass}>
@@ -40,18 +36,18 @@ export default function FilterBar() {
 
       <select value={filters.negeri} onChange={e => setFilter('negeri', e.target.value)} className={selectClass}>
         <option value="all">{t('state')} - {t('all')}</option>
-        {NEGERI.map(n => <option key={n} value={n}>{n}</option>)}
+        {uniqueNegeri.map(n => <option key={n} value={n}>{n}</option>)}
       </select>
 
       <select value={filters.komoditi} onChange={e => setFilter('komoditi', e.target.value)} className={selectClass}>
         <option value="all">{t('commodity')} - {t('all')}</option>
-        {KOMODITI.map(k => <option key={k} value={k}>{k}</option>)}
+        {uniqueKomoditi.map(k => <option key={k} value={k}>{k}</option>)}
       </select>
 
       <select value={filters.keluasan} onChange={e => setFilter('keluasan', e.target.value)} className={selectClass}>
         <option value="all">{t('enterpriseSize')} - {t('all')}</option>
-        {KELUASAN_KEYS.map(k => (
-          <option key={k} value={k}>{t(ENTERPRISE_LABEL_MAP[k])}</option>
+        {uniqueKeluasan.map(k => (
+          <option key={k} value={k}>{t(ENTERPRISE_LABEL_MAP[k]) || k}</option>
         ))}
       </select>
     </div>
