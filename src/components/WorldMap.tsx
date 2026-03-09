@@ -21,15 +21,15 @@ const EXPORT_COLOR_END = '#0066FF';   // Electric Blue
 const IMPORT_COLOR_START = '#FF8800'; // Orange
 const IMPORT_COLOR_END = '#FF2222';   // Red
 
-// ─── Regional fill colors (subtle, not overpowering) ───
+// ─── Regional fill colors (bold, saturated) ───
 const REGION_FILLS: Record<string, { light: string; dark: string }> = {
-  northAmerica: { light: 'hsla(210, 55%, 65%, 0.35)', dark: 'hsla(210, 55%, 40%, 0.35)' },
-  southAmerica: { light: 'hsla(175, 50%, 55%, 0.35)', dark: 'hsla(175, 50%, 35%, 0.35)' },
-  europe:       { light: 'hsla(0, 50%, 65%, 0.30)',   dark: 'hsla(0, 45%, 40%, 0.30)' },
-  asia:         { light: 'hsla(40, 60%, 60%, 0.35)',  dark: 'hsla(40, 55%, 38%, 0.35)' },
-  africa:       { light: 'hsla(140, 45%, 55%, 0.35)', dark: 'hsla(140, 40%, 32%, 0.35)' },
-  oceania:      { light: 'hsla(270, 50%, 60%, 0.35)', dark: 'hsla(270, 45%, 38%, 0.35)' },
-  malaysia:     { light: 'hsla(187, 72%, 42%, 0.7)',  dark: 'hsla(187, 72%, 50%, 0.7)' },
+  northAmerica: { light: 'hsla(220, 70%, 45%, 0.85)', dark: 'hsla(220, 65%, 35%, 0.85)' },
+  southAmerica: { light: 'hsla(175, 60%, 38%, 0.85)', dark: 'hsla(175, 55%, 30%, 0.85)' },
+  europe:       { light: 'hsla(0, 60%, 50%, 0.75)',   dark: 'hsla(0, 55%, 38%, 0.80)' },
+  asia:         { light: 'hsla(40, 80%, 48%, 0.85)',   dark: 'hsla(40, 70%, 40%, 0.85)' },
+  africa:       { light: 'hsla(155, 65%, 35%, 0.85)',  dark: 'hsla(155, 55%, 28%, 0.85)' },
+  oceania:      { light: 'hsla(270, 55%, 50%, 0.80)',  dark: 'hsla(270, 50%, 40%, 0.80)' },
+  malaysia:     { light: 'hsla(187, 80%, 38%, 0.9)',   dark: 'hsla(187, 75%, 45%, 0.9)' },
 };
 
 // ISO numeric → alpha-3
@@ -312,6 +312,18 @@ export default function WorldMap({ destinations, allCountries }: WorldMapProps) 
               <feMergeNode in="SourceGraphic" />
             </feMerge>
           </filter>
+          {/* Inner shadow for 3D country depth */}
+          <filter id="countryDepth" x="-5%" y="-5%" width="110%" height="110%">
+            <feComponentTransfer in="SourceAlpha" result="shadow">
+              <feFuncA type="linear" slope="0.3" />
+            </feComponentTransfer>
+            <feGaussianBlur in="shadow" stdDeviation="1.5" result="blur" />
+            <feOffset dx="0" dy="0.5" result="offsetBlur" />
+            <feMerge>
+              <feMergeNode in="offsetBlur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
         </defs>
       </svg>
 
@@ -462,21 +474,28 @@ export default function WorldMap({ destinations, allCountries }: WorldMapProps) 
         </div>
       </div>
 
-      {/* ─── Compass Rose ─── */}
-      <div className="absolute bottom-3 left-3 z-10 opacity-40">
-        <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="24" cy="24" r="22" stroke="currentColor" strokeWidth="0.5" className="text-muted-foreground" />
+      {/* ─── Compass Rose (Labeled N/S/E/W) ─── */}
+      <div className="absolute bottom-3 left-3 z-10 opacity-50">
+        <svg width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="28" cy="28" r="26" stroke="currentColor" strokeWidth="0.6" className="text-muted-foreground" />
+          <circle cx="28" cy="28" r="18" stroke="currentColor" strokeWidth="0.3" strokeDasharray="2 2" className="text-muted-foreground/40" />
           {/* North arrow */}
-          <polygon points="24,4 21,20 27,20" className="fill-muted-foreground" />
-          <polygon points="24,4 21,20 24,17" className="fill-foreground/60" />
+          <polygon points="28,5 25,22 31,22" className="fill-foreground/70 dark:fill-white/70" />
+          <polygon points="28,5 25,22 28,19" className="fill-foreground/40 dark:fill-white/40" />
           {/* South */}
-          <polygon points="24,44 21,28 27,28" className="fill-muted-foreground/40" />
+          <polygon points="28,51 25,34 31,34" className="fill-muted-foreground/30" />
+          <polygon points="28,51 25,34 28,37" className="fill-muted-foreground/15" />
           {/* East */}
-          <polygon points="44,24 28,21 28,27" className="fill-muted-foreground/40" />
+          <polygon points="51,28 34,25 34,31" className="fill-muted-foreground/30" />
           {/* West */}
-          <polygon points="4,24 20,21 20,27" className="fill-muted-foreground/40" />
-          {/* N label */}
-          <text x="24" y="3" textAnchor="middle" className="fill-foreground dark:fill-white" style={{ fontSize: '6px', fontWeight: 700 }}>N</text>
+          <polygon points="5,28 22,25 22,31" className="fill-muted-foreground/30" />
+          {/* Directional labels */}
+          <text x="28" y="3.5" textAnchor="middle" className="fill-foreground dark:fill-white" style={{ fontSize: '7px', fontWeight: 700, fontFamily: 'system-ui, sans-serif' }}>N</text>
+          <text x="28" y="55.5" textAnchor="middle" className="fill-muted-foreground" style={{ fontSize: '6px', fontWeight: 600, fontFamily: 'system-ui, sans-serif' }}>S</text>
+          <text x="54.5" y="29.5" textAnchor="middle" className="fill-muted-foreground" style={{ fontSize: '6px', fontWeight: 600, fontFamily: 'system-ui, sans-serif' }}>E</text>
+          <text x="1.5" y="29.5" textAnchor="middle" className="fill-muted-foreground" style={{ fontSize: '6px', fontWeight: 600, fontFamily: 'system-ui, sans-serif' }}>W</text>
+          {/* Center dot */}
+          <circle cx="28" cy="28" r="1.5" className="fill-foreground/50 dark:fill-white/50" />
         </svg>
       </div>
 
@@ -512,9 +531,10 @@ export default function WorldMap({ destinations, allCountries }: WorldMapProps) 
                     key={geo.rsmKey}
                     geography={geo}
                     fill={fill}
-                    stroke={isDarkMode ? 'hsla(220,20%,35%,0.4)' : 'hsla(220,20%,70%,0.5)'}
-                    strokeWidth={0.4}
+                    stroke={isDarkMode ? '#FFFFFF' : '#333333'}
+                    strokeWidth={0.5}
                     opacity={isDimmed ? 0.3 : 1}
+                    filter="url(#countryDepth)"
                     onMouseEnter={() => { if (alpha3 && normalizedDest[alpha3]) setHoveredCountry(alpha3); }}
                     onMouseLeave={() => setHoveredCountry(null)}
                     style={{
