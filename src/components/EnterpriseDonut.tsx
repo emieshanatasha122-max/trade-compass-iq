@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import type { TradeRecord } from '@/data/mockTradeData';
+import type { TradeRecord } from '@/data/tradeDataLoader';
 import { useLanguage, ENTERPRISE_LABEL_MAP } from '@/contexts/LanguageContext';
 import { motion } from 'framer-motion';
 import { Building2 } from 'lucide-react';
