@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useCallback, useEffect } from 'react';
+import React, { useMemo, useState, useCallback } from 'react';
 import {
   ComposableMap,
   Geographies,
@@ -15,18 +15,20 @@ import { motion, AnimatePresence } from 'framer-motion';
 const GEO_URL = 'https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json';
 
 // ─── Trade type arc colors ───
-const EXPORT_GRADIENT = { start: '#00E676', end: '#2979FF' }; // Green → Blue
-const IMPORT_GRADIENT = { start: '#FF9100', end: '#FF1744' }; // Orange → Red
+const EXPORT_COLOR_START = '#00FFFF'; // Neon Cyan
+const EXPORT_COLOR_END = '#0066FF';   // Electric Blue
+const IMPORT_COLOR_START = '#FF8800'; // Orange
+const IMPORT_COLOR_END = '#FF2222';   // Red
 
-// ─── Regional fill colors (subtle) ───
+// ─── Regional fill colors (subtle, not overpowering) ───
 const REGION_FILLS: Record<string, { light: string; dark: string }> = {
-  northAmerica: { light: 'hsla(210,55%,70%,0.30)', dark: 'hsla(210,55%,35%,0.35)' },
-  southAmerica: { light: 'hsla(175,50%,60%,0.30)', dark: 'hsla(175,50%,30%,0.35)' },
-  europe:       { light: 'hsla(0,45%,70%,0.25)',   dark: 'hsla(0,40%,35%,0.30)' },
-  asia:         { light: 'hsla(40,55%,65%,0.30)',  dark: 'hsla(40,50%,35%,0.35)' },
-  africa:       { light: 'hsla(140,45%,60%,0.30)', dark: 'hsla(140,40%,28%,0.35)' },
-  oceania:      { light: 'hsla(270,45%,65%,0.30)', dark: 'hsla(270,40%,35%,0.35)' },
-  malaysia:     { light: 'hsla(187,72%,42%,0.7)',  dark: 'hsla(187,72%,50%,0.7)' },
+  northAmerica: { light: 'hsla(210, 55%, 65%, 0.35)', dark: 'hsla(210, 55%, 40%, 0.35)' },
+  southAmerica: { light: 'hsla(175, 50%, 55%, 0.35)', dark: 'hsla(175, 50%, 35%, 0.35)' },
+  europe:       { light: 'hsla(0, 50%, 65%, 0.30)',   dark: 'hsla(0, 45%, 40%, 0.30)' },
+  asia:         { light: 'hsla(40, 60%, 60%, 0.35)',  dark: 'hsla(40, 55%, 38%, 0.35)' },
+  africa:       { light: 'hsla(140, 45%, 55%, 0.35)', dark: 'hsla(140, 40%, 32%, 0.35)' },
+  oceania:      { light: 'hsla(270, 50%, 60%, 0.35)', dark: 'hsla(270, 45%, 38%, 0.35)' },
+  malaysia:     { light: 'hsla(187, 72%, 42%, 0.7)',  dark: 'hsla(187, 72%, 50%, 0.7)' },
 };
 
 // ISO numeric → alpha-3
@@ -146,8 +148,8 @@ const COUNTRY_NAMES: Record<string, { bm: string; en: string }> = {
 };
 
 const MALAYSIA_COORDS: [number, number] = [101.7, 3.1];
-const DEFAULT_CENTER: [number, number] = [30, 5];
-const DEFAULT_ZOOM = 1;
+const DEFAULT_CENTER: [number, number] = [50, 5];
+const DEFAULT_ZOOM = 1.8;
 
 export interface DestData {
   value: number;
@@ -181,16 +183,6 @@ export default function WorldMap({ destinations, allCountries }: WorldMapProps) 
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [tradeView, setTradeView] = useState<TradeViewMode>('all');
-  const [isDarkMode, setIsDarkMode] = useState(false);
-
-  // Observe dark mode changes
-  useEffect(() => {
-    const check = () => setIsDarkMode(document.documentElement.classList.contains('dark'));
-    check();
-    const observer = new MutationObserver(check);
-    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
-    return () => observer.disconnect();
-  }, []);
 
   const normalizedDest = useMemo(() => {
     const result: Record<string, DestData> = {};
@@ -214,7 +206,7 @@ export default function WorldMap({ destinations, allCountries }: WorldMapProps) 
     return Object.entries(normalizedDest)
       .filter(([code]) => COUNTRY_COORDS[code])
       .sort((a, b) => b[1].value - a[1].value)
-      .slice(0, 25);
+      .slice(0, 20);
   }, [normalizedDest]);
 
   const countryList = useMemo(() => {
@@ -238,13 +230,18 @@ export default function WorldMap({ destinations, allCountries }: WorldMapProps) 
       .sort((a, b) => b.value - a.value);
   }, [allCountries, lang, searchQuery, normalizedDest]);
 
+  const isDarkMode = useMemo(() => {
+    if (typeof document === 'undefined') return false;
+    return document.documentElement.classList.contains('dark');
+  }, []);
+
   const getRegionFill = (alpha3: string): string => {
     if (alpha3 === 'MYS') return isDarkMode ? REGION_FILLS.malaysia.dark : REGION_FILLS.malaysia.light;
     const region = COUNTRY_REGION[alpha3];
     if (region && REGION_FILLS[region]) {
       return isDarkMode ? REGION_FILLS[region].dark : REGION_FILLS[region].light;
     }
-    return isDarkMode ? 'hsla(220,15%,22%,0.5)' : 'hsla(220,15%,85%,0.4)';
+    return isDarkMode ? 'hsla(220, 15%, 22%, 0.5)' : 'hsla(220, 15%, 82%, 0.4)';
   };
 
   const handleZoomIn = () => setZoom(z => Math.min(z * 1.5, 8));
@@ -274,7 +271,7 @@ export default function WorldMap({ destinations, allCountries }: WorldMapProps) 
     setSearchQuery('');
   }, []);
 
-  const getArcStrokeWidth = (value: number) => Math.max(0.8, (value / maxValue) * 5);
+  const getArcStrokeWidth = (value: number) => Math.max(1, (value / maxValue) * 6);
 
   const visibleDest = selectedCountry
     ? topDest.filter(([code]) => code === selectedCountry)
@@ -287,49 +284,32 @@ export default function WorldMap({ destinations, allCountries }: WorldMapProps) 
   const showExport = tradeView === 'all' || tradeView === 'export';
   const showImport = tradeView === 'all' || tradeView === 'import';
 
-  // Styling
-  const oceanFill = isDarkMode ? '#0B1F3B' : 'hsla(210,40%,95%,1)';
-  const strokeColor = isDarkMode ? 'hsla(220,20%,30%,0.5)' : 'hsla(220,20%,70%,0.5)';
-  const textFill = isDarkMode ? '#FFFFFF' : 'hsl(var(--foreground))';
-
   return (
-    <div className="relative w-full overflow-hidden rounded-xl border border-border" style={{ height: 500 }}>
-      {/* CSS animations for arc pulse */}
-      <style>{`
-        @keyframes arcPulseExport {
-          from { stroke-dashoffset: 0; }
-          to { stroke-dashoffset: -20; }
-        }
-        @keyframes arcPulseImport {
-          from { stroke-dashoffset: 0; }
-          to { stroke-dashoffset: -16; }
-        }
-        @keyframes hubPulse {
-          0%, 100% { r: 8; opacity: 0.25; }
-          50% { r: 14; opacity: 0.08; }
-        }
-        .arc-export { animation: arcPulseExport 1.2s linear infinite; }
-        .arc-import { animation: arcPulseImport 1.8s linear infinite; }
-      `}</style>
-
+    <div className="relative w-full overflow-hidden rounded-xl bg-card border border-border" style={{ height: 560 }}>
       {/* SVG gradient defs */}
       <svg width="0" height="0" className="absolute">
         <defs>
           <linearGradient id="exportArcGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor={EXPORT_GRADIENT.start} />
-            <stop offset="100%" stopColor={EXPORT_GRADIENT.end} />
+            <stop offset="0%" stopColor={EXPORT_COLOR_START} />
+            <stop offset="100%" stopColor={EXPORT_COLOR_END} />
           </linearGradient>
           <linearGradient id="importArcGrad" x1="100%" y1="0%" x2="0%" y2="0%">
-            <stop offset="0%" stopColor={IMPORT_GRADIENT.start} />
-            <stop offset="100%" stopColor={IMPORT_GRADIENT.end} />
+            <stop offset="0%" stopColor={IMPORT_COLOR_START} />
+            <stop offset="100%" stopColor={IMPORT_COLOR_END} />
           </linearGradient>
           <filter id="arcGlow">
-            <feGaussianBlur stdDeviation="2.5" result="blur" />
-            <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+            <feGaussianBlur stdDeviation="2" result="blur" />
+            <feMerge>
+              <feMergeNode in="blur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
           </filter>
-          <filter id="hubGlow">
-            <feGaussianBlur stdDeviation="5" result="blur" />
-            <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+          <filter id="malaysiaGlow">
+            <feGaussianBlur stdDeviation="4" result="blur" />
+            <feMerge>
+              <feMergeNode in="blur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
           </filter>
         </defs>
       </svg>
@@ -344,7 +324,7 @@ export default function WorldMap({ destinations, allCountries }: WorldMapProps) 
             <Search className="w-3.5 h-3.5" />
             {selectedCountry
               ? COUNTRY_NAMES[selectedCountry]?.[lang] || selectedCountry
-              : (lang === 'bm' ? 'Cari Negara' : 'Search Country')}
+              : t('searchCountry')}
           </button>
           <AnimatePresence>
             {searchOpen && (
@@ -359,7 +339,7 @@ export default function WorldMap({ destinations, allCountries }: WorldMapProps) 
                     type="text"
                     value={searchQuery}
                     onChange={e => setSearchQuery(e.target.value)}
-                    placeholder={lang === 'bm' ? 'Taip nama negara...' : 'Type country name...'}
+                    placeholder={t('searchCountryPlaceholder')}
                     className="w-full px-2 py-1 text-xs bg-secondary/50 rounded border-none outline-none text-foreground placeholder:text-muted-foreground"
                     autoFocus
                   />
@@ -369,7 +349,7 @@ export default function WorldMap({ destinations, allCountries }: WorldMapProps) 
                     onClick={() => { handleReset(); setSearchOpen(false); }}
                     className="w-full text-left px-3 py-1.5 text-xs text-muted-foreground hover:bg-accent/10 transition-colors"
                   >
-                    {lang === 'bm' ? '— Semua Negara —' : '— All Countries —'}
+                    {t('allCountries')}
                   </button>
                   {countryList.map(c => (
                     <button
@@ -434,32 +414,32 @@ export default function WorldMap({ destinations, allCountries }: WorldMapProps) 
             initial={{ opacity: 0, y: 5 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
-            className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 bg-card/95 backdrop-blur-md border border-border rounded-xl shadow-xl px-5 py-3.5 min-w-[280px]"
+            className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 bg-card/95 backdrop-blur-md border border-border rounded-xl shadow-xl px-5 py-3.5 min-w-[260px]"
           >
-            <p className="text-sm font-bold" style={{ color: textFill }}>
+            <p className="text-sm font-bold text-foreground dark:text-white">
               Malaysia → {COUNTRY_NAMES[hoveredCountry]?.[lang] || hoveredCountry}
             </p>
-            <div className="mt-2 space-y-1.5">
-              <p className="text-xs" style={{ color: isDarkMode ? 'rgba(255,255,255,0.85)' : undefined }}>
+            <div className="mt-2 space-y-1">
+              <p className="text-xs dark:text-white/80">
                 {lang === 'bm' ? 'Jumlah Dagangan' : 'Total Trade'}:{' '}
                 <span className="font-bold text-primary">{formatRM(normalizedDest[hoveredCountry].value)}</span>
               </p>
               <div className="flex gap-4">
-                <p className="text-xs" style={{ color: isDarkMode ? 'rgba(255,255,255,0.75)' : undefined }}>
-                  <span className="inline-block w-2.5 h-2.5 rounded-full mr-1" style={{ background: `linear-gradient(135deg, ${EXPORT_GRADIENT.start}, ${EXPORT_GRADIENT.end})` }} />
+                <p className="text-xs dark:text-white/70">
+                  <span className="inline-block w-2.5 h-2.5 rounded-full mr-1" style={{ background: `linear-gradient(135deg, ${EXPORT_COLOR_START}, ${EXPORT_COLOR_END})` }} />
                   {lang === 'bm' ? 'Eksport' : 'Exports'}:{' '}
-                  <span className="font-semibold" style={{ color: textFill }}>{formatRM(normalizedDest[hoveredCountry].exportValue)}</span>
+                  <span className="font-semibold dark:text-white">{formatRM(normalizedDest[hoveredCountry].exportValue)}</span>
                 </p>
-                <p className="text-xs" style={{ color: isDarkMode ? 'rgba(255,255,255,0.75)' : undefined }}>
-                  <span className="inline-block w-2.5 h-2.5 rounded-full mr-1" style={{ background: `linear-gradient(135deg, ${IMPORT_GRADIENT.start}, ${IMPORT_GRADIENT.end})` }} />
+                <p className="text-xs dark:text-white/70">
+                  <span className="inline-block w-2.5 h-2.5 rounded-full mr-1" style={{ background: `linear-gradient(135deg, ${IMPORT_COLOR_START}, ${IMPORT_COLOR_END})` }} />
                   {lang === 'bm' ? 'Import' : 'Imports'}:{' '}
-                  <span className="font-semibold" style={{ color: textFill }}>{formatRM(normalizedDest[hoveredCountry].importValue)}</span>
+                  <span className="font-semibold dark:text-white">{formatRM(normalizedDest[hoveredCountry].importValue)}</span>
                 </p>
               </div>
               {normalizedDest[hoveredCountry].topCommodity && (
-                <p className="text-xs pt-0.5" style={{ color: isDarkMode ? 'rgba(255,255,255,0.75)' : undefined }}>
+                <p className="text-xs dark:text-white/70 pt-0.5">
                   {lang === 'bm' ? 'Barangan Utama' : 'Top Commodity'}:{' '}
-                  <span className="font-medium" style={{ color: textFill }}>{normalizedDest[hoveredCountry].topCommodity}</span>
+                  <span className="font-medium text-foreground dark:text-white">{normalizedDest[hoveredCountry].topCommodity}</span>
                 </p>
               )}
             </div>
@@ -469,13 +449,13 @@ export default function WorldMap({ destinations, allCountries }: WorldMapProps) 
 
       {/* ─── Legend ─── */}
       <div className="absolute bottom-3 right-3 z-10 bg-card/85 backdrop-blur-sm rounded-lg border border-border px-3 py-2">
-        <div className="flex items-center gap-4 text-[10px]" style={{ color: isDarkMode ? 'rgba(255,255,255,0.7)' : undefined }}>
+        <div className="flex items-center gap-4 text-[10px] text-muted-foreground dark:text-white/70">
           <div className="flex items-center gap-1.5">
-            <div className="w-5 h-1.5 rounded-full" style={{ background: `linear-gradient(90deg, ${EXPORT_GRADIENT.start}, ${EXPORT_GRADIENT.end})` }} />
+            <div className="w-5 h-1.5 rounded-full" style={{ background: `linear-gradient(90deg, ${EXPORT_COLOR_START}, ${EXPORT_COLOR_END})` }} />
             <span>{lang === 'bm' ? 'Eksport' : 'Export'}</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <div className="w-5 h-1.5 rounded-full" style={{ background: `linear-gradient(90deg, ${IMPORT_GRADIENT.start}, ${IMPORT_GRADIENT.end})` }} />
+            <div className="w-5 h-1.5 rounded-full" style={{ background: `linear-gradient(90deg, ${IMPORT_COLOR_START}, ${IMPORT_COLOR_END})` }} />
             <span>{lang === 'bm' ? 'Import' : 'Import'}</span>
           </div>
         </div>
@@ -483,11 +463,9 @@ export default function WorldMap({ destinations, allCountries }: WorldMapProps) 
 
       {/* ─── Map ─── */}
       <ComposableMap
-        projection="geoEqualEarth"
-        projectionConfig={{ scale: 160, center: [0, 0] }}
+        projection="geoNaturalEarth1"
+        projectionConfig={{ scale: 155 }}
         style={{ width: '100%', height: '100%' }}
-        width={900}
-        height={460}
       >
         <ZoomableGroup
           zoom={zoom}
@@ -496,8 +474,8 @@ export default function WorldMap({ destinations, allCountries }: WorldMapProps) 
           minZoom={1}
           maxZoom={8}
         >
-          {/* Ocean background */}
-          <rect x={-1200} y={-700} width={3600} height={2000} fill={oceanFill} />
+          {/* Ocean */}
+          <rect x={-1000} y={-600} width={3000} height={1800} className="fill-secondary/30 dark:fill-[#0B1F3B]" />
 
           <Geographies geography={GEO_URL}>
             {({ geographies }) =>
@@ -506,17 +484,15 @@ export default function WorldMap({ destinations, allCountries }: WorldMapProps) 
                 const alpha3 = NUM_TO_ALPHA3[String(geoId)];
                 const isSelected = selectedCountry && alpha3 === selectedCountry;
                 const isDimmed = selectedCountry && alpha3 !== selectedCountry && alpha3 !== 'MYS';
-                const fill = isSelected
-                  ? 'hsl(var(--primary) / 0.6)'
-                  : alpha3 ? getRegionFill(alpha3) : (isDarkMode ? 'hsla(220,15%,22%,0.5)' : 'hsla(220,15%,85%,0.4)');
+                const fill = isSelected ? 'hsl(var(--primary) / 0.6)' : (alpha3 ? getRegionFill(alpha3) : (isDarkMode ? 'hsla(220,15%,22%,0.5)' : 'hsla(220,15%,82%,0.4)'));
                 return (
                   <Geography
                     key={geo.rsmKey}
                     geography={geo}
                     fill={fill}
-                    stroke={strokeColor}
+                    stroke={isDarkMode ? 'hsla(220,20%,35%,0.4)' : 'hsla(220,20%,70%,0.5)'}
                     strokeWidth={0.4}
-                    opacity={isDimmed ? 0.25 : 1}
+                    opacity={isDimmed ? 0.3 : 1}
                     onMouseEnter={() => { if (alpha3 && normalizedDest[alpha3]) setHoveredCountry(alpha3); }}
                     onMouseLeave={() => setHoveredCountry(null)}
                     style={{
@@ -536,24 +512,24 @@ export default function WorldMap({ destinations, allCountries }: WorldMapProps) 
               key={`dim-${code}`}
               from={MALAYSIA_COORDS}
               to={COUNTRY_COORDS[code]}
-              stroke={isDarkMode ? 'hsla(220,20%,50%,0.08)' : 'hsla(220,20%,60%,0.08)'}
-              strokeWidth={0.5}
+              stroke="hsl(var(--muted-foreground))"
+              strokeWidth={0.6}
+              strokeOpacity={0.08}
               strokeLinecap="round"
             />
           ))}
 
-          {/* ─── Export arcs (Green → Blue) ─── */}
+          {/* ─── Export arcs (Cyan → Blue) ─── */}
           {showExport && visibleDest.filter(([, d]) => d.exportValue > 0).map(([code, data]) => (
-            <React.Fragment key={`export-${code}`}>
-              {/* Glow */}
+            <React.Fragment key={`export-group-${code}`}>
+              {/* Glow underlayer */}
               <Line
                 from={MALAYSIA_COORDS}
                 to={COUNTRY_COORDS[code]}
-                stroke={EXPORT_GRADIENT.start}
-                strokeWidth={getArcStrokeWidth(data.exportValue) + 3}
-                strokeOpacity={0.1}
+                stroke={EXPORT_COLOR_START}
+                strokeWidth={getArcStrokeWidth(data.exportValue) + 2}
+                strokeOpacity={0.12}
                 strokeLinecap="round"
-                filter="url(#arcGlow)"
               />
               {/* Main arc */}
               <Line
@@ -561,29 +537,29 @@ export default function WorldMap({ destinations, allCountries }: WorldMapProps) 
                 to={COUNTRY_COORDS[code]}
                 stroke="url(#exportArcGrad)"
                 strokeWidth={getArcStrokeWidth(data.exportValue)}
-                strokeOpacity={0.8}
+                strokeOpacity={0.75}
                 strokeLinecap="round"
                 strokeDasharray="6 3"
-                className="arc-export"
-              />
+              >
+                <animate attributeName="stroke-dashoffset" from="0" to="-18" dur="1.5s" repeatCount="indefinite" />
+              </Line>
             </React.Fragment>
           ))}
 
           {/* ─── Import arcs (Orange → Red) ─── */}
           {showImport && visibleDest.filter(([, d]) => d.importValue > 0).map(([code, data]) => {
             const coords = COUNTRY_COORDS[code];
-            const offset: [number, number] = [coords[0] + 0.8, coords[1] - 0.5];
+            const offset: [number, number] = [coords[0] + 1.2, coords[1] - 0.8];
             return (
-              <React.Fragment key={`import-${code}`}>
-                {/* Glow */}
+              <React.Fragment key={`import-group-${code}`}>
+                {/* Glow underlayer */}
                 <Line
                   from={offset}
                   to={MALAYSIA_COORDS}
-                  stroke={IMPORT_GRADIENT.start}
-                  strokeWidth={getArcStrokeWidth(data.importValue) + 3}
-                  strokeOpacity={0.08}
+                  stroke={IMPORT_COLOR_START}
+                  strokeWidth={getArcStrokeWidth(data.importValue) + 2}
+                  strokeOpacity={0.1}
                   strokeLinecap="round"
-                  filter="url(#arcGlow)"
                 />
                 {/* Main arc */}
                 <Line
@@ -591,47 +567,48 @@ export default function WorldMap({ destinations, allCountries }: WorldMapProps) 
                   to={MALAYSIA_COORDS}
                   stroke="url(#importArcGrad)"
                   strokeWidth={getArcStrokeWidth(data.importValue)}
-                  strokeOpacity={0.7}
+                  strokeOpacity={0.65}
                   strokeLinecap="round"
                   strokeDasharray="4 4"
-                  className="arc-import"
-                />
+                >
+                  <animate attributeName="stroke-dashoffset" from="0" to="-16" dur="2s" repeatCount="indefinite" />
+                </Line>
               </React.Fragment>
             );
           })}
 
-          {/* ─── Destination pulse dots ─── */}
+          {/* ─── Pulse dots at destinations ─── */}
           {visibleDest.map(([code, data]) => {
             const hasExport = data.exportValue > 0 && showExport;
             const hasImport = data.importValue > 0 && showImport;
             const color = hasExport && hasImport
-              ? (data.exportValue >= data.importValue ? EXPORT_GRADIENT.start : IMPORT_GRADIENT.start)
-              : hasExport ? EXPORT_GRADIENT.start : IMPORT_GRADIENT.start;
+              ? (data.exportValue >= data.importValue ? EXPORT_COLOR_START : IMPORT_COLOR_START)
+              : hasExport ? EXPORT_COLOR_START : IMPORT_COLOR_START;
             return (
               <Marker key={`pulse-${code}`} coordinates={COUNTRY_COORDS[code]}>
-                <circle r={3 / zoom} fill={color} opacity={0.9}>
-                  <animate attributeName="r" values={`${3 / zoom};${6 / zoom};${3 / zoom}`} dur="2.5s" repeatCount="indefinite" />
-                  <animate attributeName="opacity" values="0.9;0.3;0.9" dur="2.5s" repeatCount="indefinite" />
+                <circle r={3.5 / zoom} fill={color} opacity={0.85}>
+                  <animate attributeName="r" values={`${3 / zoom};${7 / zoom};${3 / zoom}`} dur="2.5s" repeatCount="indefinite" />
+                  <animate attributeName="opacity" values="0.85;0.25;0.85" dur="2.5s" repeatCount="indefinite" />
                 </circle>
               </Marker>
             );
           })}
 
-          {/* ─── Malaysia hub ─── */}
+          {/* ─── Malaysia hub marker with glow ─── */}
           <Marker coordinates={MALAYSIA_COORDS}>
             {/* Halo */}
-            <circle r={20 / zoom} fill="hsl(var(--primary))" opacity={0.06} filter="url(#hubGlow)">
-              <animate attributeName="r" values={`${18 / zoom};${28 / zoom};${18 / zoom}`} dur="4s" repeatCount="indefinite" />
+            <circle r={18 / zoom} fill="hsl(var(--primary))" opacity={0.06} filter="url(#malaysiaGlow)">
+              <animate attributeName="r" values={`${18 / zoom};${25 / zoom};${18 / zoom}`} dur="4s" repeatCount="indefinite" />
               <animate attributeName="opacity" values="0.06;0.02;0.06" dur="4s" repeatCount="indefinite" />
             </circle>
             {/* Pulse ring */}
             <circle r={10 / zoom} fill="none" stroke="hsl(var(--primary))" strokeWidth={1.5 / zoom} opacity={0.3}>
-              <animate attributeName="r" values={`${10 / zoom};${18 / zoom};${10 / zoom}`} dur="3s" repeatCount="indefinite" />
+              <animate attributeName="r" values={`${10 / zoom};${16 / zoom};${10 / zoom}`} dur="3s" repeatCount="indefinite" />
               <animate attributeName="opacity" values="0.3;0.05;0.3" dur="3s" repeatCount="indefinite" />
             </circle>
             {/* Core */}
-            <circle r={5 / zoom} fill="hsl(var(--primary))" filter="url(#hubGlow)" />
-            <text textAnchor="middle" y={-13 / zoom} style={{ fontSize: `${11 / zoom}px`, fontWeight: 800, fill: textFill }}>
+            <circle r={5 / zoom} fill="hsl(var(--primary))" filter="url(#malaysiaGlow)" />
+            <text textAnchor="middle" y={-12 / zoom} style={{ fontSize: `${11 / zoom}px`, fontWeight: 800, fill: isDarkMode ? '#FFFFFF' : 'hsl(var(--foreground))' }}>
               Malaysia
             </text>
           </Marker>
@@ -649,7 +626,7 @@ export default function WorldMap({ destinations, allCountries }: WorldMapProps) 
                 y={-10 / zoom}
                 style={{
                   fontSize: `${hoveredCountry === code ? 9 : 7}px`,
-                  fill: textFill,
+                  fill: isDarkMode ? '#FFFFFF' : 'hsl(var(--foreground))',
                   fontWeight: hoveredCountry === code ? 700 : 400,
                   opacity: hoveredCountry === code ? 1 : 0.8,
                   transition: 'all 0.2s',

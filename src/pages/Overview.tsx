@@ -35,7 +35,7 @@ function SectionHeader({ title, description, icon: Icon }: { title: string; desc
 }
 
 export default function Overview() {
-  const { filteredData, allData, isLoading } = useFilters();
+  const { filteredData, isLoading } = useFilters();
   const { t } = useLanguage();
   const [trendMode, setTrendMode] = useState<'yearly' | 'monthly'>('yearly');
 
@@ -109,10 +109,10 @@ export default function Overview() {
     return map;
   }, [filteredData]);
 
-  // Full country list for map filter — scan ALL data, not just filtered
+  // Full country list for map filter (all unique countries from data)
   const allCountries = useMemo(() => {
     const set = new Map<string, string>();
-    allData.forEach(r => {
+    filteredData.forEach(r => {
       if (r.jenisDagangan === 'Eksport' && r.kodDestinasiEksportImport && r.kodDestinasiEksportImport !== 'MY') {
         set.set(r.kodDestinasiEksportImport, r.destinasiEksport);
       }
@@ -121,7 +121,7 @@ export default function Overview() {
       }
     });
     return Array.from(set.entries()).map(([code, name]) => ({ code, name })).sort((a, b) => a.name.localeCompare(b.name));
-  }, [allData]);
+  }, [filteredData]);
 
   const kpis = [
     { icon: TrendingUp, label: t('totalTradeValue'), value: formatRM(totalTrade), tooltip: t('tooltipTotalTrade'), gradient: 'from-[hsl(187,72%,42%)] to-[hsl(200,65%,50%)]' },
