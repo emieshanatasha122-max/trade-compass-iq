@@ -85,6 +85,25 @@ const translations: Translations = {
   exportIntensity: { bm: 'Keamatan Eksport', en: 'Export Intensity' },
   stateAnalysis: { bm: 'Analisis Dagangan Negeri', en: 'State Trade Analysis' },
   storyEnd: { bm: 'Data → Wawasan → Pemahaman Ekonomi Lebih Baik', en: 'Data → Insight → Better Economic Understanding' },
+
+  // SITC labels
+  sitc0: { bm: 'Makanan & Binatang Hidup', en: 'Food & Live Animals' },
+  sitc1: { bm: 'Minuman & Tembakau', en: 'Beverages & Tobacco' },
+  sitc2: { bm: 'Bahan Mentah Tak Boleh Dimakan', en: 'Crude Materials, Inedible' },
+  sitc3: { bm: 'Bahan Api Mineral & Pelincir', en: 'Mineral Fuels & Lubricants' },
+  sitc4: { bm: 'Minyak & Lemak Binatang/Tumbuhan', en: 'Animal & Vegetable Oils' },
+  sitc5: { bm: 'Bahan Kimia & Produk Berkaitan', en: 'Chemicals & Related Products' },
+  sitc6: { bm: 'Barang Dikilang (Kayu, Logam, Getah)', en: 'Manufactured Goods (Wood, Metal, Rubber)' },
+  sitc7: { bm: 'Jentera & Pengangkutan (E&E)', en: 'Machinery & Transport Equipment (E&E)' },
+  sitc8: { bm: 'Pelbagai Barang Dikilang', en: 'Miscellaneous Manufactured Articles' },
+  sitc9: { bm: 'Lain-lain Komoditi', en: 'Other Commodities' },
+
+  // Radar tooltip labels
+  radarTotalTrade: { bm: 'Jumlah Dagangan', en: 'Total Trade' },
+  radarContribution: { bm: 'Sumbangan', en: 'Contribution' },
+  radarTopAttributes: { bm: 'Atribut Utama', en: 'Top Attributes' },
+  radarPrimaryState: { bm: 'Negeri Utama', en: 'Primary State' },
+  radarRegion: { bm: 'Kawasan', en: 'Region' },
 };
 
 export const ENTERPRISE_LABEL_MAP: Record<string, string> = {
