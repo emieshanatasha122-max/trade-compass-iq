@@ -282,8 +282,10 @@ export default function CommoditySunburst({ data }: Props) {
         </div>
       </div>
 
-      {/* Right column: Reserved (40%) */}
-      <div className="hidden lg:block w-[40%] border-l border-border" />
+      {/* Right column: Enterprise Donut (40%) */}
+      <div className="w-full lg:w-[40%] lg:border-l border-border lg:pl-6">
+        <EnterpriseDonut data={data} />
+      </div>
     </div>
   );
 }
