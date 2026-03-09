@@ -6,6 +6,7 @@ import {
   Marker,
   Line,
   ZoomableGroup,
+  Graticule,
 } from 'react-simple-maps';
 import { ALPHA2_TO_ALPHA3 } from '@/data/tradeDataLoader';
 import { useLanguage } from '@/contexts/LanguageContext';
