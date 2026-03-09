@@ -6,7 +6,7 @@ import InfoTooltip from '@/components/InfoTooltip';
 import WorldMap from '@/components/WorldMap';
 import StateFlagGrid from '@/components/StateFlagGrid';
 import StateStackedAreaChart from '@/components/StateStackedAreaChart';
-import CommodityBarChart from '@/components/CommodityBarChart';
+import CommodityStackedAreaChart from '@/components/CommodityStackedAreaChart';
 import DualDonutSection from '@/components/DualDonutSection';
 import TopRankings from '@/components/TopRankings';
 import {
@@ -236,11 +236,15 @@ export default function Overview() {
         </div>
       </section>
 
-      {/* SECTION 5: Commodity Analysis - Horizontal Bar */}
+      {/* SECTION 5: Commodity Analysis - Stacked Area */}
       <section>
-        <SectionHeader title={t('commodityStructure')} description={t('commodityStructureDesc')} icon={Package} />
+        <SectionHeader
+          title={lang === 'bm' ? 'Aliran Dagangan mengikut Komoditi' : 'Trade Flow by Commodity'}
+          description={lang === 'bm' ? 'Evolusi dagangan mengikut kategori SITC sepanjang masa' : 'Evolution of trade by SITC category over time'}
+          icon={Package}
+        />
         <div className="chart-container">
-          <CommodityBarChart data={filteredData} />
+          <CommodityStackedAreaChart data={filteredData} />
         </div>
       </section>
 
