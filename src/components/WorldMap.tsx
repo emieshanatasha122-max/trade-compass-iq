@@ -146,8 +146,8 @@ const COUNTRY_NAMES: Record<string, { bm: string; en: string }> = {
 };
 
 const MALAYSIA_COORDS: [number, number] = [101.7, 3.1];
-const DEFAULT_CENTER: [number, number] = [50, 10];
-const DEFAULT_ZOOM = 1.5;
+const DEFAULT_CENTER: [number, number] = [30, 5];
+const DEFAULT_ZOOM = 1;
 
 export interface DestData {
   value: number;
@@ -293,7 +293,7 @@ export default function WorldMap({ destinations, allCountries }: WorldMapProps) 
   const textFill = isDarkMode ? '#FFFFFF' : 'hsl(var(--foreground))';
 
   return (
-    <div className="relative w-full overflow-hidden rounded-xl border border-border" style={{ minHeight: 480 }}>
+    <div className="relative w-full overflow-hidden rounded-xl border border-border" style={{ height: 500 }}>
       {/* CSS animations for arc pulse */}
       <style>{`
         @keyframes arcPulseExport {
@@ -483,9 +483,11 @@ export default function WorldMap({ destinations, allCountries }: WorldMapProps) 
 
       {/* ─── Map ─── */}
       <ComposableMap
-        projection="geoNaturalEarth1"
-        projectionConfig={{ scale: 148 }}
-        style={{ width: '100%', height: '100%', minHeight: 480 }}
+        projection="geoEqualEarth"
+        projectionConfig={{ scale: 160, center: [0, 0] }}
+        style={{ width: '100%', height: '100%' }}
+        width={900}
+        height={460}
       >
         <ZoomableGroup
           zoom={zoom}
