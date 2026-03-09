@@ -93,11 +93,11 @@ export default function Overview() {
       }));
   }, [filteredData]);
 
-  // Export destinations
+  // Export destinations - use 2-letter codes from CSV
   const exportDestinations = useMemo(() => {
     const map: Record<string, { value: number; code: string }> = {};
     filteredData
-      .filter(r => r.jenisDagangan === 'Eksport' && r.kodDestinasiEksportImport)
+      .filter(r => r.jenisDagangan === 'Eksport' && r.kodDestinasiEksportImport && r.kodDestinasiEksportImport !== 'MY')
       .forEach(r => {
         const code = r.kodDestinasiEksportImport;
         if (!map[code]) map[code] = { value: 0, code };
