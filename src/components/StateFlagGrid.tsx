@@ -3,7 +3,6 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import type { TradeRecord } from '@/data/tradeDataLoader';
 import { motion } from 'framer-motion';
 
-// Map state names to their official flag file paths in public/flags/
 const STATE_FLAG_FILES: Record<string, string> = {
   'Selangor': '/flags/Selangor.svg',
   'Johor': '/flags/Johor.svg',
@@ -20,13 +19,19 @@ const STATE_FLAG_FILES: Record<string, string> = {
   'Perlis': '/flags/Perlis.svg',
   'W.P. Kuala Lumpur': '/flags/WP_Kuala_Lumpur.svg',
   'W.P. Labuan': '/flags/WP_Labuan.svg',
-  'Supra': '/flags/Supra.svg',
+  'W.P. Putrajaya': '/flags/WP_Putrajaya.svg',
 };
 
-function formatRM(value: number): string {
-  if (value >= 1e12) return `RM ${(value / 1e12).toFixed(1)}T`;
-  if (value >= 1e9) return `RM ${(value / 1e9).toFixed(1)}B`;
-  if (value >= 1e6) return `RM ${(value / 1e6).toFixed(1)}M`;
+function formatRM(value: number, lang: string): string {
+  if (lang === 'bm') {
+    if (value >= 1e12) return `RM ${(value / 1e12).toFixed(1)} Trilion`;
+    if (value >= 1e9) return `RM ${(value / 1e9).toFixed(1)} Bilion`;
+    if (value >= 1e6) return `RM ${(value / 1e6).toFixed(1)} Juta`;
+  } else {
+    if (value >= 1e12) return `RM ${(value / 1e12).toFixed(1)} Trillion`;
+    if (value >= 1e9) return `RM ${(value / 1e9).toFixed(1)} Billion`;
+    if (value >= 1e6) return `RM ${(value / 1e6).toFixed(1)} Million`;
+  }
   return `RM ${value.toLocaleString()}`;
 }
 
@@ -35,7 +40,6 @@ function FlagImage({ stateName }: { stateName: string }) {
   const src = STATE_FLAG_FILES[stateName];
 
   if (!src || hasError) {
-    // Text fallback
     return (
       <div className="w-full h-full flex items-center justify-center bg-muted rounded-lg">
         <span className="text-xs font-semibold text-muted-foreground">{stateName}</span>
@@ -63,16 +67,26 @@ export default function StateFlagGrid({ data }: Props) {
   const [hoveredState, setHoveredState] = useState<string | null>(null);
 
   const stateData = useMemo(() => {
-    const map: Record<string, number> = {};
-    data.forEach(r => { map[r.negeri] = (map[r.negeri] || 0) + r.jumlahDaganganRM; });
-    const total = Object.values(map).reduce((a, b) => a + b, 0);
+    const map: Record<string, { value: number; records: number; commodities: Record<string, number> }> = {};
+    data.forEach(r => {
+      if (!map[r.negeri]) map[r.negeri] = { value: 0, records: 0, commodities: {} };
+      map[r.negeri].value += r.jumlahDaganganRM;
+      map[r.negeri].records += 1;
+      map[r.negeri].commodities[r.komoditiUtama] = (map[r.negeri].commodities[r.komoditiUtama] || 0) + r.jumlahDaganganRM;
+    });
+    const total = Object.values(map).reduce((a, b) => a + b.value, 0);
     return Object.entries(map)
-      .sort((a, b) => b[1] - a[1])
-      .map(([name, value]) => ({
-        name,
-        value,
-        pct: total > 0 ? ((value / total) * 100).toFixed(1) : '0',
-      }));
+      .sort((a, b) => b[1].value - a[1].value)
+      .map(([name, d]) => {
+        const topCommodity = Object.entries(d.commodities).sort((a, b) => b[1] - a[1])[0];
+        return {
+          name,
+          value: d.value,
+          records: d.records,
+          pct: total > 0 ? ((d.value / total) * 100).toFixed(1) : '0',
+          topCommodity: topCommodity ? topCommodity[0] : '-',
+        };
+      });
   }, [data]);
 
   return (
@@ -95,20 +109,35 @@ export default function StateFlagGrid({ data }: Props) {
               <FlagImage stateName={state.name} />
             </div>
 
-            {/* State name - centered */}
+            {/* State name */}
             <p className="text-xs font-medium text-muted-foreground text-center truncate">{state.name}</p>
 
-            {/* Trade value - centered, large, bold */}
-            <p className="text-base font-bold text-primary text-center mt-0.5">{formatRM(state.value)}</p>
+            {/* Trade value - large bold */}
+            <p className="text-base font-bold text-primary text-center mt-0.5">{formatRM(state.value, lang)}</p>
 
-            {/* Hover overlay with percentage */}
-            <div className={`absolute inset-0 rounded-xl bg-card/95 backdrop-blur-sm flex flex-col items-center justify-center transition-opacity duration-200 ${isHovered ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+            {/* Hover overlay with details */}
+            <div className={`absolute inset-0 rounded-xl bg-card/95 backdrop-blur-sm flex flex-col items-center justify-center px-3 transition-opacity duration-200 ${isHovered ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
               <p className="text-sm font-semibold text-foreground">{state.name}</p>
               <p className="text-2xl font-bold text-primary mt-1">{state.pct}%</p>
               <p className="text-[10px] text-muted-foreground">
                 {lang === 'bm' ? 'Sumbangan Dagangan Nasional' : 'Share of National Trade'}
               </p>
-              <p className="text-sm font-semibold text-foreground mt-1">{formatRM(state.value)}</p>
+              <p className="text-sm font-semibold text-foreground mt-1">{formatRM(state.value, lang)}</p>
+
+              <div className="mt-2 w-full border-t border-border/50 pt-2 space-y-1">
+                <p className="text-[10px] text-muted-foreground text-center">
+                  <span className="font-semibold text-foreground">
+                    {lang === 'bm' ? 'Komoditi Teratas' : 'Top Commodity'}:
+                  </span>{' '}
+                  {state.topCommodity.length > 25 ? state.topCommodity.slice(0, 25) + '…' : state.topCommodity}
+                </p>
+                <p className="text-[10px] text-muted-foreground text-center">
+                  <span className="font-semibold text-foreground">
+                    {lang === 'bm' ? 'Jumlah Rekod' : 'Total Records'}:
+                  </span>{' '}
+                  {state.records.toLocaleString()}
+                </p>
+              </div>
             </div>
           </motion.div>
         );
