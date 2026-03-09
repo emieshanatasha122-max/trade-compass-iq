@@ -40,8 +40,19 @@ function SectionHeader({ title, description, icon: Icon }: { title: string; desc
 
 
 export default function Overview() {
-  const { filteredData } = useFilters();
+  const { filteredData, isLoading } = useFilters();
   const { t } = useLanguage();
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-[60vh]">
+        <div className="text-center space-y-3">
+          <div className="w-10 h-10 border-3 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
+          <p className="text-sm text-muted-foreground">{t('loadingData') || 'Loading trade data...'}</p>
+        </div>
+      </div>
+    );
+  }
 
   // KPIs
   const totalTrade = useMemo(() => filteredData.reduce((s, r) => s + r.jumlahDaganganRM, 0), [filteredData]);
