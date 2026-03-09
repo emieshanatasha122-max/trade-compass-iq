@@ -4,7 +4,8 @@ import { useLanguage, ENTERPRISE_LABEL_MAP } from '@/contexts/LanguageContext';
 import FilterBar from '@/components/FilterBar';
 import InfoTooltip from '@/components/InfoTooltip';
 import WorldMap from '@/components/WorldMap';
-import StateBarChart from '@/components/StateBarChart';
+import StateFlagGrid from '@/components/StateFlagGrid';
+import StateStackedAreaChart from '@/components/StateStackedAreaChart';
 import CommodityBarChart from '@/components/CommodityBarChart';
 import DualDonutSection from '@/components/DualDonutSection';
 import TopRankings from '@/components/TopRankings';
@@ -36,7 +37,7 @@ function SectionHeader({ title, description, icon: Icon }: { title: string; desc
 
 export default function Overview() {
   const { filteredData, isLoading } = useFilters();
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const [trendMode, setTrendMode] = useState<'yearly' | 'monthly'>('yearly');
 
   // KPIs
@@ -221,11 +222,17 @@ export default function Overview() {
         </div>
       </section>
 
-      {/* SECTION 4: Trade by State - Horizontal Bar */}
+      {/* SECTION 4: Trade by State - Flags + Stacked Area */}
       <section>
         <SectionHeader title={t('stateActivity')} description={t('stateActivityDesc')} icon={MapPin} />
+        <div className="chart-container mb-4">
+          <StateFlagGrid data={filteredData} />
+        </div>
         <div className="chart-container">
-          <StateBarChart data={filteredData} />
+          <h3 className="text-sm font-semibold text-foreground mb-3">
+            {lang === 'bm' ? 'Graf Garis Komponen Mengikut Negeri' : 'Stacked Area Chart by State'}
+          </h3>
+          <StateStackedAreaChart data={filteredData} />
         </div>
       </section>
 
