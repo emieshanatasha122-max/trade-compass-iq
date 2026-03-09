@@ -7,7 +7,6 @@ import WorldMap from '@/components/WorldMap';
 import StateFlagGrid from '@/components/StateFlagGrid';
 import StateStackedAreaChart from '@/components/StateStackedAreaChart';
 import CommodityStackedAreaChart from '@/components/CommodityStackedAreaChart';
-import CommodityStackedAreaChart from '@/components/CommodityStackedAreaChart';
 import {
   XAxis, YAxis, Tooltip, ResponsiveContainer,
   CartesianGrid, LineChart, Line, Legend
