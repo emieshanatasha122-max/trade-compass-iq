@@ -129,7 +129,7 @@ export default function CommoditySunburst({ data }: Props) {
       records.forEach(r => { stateMap[r.negeri] = (stateMap[r.negeri] || 0) + r.jumlahDaganganRM; });
       const topState = Object.entries(stateMap).sort((a, b) => b[1] - a[1])[0]?.[0] || 'Selangor';
       const regionMap: Record<string, number> = {};
-      records.forEach(r => { const rg = mapStateToRegion(r.negeri); regionMap[rg] = (regionMap[rg] || 0) + r.jumlahDaganganRM; });
+      records.forEach(r => { const rg = normalizeKawasan(r.kawasan); regionMap[rg] = (regionMap[rg] || 0) + r.jumlahDaganganRM; });
       const topRegion = Object.entries(regionMap).sort((a, b) => b[1] - a[1])[0]?.[0] || 'Semenanjung';
       return { code: rule.code, num: rule.num, total, topState, topRegion };
     });
