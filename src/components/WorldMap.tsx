@@ -14,10 +14,61 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 const GEO_URL = 'https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json';
 
-// Trade type colors
-const EXPORT_COLOR = 'hsl(180, 100%, 50%)';  // Neon Cyan
-const IMPORT_COLOR = 'hsl(300, 85%, 60%)';   // Vibrant Magenta
+// ─── Trade type arc colors ───
+const EXPORT_COLOR_START = '#00FFFF'; // Neon Cyan
+const EXPORT_COLOR_END = '#0066FF';   // Electric Blue
+const IMPORT_COLOR_START = '#FF8800'; // Orange
+const IMPORT_COLOR_END = '#FF2222';   // Red
 
+// ─── Regional fill colors (subtle, not overpowering) ───
+const REGION_FILLS: Record<string, { light: string; dark: string }> = {
+  northAmerica: { light: 'hsla(210, 55%, 65%, 0.35)', dark: 'hsla(210, 55%, 40%, 0.35)' },
+  southAmerica: { light: 'hsla(175, 50%, 55%, 0.35)', dark: 'hsla(175, 50%, 35%, 0.35)' },
+  europe:       { light: 'hsla(0, 50%, 65%, 0.30)',   dark: 'hsla(0, 45%, 40%, 0.30)' },
+  asia:         { light: 'hsla(40, 60%, 60%, 0.35)',  dark: 'hsla(40, 55%, 38%, 0.35)' },
+  africa:       { light: 'hsla(140, 45%, 55%, 0.35)', dark: 'hsla(140, 40%, 32%, 0.35)' },
+  oceania:      { light: 'hsla(270, 50%, 60%, 0.35)', dark: 'hsla(270, 45%, 38%, 0.35)' },
+  malaysia:     { light: 'hsla(187, 72%, 42%, 0.7)',  dark: 'hsla(187, 72%, 50%, 0.7)' },
+};
+
+// ISO numeric → alpha-3
+const NUM_TO_ALPHA3: Record<string, string> = {
+  '004': 'AFG', '008': 'ALB', '012': 'DZA', '024': 'AGO', '032': 'ARG',
+  '036': 'AUS', '040': 'AUT', '050': 'BGD', '056': 'BEL', '064': 'BTN',
+  '068': 'BOL', '076': 'BRA', '096': 'BRN', '100': 'BGR', '104': 'MMR',
+  '116': 'KHM', '120': 'CMR', '124': 'CAN', '144': 'LKA', '152': 'CHL',
+  '156': 'CHN', '158': 'TWN', '170': 'COL', '180': 'COD', '188': 'CRI',
+  '191': 'HRV', '192': 'CUB', '196': 'CYP', '203': 'CZE', '208': 'DNK',
+  '218': 'ECU', '231': 'ETH', '233': 'EST', '246': 'FIN', '250': 'FRA',
+  '276': 'DEU', '288': 'GHA', '300': 'GRC', '320': 'GTM', '332': 'HTI',
+  '340': 'HND', '344': 'HKG', '348': 'HUN', '352': 'ISL', '356': 'IND',
+  '360': 'IDN', '364': 'IRN', '368': 'IRQ', '372': 'IRL', '376': 'ISR',
+  '380': 'ITA', '388': 'JAM', '392': 'JPN', '400': 'JOR', '404': 'KEN',
+  '410': 'KOR', '414': 'KWT', '418': 'LAO', '422': 'LBN', '434': 'LBY',
+  '440': 'LTU', '442': 'LUX', '446': 'MAC', '458': 'MYS', '466': 'MLI',
+  '484': 'MEX', '496': 'MNG', '504': 'MAR', '508': 'MOZ', '516': 'NAM',
+  '524': 'NPL', '528': 'NLD', '554': 'NZL', '566': 'NGA', '578': 'NOR',
+  '586': 'PAK', '591': 'PAN', '598': 'PNG', '600': 'PRY', '604': 'PER',
+  '608': 'PHL', '616': 'POL', '620': 'PRT', '634': 'QAT', '642': 'ROU',
+  '643': 'RUS', '682': 'SAU', '686': 'SEN', '690': 'SYC', '702': 'SGP',
+  '703': 'SVK', '704': 'VNM', '705': 'SVN', '710': 'ZAF', '724': 'ESP',
+  '740': 'SUR', '752': 'SWE', '756': 'CHE', '760': 'SYR', '764': 'THA',
+  '780': 'TTO', '784': 'ARE', '788': 'TUN', '792': 'TUR', '800': 'UGA',
+  '804': 'UKR', '818': 'EGY', '826': 'GBR', '834': 'TZA', '840': 'USA',
+  '854': 'BFA', '858': 'URY', '860': 'UZB', '862': 'VEN', '887': 'YEM',
+  '894': 'ZMB', '716': 'ZWE', '048': 'BHR', '512': 'OMN',
+};
+
+// Country → region mapping
+const COUNTRY_REGION: Record<string, string> = {};
+['USA','CAN','MEX','GTM','HND','CRI','PAN','CUB','JAM','HTI','TTO'].forEach(c => COUNTRY_REGION[c] = 'northAmerica');
+['BRA','ARG','CHL','COL','PER','ECU','VEN','URY','BOL','PRY','SUR'].forEach(c => COUNTRY_REGION[c] = 'southAmerica');
+['GBR','FRA','DEU','ITA','ESP','NLD','BEL','CHE','AUT','SWE','NOR','DNK','FIN','PRT','IRL','POL','CZE','HUN','ROU','GRC','BGR','HRV','SVK','SVN','EST','LTU','LUX','ISL','CYP','UKR'].forEach(c => COUNTRY_REGION[c] = 'europe');
+['CHN','JPN','KOR','IND','IDN','THA','VNM','PHL','MYS','SGP','MMR','KHM','LAO','BRN','BGD','PAK','LKA','NPL','BTN','TWN','HKG','MAC','MNG','AFG','IRN','IRQ','ISR','JOR','KWT','LBN','QAT','SAU','ARE','BHR','OMN','SYR','TUR','UZB','YEM'].forEach(c => COUNTRY_REGION[c] = 'asia');
+['ZAF','NGA','EGY','KEN','GHA','ETH','TZA','MOZ','SEN','CMR','DZA','MAR','TUN','LBY','AGO','COD','UGA','BFA','ZMB','ZWE','NAM','MLI','SYC'].forEach(c => COUNTRY_REGION[c] = 'africa');
+['AUS','NZL','PNG'].forEach(c => COUNTRY_REGION[c] = 'oceania');
+
+// ─── Country centroid coordinates ───
 const COUNTRY_COORDS: Record<string, [number, number]> = {
   SGP: [103.8, 1.35], CHN: [104.2, 35.9], USA: [-95.7, 37.1],
   JPN: [138.3, 36.2], THA: [100.5, 15.9], KOR: [127.8, 35.9],
@@ -31,8 +82,8 @@ const COUNTRY_COORDS: Record<string, [number, number]> = {
   TUR: [35.2, 38.9], RUS: [105.3, 61.5], POL: [19.1, 51.9],
   SWE: [18.6, 60.1], BGD: [90.4, 23.7], PAK: [69.3, 30.4],
   LKA: [80.8, 7.9], MMR: [96.0, 21.9], KHM: [105.0, 12.6],
-  BRN: [114.7, 4.9], ZAF: [-22.9, -30.6], NGA: [8.7, 9.1],
-  EGY: [30.8, 26.8], KEN: [37.9, -0.0], GHA: [-1.0, 7.9],
+  BRN: [114.7, 4.9], ZAF: [22.9, -30.6], NGA: [8.7, 9.1],
+  EGY: [30.8, 26.8], KEN: [37.9, 0.0], GHA: [-1.0, 7.9],
   CHL: [-71.5, -35.7], ARG: [-63.6, -38.4], COL: [-74.3, 4.6],
   PER: [-75.0, -9.2], QAT: [51.2, 25.3], KWT: [47.5, 29.3],
   BHR: [50.6, 26.0], OMN: [55.9, 21.5], IRQ: [43.7, 33.2],
@@ -40,7 +91,25 @@ const COUNTRY_COORDS: Record<string, [number, number]> = {
   DNK: [9.5, 56.3], NOR: [8.5, 60.5], FIN: [25.7, 61.9],
   PRT: [-8.2, 39.4], AUT: [14.6, 47.5], IRL: [-8.2, 53.4],
   CZE: [15.5, 49.8], HUN: [19.5, 47.2], ROU: [24.9, 45.9],
-  GRC: [21.8, 39.1],
+  GRC: [21.8, 39.1], ECU: [-78.2, -1.8], VEN: [-66.6, 6.4],
+  URY: [-55.8, -32.5], BOL: [-65.0, -16.3], PRY: [-58.4, -23.4],
+  CRI: [-84.0, 9.7], PAN: [-80.8, 8.5], GTM: [-90.2, 15.8],
+  HND: [-86.2, 15.2], CUB: [-77.8, 21.5], JAM: [-77.3, 18.1],
+  TTO: [-61.2, 10.4], HTI: [-72.3, 19.0],
+  AFG: [67.7, 33.9], DZA: [1.7, 28.0], AGO: [17.9, -11.2],
+  BGR: [25.5, 42.7], HRV: [15.2, 45.1], SVK: [19.7, 48.7],
+  SVN: [14.6, 46.2], EST: [25.0, 58.6], LTU: [23.9, 55.2],
+  LUX: [6.1, 49.8], ISL: [-19.0, 65.0], CYP: [33.4, 35.1],
+  UKR: [31.2, 48.4], NPL: [84.1, 28.4], BTN: [90.4, 27.5],
+  MNG: [103.8, 46.9], LAO: [102.5, 19.9], MAC: [113.5, 22.2],
+  SYR: [38.0, 35.0], LBN: [35.9, 33.9], YEM: [48.5, 15.6],
+  UZB: [64.6, 41.4], LBY: [17.2, 26.3], TUN: [9.5, 33.9],
+  MAR: [-7.1, 31.8], SEN: [-14.5, 14.5], CMR: [12.4, 7.4],
+  ETH: [40.5, 9.1], TZA: [34.9, -6.4], MOZ: [35.5, -18.7],
+  UGA: [32.3, 1.4], COD: [21.8, -4.0], NAM: [18.5, -22.6],
+  ZMB: [28.3, -13.1], ZWE: [29.2, -19.0], BFA: [-1.6, 12.3],
+  MLI: [-8.0, 17.6], SYC: [55.5, -4.7], PNG: [143.9, -6.3],
+  SUR: [-56.0, 4.0],
 };
 
 const COUNTRY_NAMES: Record<string, { bm: string; en: string }> = {
@@ -56,21 +125,31 @@ const COUNTRY_NAMES: Record<string, { bm: string; en: string }> = {
   BEL: { bm: 'Belgium', en: 'Belgium' }, ARE: { bm: 'Emiriah Arab Bersatu', en: 'UAE' },
   SAU: { bm: 'Arab Saudi', en: 'Saudi Arabia' }, BRA: { bm: 'Brazil', en: 'Brazil' },
   CAN: { bm: 'Kanada', en: 'Canada' }, MEX: { bm: 'Mexico', en: 'Mexico' },
+  ESP: { bm: 'Sepanyol', en: 'Spain' }, CHE: { bm: 'Switzerland', en: 'Switzerland' },
+  NZL: { bm: 'New Zealand', en: 'New Zealand' }, TUR: { bm: 'Turki', en: 'Turkey' },
+  RUS: { bm: 'Rusia', en: 'Russia' }, POL: { bm: 'Poland', en: 'Poland' },
+  SWE: { bm: 'Sweden', en: 'Sweden' }, BGD: { bm: 'Bangladesh', en: 'Bangladesh' },
+  PAK: { bm: 'Pakistan', en: 'Pakistan' }, LKA: { bm: 'Sri Lanka', en: 'Sri Lanka' },
+  MMR: { bm: 'Myanmar', en: 'Myanmar' }, KHM: { bm: 'Kemboja', en: 'Cambodia' },
+  BRN: { bm: 'Brunei', en: 'Brunei' }, ZAF: { bm: 'Afrika Selatan', en: 'South Africa' },
+  NGA: { bm: 'Nigeria', en: 'Nigeria' }, EGY: { bm: 'Mesir', en: 'Egypt' },
+  KEN: { bm: 'Kenya', en: 'Kenya' }, GHA: { bm: 'Ghana', en: 'Ghana' },
+  CHL: { bm: 'Chile', en: 'Chile' }, ARG: { bm: 'Argentina', en: 'Argentina' },
+  COL: { bm: 'Colombia', en: 'Colombia' }, PER: { bm: 'Peru', en: 'Peru' },
+  QAT: { bm: 'Qatar', en: 'Qatar' }, KWT: { bm: 'Kuwait', en: 'Kuwait' },
+  BHR: { bm: 'Bahrain', en: 'Bahrain' }, OMN: { bm: 'Oman', en: 'Oman' },
+  IRQ: { bm: 'Iraq', en: 'Iraq' }, IRN: { bm: 'Iran', en: 'Iran' },
+  ISR: { bm: 'Israel', en: 'Israel' }, JOR: { bm: 'Jordan', en: 'Jordan' },
+  DNK: { bm: 'Denmark', en: 'Denmark' }, NOR: { bm: 'Norway', en: 'Norway' },
+  FIN: { bm: 'Finland', en: 'Finland' }, PRT: { bm: 'Portugal', en: 'Portugal' },
+  AUT: { bm: 'Austria', en: 'Austria' }, IRL: { bm: 'Ireland', en: 'Ireland' },
+  CZE: { bm: 'Czech Republic', en: 'Czech Republic' }, HUN: { bm: 'Hungary', en: 'Hungary' },
+  ROU: { bm: 'Romania', en: 'Romania' }, GRC: { bm: 'Greece', en: 'Greece' },
 };
 
 const MALAYSIA_COORDS: [number, number] = [101.7, 3.1];
-const DEFAULT_CENTER: [number, number] = [60, 10];
-const DEFAULT_ZOOM = 1.5;
-
-const NUM_TO_ALPHA3: Record<string, string> = {
-  '702': 'SGP', '156': 'CHN', '840': 'USA', '392': 'JPN',
-  '764': 'THA', '410': 'KOR', '356': 'IND', '036': 'AUS',
-  '276': 'DEU', '826': 'GBR', '458': 'MYS', '158': 'TWN',
-  '344': 'HKG', '608': 'PHL', '704': 'VNM', '360': 'IDN',
-  '250': 'FRA', '380': 'ITA', '528': 'NLD', '056': 'BEL',
-  '784': 'ARE', '682': 'SAU', '076': 'BRA', '124': 'CAN',
-  '484': 'MEX',
-};
+const DEFAULT_CENTER: [number, number] = [50, 5];
+const DEFAULT_ZOOM = 1.8;
 
 export interface DestData {
   value: number;
@@ -93,6 +172,8 @@ function formatRM(value: number): string {
   return `RM ${value.toLocaleString()}`;
 }
 
+type TradeViewMode = 'all' | 'export' | 'import';
+
 export default function WorldMap({ destinations, allCountries }: WorldMapProps) {
   const { lang, t } = useLanguage();
   const [zoom, setZoom] = useState(DEFAULT_ZOOM);
@@ -101,6 +182,7 @@ export default function WorldMap({ destinations, allCountries }: WorldMapProps) 
   const [selectedCountry, setSelectedCountry] = useState<string>('');
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [tradeView, setTradeView] = useState<TradeViewMode>('all');
 
   const normalizedDest = useMemo(() => {
     const result: Record<string, DestData> = {};
@@ -110,6 +192,7 @@ export default function WorldMap({ destinations, allCountries }: WorldMapProps) 
       result[alpha3].value += data.value;
       result[alpha3].exportValue += data.exportValue;
       result[alpha3].importValue += data.importValue;
+      if (data.topCommodity && !result[alpha3].topCommodity) result[alpha3].topCommodity = data.topCommodity;
     });
     return result;
   }, [destinations]);
@@ -123,7 +206,7 @@ export default function WorldMap({ destinations, allCountries }: WorldMapProps) 
     return Object.entries(normalizedDest)
       .filter(([code]) => COUNTRY_COORDS[code])
       .sort((a, b) => b[1].value - a[1].value)
-      .slice(0, 15);
+      .slice(0, 20);
   }, [normalizedDest]);
 
   const countryList = useMemo(() => {
@@ -137,24 +220,28 @@ export default function WorldMap({ destinations, allCountries }: WorldMapProps) 
       };
     });
     const seen = new Set<string>();
-    const unique = items.filter(c => {
-      if (seen.has(c.code) || c.code === 'MYS') return false;
-      seen.add(c.code);
-      return true;
-    });
-    return unique
+    return items
+      .filter(c => {
+        if (seen.has(c.code) || c.code === 'MYS') return false;
+        seen.add(c.code);
+        return true;
+      })
       .filter(c => !searchQuery || c.name.toLowerCase().includes(searchQuery.toLowerCase()))
       .sort((a, b) => b.value - a.value);
   }, [allCountries, lang, searchQuery, normalizedDest]);
 
-  const getCountryFill = (geoId: string) => {
-    const alpha3 = NUM_TO_ALPHA3[geoId];
-    if (alpha3 === 'MYS') return 'hsl(var(--primary))';
-    if (alpha3 && normalizedDest[alpha3]) {
-      const intensity = Math.max(0.25, normalizedDest[alpha3].value / maxValue);
-      return `hsla(187, 72%, 42%, ${intensity})`;
+  const isDarkMode = useMemo(() => {
+    if (typeof document === 'undefined') return false;
+    return document.documentElement.classList.contains('dark');
+  }, []);
+
+  const getRegionFill = (alpha3: string): string => {
+    if (alpha3 === 'MYS') return isDarkMode ? REGION_FILLS.malaysia.dark : REGION_FILLS.malaysia.light;
+    const region = COUNTRY_REGION[alpha3];
+    if (region && REGION_FILLS[region]) {
+      return isDarkMode ? REGION_FILLS[region].dark : REGION_FILLS[region].light;
     }
-    return 'hsl(var(--muted))';
+    return isDarkMode ? 'hsla(220, 15%, 22%, 0.5)' : 'hsla(220, 15%, 82%, 0.4)';
   };
 
   const handleZoomIn = () => setZoom(z => Math.min(z * 1.5, 8));
@@ -178,13 +265,13 @@ export default function WorldMap({ destinations, allCountries }: WorldMapProps) 
       (MALAYSIA_COORDS[1] + coords[1]) / 2,
     ];
     setCenter(mid);
-    setZoom(3);
+    setZoom(3.5);
     setSelectedCountry(code);
     setSearchOpen(false);
     setSearchQuery('');
   }, []);
 
-  const getArcStrokeWidth = (value: number) => Math.max(1.2, (value / maxValue) * 5);
+  const getArcStrokeWidth = (value: number) => Math.max(1, (value / maxValue) * 6);
 
   const visibleDest = selectedCountry
     ? topDest.filter(([code]) => code === selectedCountry)
@@ -194,23 +281,40 @@ export default function WorldMap({ destinations, allCountries }: WorldMapProps) 
     ? topDest.filter(([code]) => code !== selectedCountry)
     : [];
 
+  const showExport = tradeView === 'all' || tradeView === 'export';
+  const showImport = tradeView === 'all' || tradeView === 'import';
+
   return (
-    <div className="relative w-full overflow-hidden rounded-xl bg-card" style={{ height: 520 }}>
-      {/* SVG gradient defs for arcs */}
+    <div className="relative w-full overflow-hidden rounded-xl bg-card border border-border" style={{ height: 560 }}>
+      {/* SVG gradient defs */}
       <svg width="0" height="0" className="absolute">
         <defs>
-          <linearGradient id="exportGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="hsl(var(--primary))" />
-            <stop offset="100%" stopColor={EXPORT_COLOR} />
+          <linearGradient id="exportArcGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor={EXPORT_COLOR_START} />
+            <stop offset="100%" stopColor={EXPORT_COLOR_END} />
           </linearGradient>
-          <linearGradient id="importGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="hsl(var(--primary))" />
-            <stop offset="100%" stopColor={IMPORT_COLOR} />
+          <linearGradient id="importArcGrad" x1="100%" y1="0%" x2="0%" y2="0%">
+            <stop offset="0%" stopColor={IMPORT_COLOR_START} />
+            <stop offset="100%" stopColor={IMPORT_COLOR_END} />
           </linearGradient>
+          <filter id="arcGlow">
+            <feGaussianBlur stdDeviation="2" result="blur" />
+            <feMerge>
+              <feMergeNode in="blur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+          <filter id="malaysiaGlow">
+            <feGaussianBlur stdDeviation="4" result="blur" />
+            <feMerge>
+              <feMergeNode in="blur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
         </defs>
       </svg>
 
-      {/* Controls overlay */}
+      {/* ─── Controls: Search ─── */}
       <div className="absolute top-3 left-3 z-20 flex flex-col gap-2">
         <div className="relative">
           <button
@@ -269,7 +373,7 @@ export default function WorldMap({ destinations, allCountries }: WorldMapProps) 
         </div>
       </div>
 
-      {/* Zoom controls + Reset */}
+      {/* ─── Controls: Zoom + Reset ─── */}
       <div className="absolute top-3 right-3 z-20 flex flex-col gap-1">
         <button onClick={handleZoomIn} className="w-8 h-8 rounded-lg bg-card/90 backdrop-blur-sm border border-border flex items-center justify-center text-foreground hover:bg-accent/10 transition-colors shadow-sm">
           <ZoomIn className="w-4 h-4" />
@@ -282,58 +386,85 @@ export default function WorldMap({ destinations, allCountries }: WorldMapProps) 
         </button>
       </div>
 
-      {/* Tooltip — dark mode: pure white text */}
+      {/* ─── Trade Type Toggle ─── */}
+      <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20 flex gap-1 bg-card/90 backdrop-blur-sm border border-border rounded-lg p-1 shadow-sm">
+        {([
+          { key: 'all' as TradeViewMode, label: lang === 'bm' ? 'Semua' : 'All' },
+          { key: 'export' as TradeViewMode, label: lang === 'bm' ? 'Eksport' : 'Export' },
+          { key: 'import' as TradeViewMode, label: lang === 'bm' ? 'Import' : 'Import' },
+        ]).map(opt => (
+          <button
+            key={opt.key}
+            onClick={() => setTradeView(opt.key)}
+            className={`px-3 py-1 rounded-md text-[10px] font-semibold transition-all ${
+              tradeView === opt.key
+                ? 'bg-primary text-primary-foreground shadow-sm'
+                : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            {opt.label}
+          </button>
+        ))}
+      </div>
+
+      {/* ─── Tooltip ─── */}
       <AnimatePresence>
         {hoveredCountry && normalizedDest[hoveredCountry] && (
           <motion.div
             initial={{ opacity: 0, y: 5 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
-            className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 bg-card/95 backdrop-blur-sm border border-border rounded-xl shadow-lg px-4 py-3 min-w-[230px]"
+            className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 bg-card/95 backdrop-blur-md border border-border rounded-xl shadow-xl px-5 py-3.5 min-w-[260px]"
           >
             <p className="text-sm font-bold text-foreground dark:text-white">
-              {COUNTRY_NAMES[hoveredCountry]?.[lang] || hoveredCountry}
+              Malaysia → {COUNTRY_NAMES[hoveredCountry]?.[lang] || hoveredCountry}
             </p>
-            <p className="text-xs text-muted-foreground dark:text-white/70 mt-1">
-              {t('tradeValue')}: <span className="font-semibold text-primary">{formatRM(normalizedDest[hoveredCountry].value)}</span>
-            </p>
-            <div className="flex gap-3 mt-1">
-              <p className="text-xs dark:text-white/70">
-                <span className="inline-block w-2 h-2 rounded-full mr-1" style={{ backgroundColor: EXPORT_COLOR }} />
-                {lang === 'bm' ? 'Eksport' : 'Export'}: <span className="font-medium dark:text-white">{formatRM(normalizedDest[hoveredCountry].exportValue)}</span>
+            <div className="mt-2 space-y-1">
+              <p className="text-xs dark:text-white/80">
+                {lang === 'bm' ? 'Jumlah Dagangan' : 'Total Trade'}:{' '}
+                <span className="font-bold text-primary">{formatRM(normalizedDest[hoveredCountry].value)}</span>
               </p>
-              <p className="text-xs dark:text-white/70">
-                <span className="inline-block w-2 h-2 rounded-full mr-1" style={{ backgroundColor: IMPORT_COLOR }} />
-                {lang === 'bm' ? 'Import' : 'Import'}: <span className="font-medium dark:text-white">{formatRM(normalizedDest[hoveredCountry].importValue)}</span>
-              </p>
+              <div className="flex gap-4">
+                <p className="text-xs dark:text-white/70">
+                  <span className="inline-block w-2.5 h-2.5 rounded-full mr-1" style={{ background: `linear-gradient(135deg, ${EXPORT_COLOR_START}, ${EXPORT_COLOR_END})` }} />
+                  {lang === 'bm' ? 'Eksport' : 'Exports'}:{' '}
+                  <span className="font-semibold dark:text-white">{formatRM(normalizedDest[hoveredCountry].exportValue)}</span>
+                </p>
+                <p className="text-xs dark:text-white/70">
+                  <span className="inline-block w-2.5 h-2.5 rounded-full mr-1" style={{ background: `linear-gradient(135deg, ${IMPORT_COLOR_START}, ${IMPORT_COLOR_END})` }} />
+                  {lang === 'bm' ? 'Import' : 'Imports'}:{' '}
+                  <span className="font-semibold dark:text-white">{formatRM(normalizedDest[hoveredCountry].importValue)}</span>
+                </p>
+              </div>
+              {normalizedDest[hoveredCountry].topCommodity && (
+                <p className="text-xs dark:text-white/70 pt-0.5">
+                  {lang === 'bm' ? 'Barangan Utama' : 'Top Commodity'}:{' '}
+                  <span className="font-medium text-foreground dark:text-white">{normalizedDest[hoveredCountry].topCommodity}</span>
+                </p>
+              )}
             </div>
-            {normalizedDest[hoveredCountry].topCommodity && (
-              <p className="text-xs text-muted-foreground dark:text-white/70 mt-1">
-                {t('topCommodities')}: <span className="font-medium text-foreground dark:text-white">{normalizedDest[hoveredCountry].topCommodity}</span>
-              </p>
-            )}
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Legend — Export/Import */}
-      <div className="absolute bottom-3 right-3 z-10 bg-card/80 backdrop-blur-sm rounded-lg border border-border px-3 py-2">
+      {/* ─── Legend ─── */}
+      <div className="absolute bottom-3 right-3 z-10 bg-card/85 backdrop-blur-sm rounded-lg border border-border px-3 py-2">
         <div className="flex items-center gap-4 text-[10px] text-muted-foreground dark:text-white/70">
           <div className="flex items-center gap-1.5">
-            <div className="w-5 h-1.5 rounded-full" style={{ backgroundColor: EXPORT_COLOR }} />
+            <div className="w-5 h-1.5 rounded-full" style={{ background: `linear-gradient(90deg, ${EXPORT_COLOR_START}, ${EXPORT_COLOR_END})` }} />
             <span>{lang === 'bm' ? 'Eksport' : 'Export'}</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <div className="w-5 h-1.5 rounded-full" style={{ backgroundColor: IMPORT_COLOR }} />
+            <div className="w-5 h-1.5 rounded-full" style={{ background: `linear-gradient(90deg, ${IMPORT_COLOR_START}, ${IMPORT_COLOR_END})` }} />
             <span>{lang === 'bm' ? 'Import' : 'Import'}</span>
           </div>
         </div>
       </div>
 
-      {/* Map */}
+      {/* ─── Map ─── */}
       <ComposableMap
         projection="geoNaturalEarth1"
-        projectionConfig={{ scale: 140 }}
+        projectionConfig={{ scale: 155 }}
         style={{ width: '100%', height: '100%' }}
       >
         <ZoomableGroup
@@ -343,8 +474,8 @@ export default function WorldMap({ destinations, allCountries }: WorldMapProps) 
           minZoom={1}
           maxZoom={8}
         >
-          {/* Ocean background */}
-          <rect x={-1000} y={-600} width={3000} height={1800} className="fill-muted/10 dark:fill-[hsl(220,30%,8%)]" />
+          {/* Ocean */}
+          <rect x={-1000} y={-600} width={3000} height={1800} className="fill-secondary/30 dark:fill-[#0B1F3B]" />
 
           <Geographies geography={GEO_URL}>
             {({ geographies }) =>
@@ -353,19 +484,20 @@ export default function WorldMap({ destinations, allCountries }: WorldMapProps) 
                 const alpha3 = NUM_TO_ALPHA3[String(geoId)];
                 const isSelected = selectedCountry && alpha3 === selectedCountry;
                 const isDimmed = selectedCountry && alpha3 !== selectedCountry && alpha3 !== 'MYS';
+                const fill = isSelected ? 'hsl(var(--primary) / 0.6)' : (alpha3 ? getRegionFill(alpha3) : (isDarkMode ? 'hsla(220,15%,22%,0.5)' : 'hsla(220,15%,82%,0.4)'));
                 return (
                   <Geography
                     key={geo.rsmKey}
                     geography={geo}
-                    fill={isSelected ? 'hsl(var(--primary) / 0.6)' : getCountryFill(String(geoId))}
-                    stroke="hsl(var(--border))"
-                    strokeWidth={0.3}
-                    opacity={isDimmed ? 0.35 : 1}
+                    fill={fill}
+                    stroke={isDarkMode ? 'hsla(220,20%,35%,0.4)' : 'hsla(220,20%,70%,0.5)'}
+                    strokeWidth={0.4}
+                    opacity={isDimmed ? 0.3 : 1}
                     onMouseEnter={() => { if (alpha3 && normalizedDest[alpha3]) setHoveredCountry(alpha3); }}
                     onMouseLeave={() => setHoveredCountry(null)}
                     style={{
-                      default: { outline: 'none', transition: 'opacity 0.3s' },
-                      hover: { fill: alpha3 && normalizedDest[alpha3] ? 'hsl(187, 65%, 50%)' : 'hsl(var(--muted))', outline: 'none', cursor: alpha3 && normalizedDest[alpha3] ? 'pointer' : 'default' },
+                      default: { outline: 'none', transition: 'opacity 0.3s, fill 0.3s' },
+                      hover: { fill: alpha3 && normalizedDest[alpha3] ? 'hsl(187, 65%, 50%)' : fill, outline: 'none', cursor: alpha3 && normalizedDest[alpha3] ? 'pointer' : 'default' },
                       pressed: { outline: 'none' },
                     }}
                   />
@@ -374,75 +506,114 @@ export default function WorldMap({ destinations, allCountries }: WorldMapProps) 
             }
           </Geographies>
 
-          {/* Dimmed arcs */}
+          {/* ─── Dimmed arcs ─── */}
           {dimmedDest.map(([code]) => (
             <Line
               key={`dim-${code}`}
               from={MALAYSIA_COORDS}
               to={COUNTRY_COORDS[code]}
               stroke="hsl(var(--muted-foreground))"
-              strokeWidth={0.8}
-              strokeOpacity={0.12}
+              strokeWidth={0.6}
+              strokeOpacity={0.08}
               strokeLinecap="round"
             />
           ))}
 
-          {/* Export arcs (cyan) */}
-          {visibleDest.filter(([, d]) => d.exportValue > 0).map(([code, data]) => (
-            <Line
-              key={`export-${code}`}
-              from={MALAYSIA_COORDS}
-              to={COUNTRY_COORDS[code]}
-              stroke={EXPORT_COLOR}
-              strokeWidth={getArcStrokeWidth(data.exportValue)}
-              strokeOpacity={0.65}
-              strokeLinecap="round"
-            />
-          ))}
-
-          {/* Import arcs (magenta) — slight offset */}
-          {visibleDest.filter(([, d]) => d.importValue > 0).map(([code, data]) => {
-            const coords = COUNTRY_COORDS[code];
-            const offset: [number, number] = [coords[0] + 1.5, coords[1] - 1];
-            return (
+          {/* ─── Export arcs (Cyan → Blue) ─── */}
+          {showExport && visibleDest.filter(([, d]) => d.exportValue > 0).map(([code, data]) => (
+            <React.Fragment key={`export-group-${code}`}>
+              {/* Glow underlayer */}
               <Line
-                key={`import-${code}`}
                 from={MALAYSIA_COORDS}
-                to={offset}
-                stroke={IMPORT_COLOR}
-                strokeWidth={getArcStrokeWidth(data.importValue)}
-                strokeOpacity={0.55}
+                to={COUNTRY_COORDS[code]}
+                stroke={EXPORT_COLOR_START}
+                strokeWidth={getArcStrokeWidth(data.exportValue) + 2}
+                strokeOpacity={0.12}
                 strokeLinecap="round"
               />
+              {/* Main arc */}
+              <Line
+                from={MALAYSIA_COORDS}
+                to={COUNTRY_COORDS[code]}
+                stroke="url(#exportArcGrad)"
+                strokeWidth={getArcStrokeWidth(data.exportValue)}
+                strokeOpacity={0.75}
+                strokeLinecap="round"
+                strokeDasharray="6 3"
+              >
+                <animate attributeName="stroke-dashoffset" from="0" to="-18" dur="1.5s" repeatCount="indefinite" />
+              </Line>
+            </React.Fragment>
+          ))}
+
+          {/* ─── Import arcs (Orange → Red) ─── */}
+          {showImport && visibleDest.filter(([, d]) => d.importValue > 0).map(([code, data]) => {
+            const coords = COUNTRY_COORDS[code];
+            const offset: [number, number] = [coords[0] + 1.2, coords[1] - 0.8];
+            return (
+              <React.Fragment key={`import-group-${code}`}>
+                {/* Glow underlayer */}
+                <Line
+                  from={offset}
+                  to={MALAYSIA_COORDS}
+                  stroke={IMPORT_COLOR_START}
+                  strokeWidth={getArcStrokeWidth(data.importValue) + 2}
+                  strokeOpacity={0.1}
+                  strokeLinecap="round"
+                />
+                {/* Main arc */}
+                <Line
+                  from={offset}
+                  to={MALAYSIA_COORDS}
+                  stroke="url(#importArcGrad)"
+                  strokeWidth={getArcStrokeWidth(data.importValue)}
+                  strokeOpacity={0.65}
+                  strokeLinecap="round"
+                  strokeDasharray="4 4"
+                >
+                  <animate attributeName="stroke-dashoffset" from="0" to="-16" dur="2s" repeatCount="indefinite" />
+                </Line>
+              </React.Fragment>
             );
           })}
 
-          {/* Pulse dots at destinations */}
+          {/* ─── Pulse dots at destinations ─── */}
           {visibleDest.map(([code, data]) => {
-            const dominant = data.exportValue >= data.importValue ? EXPORT_COLOR : IMPORT_COLOR;
+            const hasExport = data.exportValue > 0 && showExport;
+            const hasImport = data.importValue > 0 && showImport;
+            const color = hasExport && hasImport
+              ? (data.exportValue >= data.importValue ? EXPORT_COLOR_START : IMPORT_COLOR_START)
+              : hasExport ? EXPORT_COLOR_START : IMPORT_COLOR_START;
             return (
               <Marker key={`pulse-${code}`} coordinates={COUNTRY_COORDS[code]}>
-                <circle r={3 / zoom} fill={dominant} opacity={0.9}>
-                  <animate attributeName="r" values={`${2.5 / zoom};${6 / zoom};${2.5 / zoom}`} dur="2s" repeatCount="indefinite" />
-                  <animate attributeName="opacity" values="0.9;0.3;0.9" dur="2s" repeatCount="indefinite" />
+                <circle r={3.5 / zoom} fill={color} opacity={0.85}>
+                  <animate attributeName="r" values={`${3 / zoom};${7 / zoom};${3 / zoom}`} dur="2.5s" repeatCount="indefinite" />
+                  <animate attributeName="opacity" values="0.85;0.25;0.85" dur="2.5s" repeatCount="indefinite" />
                 </circle>
               </Marker>
             );
           })}
 
-          {/* Malaysia marker */}
+          {/* ─── Malaysia hub marker with glow ─── */}
           <Marker coordinates={MALAYSIA_COORDS}>
-            <circle r={5 / zoom} fill="hsl(var(--primary))" />
-            <circle r={10 / zoom} fill="hsl(var(--primary))" opacity={0.2}>
-              <animate attributeName="r" values={`${10 / zoom};${15 / zoom};${10 / zoom}`} dur="3s" repeatCount="indefinite" />
-              <animate attributeName="opacity" values="0.2;0.05;0.2" dur="3s" repeatCount="indefinite" />
+            {/* Halo */}
+            <circle r={18 / zoom} fill="hsl(var(--primary))" opacity={0.06} filter="url(#malaysiaGlow)">
+              <animate attributeName="r" values={`${18 / zoom};${25 / zoom};${18 / zoom}`} dur="4s" repeatCount="indefinite" />
+              <animate attributeName="opacity" values="0.06;0.02;0.06" dur="4s" repeatCount="indefinite" />
             </circle>
-            <text textAnchor="middle" y={-10 / zoom} style={{ fontSize: `${10 / zoom}px`, fill: 'hsl(var(--foreground))', fontWeight: 700 }}>
+            {/* Pulse ring */}
+            <circle r={10 / zoom} fill="none" stroke="hsl(var(--primary))" strokeWidth={1.5 / zoom} opacity={0.3}>
+              <animate attributeName="r" values={`${10 / zoom};${16 / zoom};${10 / zoom}`} dur="3s" repeatCount="indefinite" />
+              <animate attributeName="opacity" values="0.3;0.05;0.3" dur="3s" repeatCount="indefinite" />
+            </circle>
+            {/* Core */}
+            <circle r={5 / zoom} fill="hsl(var(--primary))" filter="url(#malaysiaGlow)" />
+            <text textAnchor="middle" y={-12 / zoom} style={{ fontSize: `${11 / zoom}px`, fontWeight: 800, fill: isDarkMode ? '#FFFFFF' : 'hsl(var(--foreground))' }}>
               Malaysia
             </text>
           </Marker>
 
-          {/* Country labels */}
+          {/* ─── Country labels ─── */}
           {visibleDest.map(([code]) => (
             <Marker
               key={`label-${code}`}
@@ -454,14 +625,15 @@ export default function WorldMap({ destinations, allCountries }: WorldMapProps) 
                 textAnchor="middle"
                 y={-10 / zoom}
                 style={{
-                  fontSize: `${hoveredCountry === code ? 9 : 7.5}px`,
-                  fill: hoveredCountry === code ? 'hsl(var(--foreground))' : 'hsl(var(--muted-foreground))',
-                  fontWeight: hoveredCountry === code ? 600 : 400,
+                  fontSize: `${hoveredCountry === code ? 9 : 7}px`,
+                  fill: isDarkMode ? '#FFFFFF' : 'hsl(var(--foreground))',
+                  fontWeight: hoveredCountry === code ? 700 : 400,
+                  opacity: hoveredCountry === code ? 1 : 0.8,
                   transition: 'all 0.2s',
                   pointerEvents: 'none',
                 }}
               >
-                {COUNTRY_NAMES[code]?.[lang]?.slice(0, 12) || code}
+                {COUNTRY_NAMES[code]?.[lang]?.slice(0, 14) || code}
               </text>
             </Marker>
           ))}
