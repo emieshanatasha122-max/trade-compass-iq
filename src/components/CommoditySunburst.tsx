@@ -1,9 +1,9 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useCallback } from 'react';
 import type { TradeRecord } from '@/data/mockTradeData';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import {
   Utensils, Wine, Leaf, Fuel, Droplets, FlaskConical,
-  Hammer, Cpu, ShirtIcon, Package, ChevronDown
+  Hammer, Cpu, ShirtIcon, Package
 } from 'lucide-react';
 
 const SITC_ICONS = [Utensils, Wine, Leaf, Fuel, Droplets, FlaskConical, Hammer, Cpu, ShirtIcon, Package];
@@ -21,26 +21,6 @@ const SITC_RULES: { code: string; num: number; label: string; keywords: string[]
   { code: 'SITC 9', num: 9, label: 'Lain-lain Komoditi', keywords: [] },
 ];
 
-const STATE_LIST = [
-  'Selangor', 'Johor', 'Pulau Pinang', 'Sarawak', 'Sabah', 'Perak', 'Kedah',
-  'Pahang', 'Kelantan', 'Terengganu', 'Melaka', 'Negeri Sembilan', 'Perlis',
-  'W.P. Kuala Lumpur', 'W.P. Labuan', 'Supra', 'Agent',
-];
-
-const REGION_LIST = ['Semenanjung', 'Sabah', 'Sarawak', 'Zon Bebas'];
-
-const STATE_TO_REGION: Record<string, string> = {
-  'Sabah': 'Sabah',
-  'Sarawak': 'Sarawak',
-  'W.P. Labuan': 'Zon Bebas',
-  'Supra': 'Zon Bebas',
-  'Agent': 'Zon Bebas',
-};
-
-function mapStateToRegion(state: string): string {
-  return STATE_TO_REGION[state] || 'Semenanjung';
-}
-
 function getSITCCode(name: string): string {
   const lower = name.toLowerCase();
   for (const rule of SITC_RULES) {
@@ -57,173 +37,79 @@ function formatRM(value: number): string {
   return `RM ${value.toLocaleString()}`;
 }
 
-function clamp(n: number, min: number, max: number) {
-  return Math.min(max, Math.max(min, n));
+const STATE_LIST = [
+  'Selangor', 'Johor', 'Pulau Pinang', 'Sarawak', 'Sabah', 'Perak', 'Kedah',
+  'Pahang', 'Kelantan', 'Terengganu', 'Melaka', 'Negeri Sembilan', 'Perlis',
+  'W.P. Kuala Lumpur', 'W.P. Labuan', 'Supra', 'Agent',
+];
+
+const REGION_LIST = ['Semenanjung', 'Sabah', 'Sarawak', 'Zon Bebas'];
+
+const STATE_TO_REGION: Record<string, string> = {
+  'Sabah': 'Sabah', 'Sarawak': 'Sarawak',
+  'W.P. Labuan': 'Zon Bebas', 'Supra': 'Zon Bebas', 'Agent': 'Zon Bebas',
+};
+
+function mapStateToRegion(s: string) { return STATE_TO_REGION[s] || 'Semenanjung'; }
+
+interface SITCItem { code: string; num: number; label: string; total: number; topState: string; topRegion: string }
+
+// Radar geometry helpers
+const CX = 300;
+const CY = 300;
+const R_MAX = 220;
+const R_GRID = [0.2, 0.4, 0.6, 0.8, 1.0];
+const LABEL_R = R_MAX + 40;
+const ICON_R = R_MAX + 68;
+
+function polarToXY(angle: number, r: number): [number, number] {
+  const rad = (angle - 90) * (Math.PI / 180);
+  return [CX + r * Math.cos(rad), CY + r * Math.sin(rad)];
 }
 
-function curvePath(x1: number, y1: number, x2: number, y2: number) {
-  const c = (x2 - x1) * 0.5;
-  return `M ${x1} ${y1} C ${x1 + c} ${y1}, ${x2 - c} ${y2}, ${x2} ${y2}`;
-}
-
-const DEFAULT_VISIBLE = 4;
-
-interface StateNode { name: string; region: string; widthPct: number }
-interface RegionNode { name: string; widthPct: number }
-interface SITCData {
-  code: string; num: number; label: string; total: number;
-  states: StateNode[]; regions: RegionNode[];
-}
-
-function SITCTreeCard({ sitc }: { sitc: SITCData }) {
-  const [expanded, setExpanded] = useState(false);
-  const visibleStates = expanded ? sitc.states : sitc.states.slice(0, DEFAULT_VISIBLE);
-  const hasMore = sitc.states.length > DEFAULT_VISIBLE;
-  const Icon = SITC_ICONS[sitc.num] || Package;
-
-  const c = {
-    width: 580,
-    rootX: 8,
-    stateX: 190,
-    regionX: 400,
-    rootW: 150,
-    nodeW: 130,
-    top: 12,
-    row: 26,
-    offsetY: 13,
-  };
-
-  const stateCount = visibleStates.length;
-  const regionCount = sitc.regions.length;
-  const height = c.top * 2 + c.row * Math.max(stateCount, regionCount) + c.offsetY;
-
-  const stateY = (i: number) => c.top + i * c.row + c.offsetY;
-  const regionY = (i: number) => {
-    const inner = height - c.top * 2;
-    return c.top + ((i + 1) * inner) / (regionCount + 1);
-  };
-  const rootY = height / 2;
-
-  const regionCenterMap = sitc.regions.reduce<Record<string, number>>((acc, r, i) => {
-    acc[r.name] = regionY(i);
-    return acc;
-  }, {});
+function RadarTooltipCard({
+  item, x, y, maxVal
+}: { item: SITCItem; x: number; y: number; maxVal: number }) {
+  const Icon = SITC_ICONS[item.num] || Package;
+  const pct = maxVal > 0 ? ((item.total / maxVal) * 100).toFixed(1) : '0';
+  
+  // Position tooltip to avoid going off-screen
+  const tooltipX = x > CX ? x - 220 : x + 12;
+  const tooltipY = y > CY ? y - 120 : y + 12;
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 6 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.25, delay: sitc.num * 0.02 }}
-      className="rounded-lg border border-border bg-card shadow-sm overflow-hidden"
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.9 }}
+      className="absolute z-50 w-[210px] rounded-lg border border-border bg-card shadow-xl p-3"
+      style={{ left: tooltipX, top: tooltipY }}
     >
-      {/* Header */}
-      <div className="flex items-center gap-2 px-3 py-2 border-b border-border bg-secondary/30">
+      <div className="flex items-center gap-2 mb-2">
         <Icon className="w-4 h-4 text-primary shrink-0" />
-        <div className="min-w-0">
-          <p className="text-[11px] font-semibold text-foreground leading-tight truncate">
-            {sitc.code}: {sitc.label}
-          </p>
-          <p className="text-xs font-bold text-primary">{formatRM(sitc.total)}</p>
-        </div>
+        <p className="text-xs font-bold text-foreground leading-tight">{item.code}: {item.label}</p>
       </div>
-
-      {/* Tree canvas */}
-      <div className="relative overflow-x-auto">
-        <div className="relative" style={{ width: c.width, height }}>
-          <svg
-            width={c.width}
-            height={height}
-            className="absolute inset-0 pointer-events-none"
-            aria-hidden="true"
-          >
-            {/* Root → States */}
-            {visibleStates.map((state, i) => (
-              <motion.path
-                key={`rs-${state.name}`}
-                d={curvePath(c.rootX + c.rootW, rootY, c.stateX - 6, stateY(i))}
-                fill="none"
-                stroke="hsl(var(--primary) / 0.28)"
-                strokeWidth="1.2"
-                strokeLinecap="round"
-                initial={{ pathLength: 0, opacity: 0 }}
-                animate={{ pathLength: 1, opacity: 1 }}
-                transition={{ duration: 0.35, delay: 0.01 * i }}
-              />
-            ))}
-            {/* States → Regions */}
-            {visibleStates.map((state, i) => {
-              const y2 = regionCenterMap[state.region] ?? rootY;
-              return (
-                <motion.path
-                  key={`sr-${state.name}`}
-                  d={curvePath(c.stateX + c.nodeW, stateY(i), c.regionX - 6, y2)}
-                  fill="none"
-                  stroke="hsl(var(--primary) / 0.18)"
-                  strokeWidth="1"
-                  strokeLinecap="round"
-                  initial={{ pathLength: 0, opacity: 0 }}
-                  animate={{ pathLength: 1, opacity: 1 }}
-                  transition={{ duration: 0.35, delay: 0.08 + 0.008 * i }}
-                />
-              );
-            })}
-          </svg>
-
-          {/* Root node */}
-          <div
-            className="absolute rounded-md border border-border bg-secondary/40 px-2 py-1.5"
-            style={{ left: c.rootX, top: rootY - 20, width: c.rootW }}
-          >
-            <p className="text-[9px] font-semibold text-foreground leading-tight truncate">Negeri</p>
-            <p className="text-[9px] text-muted-foreground">→ Kawasan</p>
+      <div className="space-y-1.5 text-[11px]">
+        <div className="flex justify-between">
+          <span className="text-muted-foreground">Jumlah Dagangan</span>
+          <span className="font-bold text-primary">{formatRM(item.total)}</span>
+        </div>
+        <div className="flex justify-between">
+          <span className="text-muted-foreground">Sumbangan</span>
+          <span className="font-semibold text-foreground">{pct}%</span>
+        </div>
+        <div className="border-t border-border pt-1.5 mt-1.5">
+          <p className="text-[10px] text-muted-foreground mb-0.5">Atribut Utama:</p>
+          <div className="flex justify-between">
+            <span className="text-muted-foreground">Negeri Utama</span>
+            <span className="font-medium text-foreground">{item.topState}</span>
           </div>
-
-          {/* State bars */}
-          {visibleStates.map((state, i) => (
-            <div
-              key={`s-${state.name}`}
-              className="absolute"
-              style={{ left: c.stateX, top: stateY(i) - 11, width: c.nodeW }}
-            >
-              <p className="text-[8px] font-medium text-foreground truncate mb-0.5">{state.name}</p>
-              <div className="h-2.5 rounded-full bg-muted overflow-hidden">
-                <div
-                  className="h-full rounded-full bg-primary"
-                  style={{ width: `${clamp(state.widthPct, 12, 100)}%` }}
-                />
-              </div>
-            </div>
-          ))}
-
-          {/* Region bars */}
-          {sitc.regions.map((region, i) => (
-            <div
-              key={`r-${region.name}`}
-              className="absolute"
-              style={{ left: c.regionX, top: regionY(i) - 11, width: c.nodeW }}
-            >
-              <p className="text-[8px] font-medium text-foreground truncate mb-0.5">{region.name}</p>
-              <div className="h-2.5 rounded-full bg-muted overflow-hidden">
-                <div
-                  className="h-full rounded-full bg-accent"
-                  style={{ width: `${clamp(region.widthPct, 15, 100)}%` }}
-                />
-              </div>
-            </div>
-          ))}
+          <div className="flex justify-between">
+            <span className="text-muted-foreground">Kawasan</span>
+            <span className="font-medium text-foreground">{item.topRegion}</span>
+          </div>
         </div>
       </div>
-
-      {/* View More */}
-      {hasMore && (
-        <button
-          onClick={() => setExpanded(prev => !prev)}
-          className="w-full flex items-center justify-center gap-1 py-1.5 text-[10px] font-medium text-primary hover:bg-secondary/40 transition-colors border-t border-border"
-        >
-          {expanded ? 'Tutup' : `Lagi ${sitc.states.length - DEFAULT_VISIBLE} negeri`}
-          <ChevronDown className={`w-3 h-3 transition-transform ${expanded ? 'rotate-180' : ''}`} />
-        </button>
-      )}
     </motion.div>
   );
 }
@@ -231,32 +117,200 @@ function SITCTreeCard({ sitc }: { sitc: SITCData }) {
 interface Props { data: TradeRecord[] }
 
 export default function CommoditySunburst({ data }: Props) {
-  const sitcPanels = useMemo<SITCData[]>(() => {
-    const grouped: Record<string, TradeRecord[]> = {};
-    SITC_RULES.forEach(rule => { grouped[rule.code] = []; });
-    data.forEach(record => { grouped[getSITCCode(record.komoditiUtama)].push(record); });
+  const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
 
-    const stateBase = [96, 92, 88, 84, 81, 78, 75, 72, 69, 66, 63, 60, 57, 54, 51, 48, 45];
-    const regionBase = [94, 86, 78, 70];
+  const sitcItems = useMemo<SITCItem[]>(() => {
+    const grouped: Record<string, TradeRecord[]> = {};
+    SITC_RULES.forEach(r => { grouped[r.code] = []; });
+    data.forEach(rec => { grouped[getSITCCode(rec.komoditiUtama)].push(rec); });
 
     return SITC_RULES.map(rule => {
-      const total = grouped[rule.code].reduce((sum, row) => sum + row.jumlahDaganganRM, 0);
-      const states: StateNode[] = STATE_LIST.map((name, i) => ({
-        name, region: mapStateToRegion(name),
-        widthPct: clamp(stateBase[i] - (rule.num % 3) * 3, 30, 100),
-      }));
-      const regions: RegionNode[] = REGION_LIST.map((name, i) => ({
-        name, widthPct: clamp(regionBase[i] - (rule.num % 4) * 2, 36, 100),
-      }));
-      return { code: rule.code, num: rule.num, label: rule.label, total, states, regions };
-    }).sort((a, b) => a.num - b.num);
+      const records = grouped[rule.code];
+      const total = records.reduce((s, r) => s + r.jumlahDaganganRM, 0);
+
+      // Find top state
+      const stateMap: Record<string, number> = {};
+      records.forEach(r => { stateMap[r.negeri] = (stateMap[r.negeri] || 0) + r.jumlahDaganganRM; });
+      const topState = Object.entries(stateMap).sort((a, b) => b[1] - a[1])[0]?.[0] || 'Selangor';
+
+      // Find top region
+      const regionMap: Record<string, number> = {};
+      records.forEach(r => {
+        const region = mapStateToRegion(r.negeri);
+        regionMap[region] = (regionMap[region] || 0) + r.jumlahDaganganRM;
+      });
+      const topRegion = Object.entries(regionMap).sort((a, b) => b[1] - a[1])[0]?.[0] || 'Semenanjung';
+
+      return { code: rule.code, num: rule.num, label: rule.label, total, topState, topRegion };
+    });
   }, [data]);
 
+  const maxVal = useMemo(() => Math.max(...sitcItems.map(s => s.total), 1), [sitcItems]);
+
+  const N = sitcItems.length;
+  const angleStep = 360 / N;
+
+  // Compute radar polygon points
+  const dataPoints = sitcItems.map((item, i) => {
+    const angle = i * angleStep;
+    const r = (item.total / maxVal) * R_MAX;
+    const [x, y] = polarToXY(angle, Math.max(r, R_MAX * 0.05));
+    return { x, y, angle, item };
+  });
+
+  const polygonPath = dataPoints.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ') + ' Z';
+
+  // Grid scale labels
+  const gridLabels = R_GRID.map(pct => ({
+    value: formatRM(maxVal * pct),
+    r: R_MAX * pct,
+  }));
+
+  const viewBox = `0 0 ${CX * 2} ${CY * 2}`;
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-      {sitcPanels.map(sitc => (
-        <SITCTreeCard key={sitc.code} sitc={sitc} />
-      ))}
+    <div className="flex justify-center">
+      <div className="relative w-full max-w-[680px]">
+        <svg viewBox={viewBox} className="w-full h-auto">
+          {/* Concentric grid circles */}
+          {R_GRID.map((pct, i) => (
+            <circle
+              key={i}
+              cx={CX} cy={CY}
+              r={R_MAX * pct}
+              fill="none"
+              stroke="hsl(var(--border))"
+              strokeWidth={i === R_GRID.length - 1 ? 0.8 : 0.4}
+              strokeDasharray={i < R_GRID.length - 1 ? '3 3' : 'none'}
+              opacity={0.5}
+            />
+          ))}
+
+          {/* Axis lines */}
+          {sitcItems.map((_, i) => {
+            const angle = i * angleStep;
+            const [x, y] = polarToXY(angle, R_MAX);
+            return (
+              <line
+                key={i}
+                x1={CX} y1={CY} x2={x} y2={y}
+                stroke="hsl(var(--border))"
+                strokeWidth={0.4}
+                opacity={0.4}
+              />
+            );
+          })}
+
+          {/* Scale labels on right axis */}
+          {gridLabels.map((gl, i) => (
+            <text
+              key={i}
+              x={CX + 4}
+              y={CY - gl.r + 3}
+              fontSize="8"
+              fill="hsl(var(--muted-foreground))"
+              opacity={0.6}
+            >
+              {gl.value}
+            </text>
+          ))}
+
+          {/* Data polygon fill */}
+          <motion.path
+            d={polygonPath}
+            fill="hsl(var(--primary) / 0.15)"
+            stroke="hsl(var(--primary))"
+            strokeWidth={2}
+            strokeLinejoin="round"
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.6, ease: 'easeOut' }}
+            style={{ transformOrigin: `${CX}px ${CY}px` }}
+          />
+
+          {/* Data points */}
+          {dataPoints.map((dp, i) => (
+            <motion.circle
+              key={i}
+              cx={dp.x} cy={dp.y}
+              r={hoveredIdx === i ? 6 : 4}
+              fill={hoveredIdx === i ? 'hsl(var(--primary))' : 'hsl(var(--background))'}
+              stroke="hsl(var(--primary))"
+              strokeWidth={2}
+              className="cursor-pointer transition-all"
+              initial={{ opacity: 0, scale: 0 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.3, delay: 0.05 * i }}
+              onMouseEnter={() => setHoveredIdx(i)}
+              onMouseLeave={() => setHoveredIdx(null)}
+            />
+          ))}
+
+          {/* Axis labels */}
+          {sitcItems.map((item, i) => {
+            const angle = i * angleStep;
+            const [lx, ly] = polarToXY(angle, LABEL_R);
+            const isLeft = lx < CX - 20;
+            const isRight = lx > CX + 20;
+            return (
+              <text
+                key={i}
+                x={lx}
+                y={ly}
+                fontSize="10"
+                fontWeight={hoveredIdx === i ? 700 : 500}
+                fill={hoveredIdx === i ? 'hsl(var(--primary))' : 'hsl(var(--foreground))'}
+                textAnchor={isLeft ? 'end' : isRight ? 'start' : 'middle'}
+                dominantBaseline="middle"
+                className="transition-colors cursor-pointer select-none"
+                onMouseEnter={() => setHoveredIdx(i)}
+                onMouseLeave={() => setHoveredIdx(null)}
+              >
+                {item.code}
+              </text>
+            );
+          })}
+        </svg>
+
+        {/* Icon overlays positioned around the radar */}
+        {sitcItems.map((item, i) => {
+          const angle = i * angleStep;
+          // Convert SVG coords to percentage for absolute positioning
+          const [ix, iy] = polarToXY(angle, ICON_R);
+          const pctX = (ix / (CX * 2)) * 100;
+          const pctY = (iy / (CY * 2)) * 100;
+          const Icon = SITC_ICONS[item.num] || Package;
+          return (
+            <div
+              key={i}
+              className="absolute -translate-x-1/2 -translate-y-1/2 pointer-events-none"
+              style={{ left: `${pctX}%`, top: `${pctY}%` }}
+            >
+              <Icon
+                className={`w-4 h-4 transition-colors ${
+                  hoveredIdx === i ? 'text-primary' : 'text-muted-foreground'
+                }`}
+              />
+            </div>
+          );
+        })}
+
+        {/* Tooltip */}
+        {hoveredIdx !== null && (() => {
+          const dp = dataPoints[hoveredIdx];
+          const pctX = (dp.x / (CX * 2)) * 100;
+          const pctY = (dp.y / (CY * 2)) * 100;
+          // Convert percentage to approximate pixel for tooltip positioning
+          return (
+            <RadarTooltipCard
+              item={dp.item}
+              x={(pctX / 100) * 680}
+              y={(pctY / 100) * 680}
+              maxVal={maxVal}
+            />
+          );
+        })()}
+      </div>
     </div>
   );
 }
