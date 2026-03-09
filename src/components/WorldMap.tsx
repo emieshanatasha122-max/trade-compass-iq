@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useCallback } from 'react';
+import React, { useMemo, useState, useCallback, useEffect } from 'react';
 import {
   ComposableMap,
   Geographies,
@@ -15,22 +15,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 const GEO_URL = 'https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json';
 
-// ─── Trade type arc colors ───
-const EXPORT_COLOR_START = '#00FFFF'; // Neon Cyan
-const EXPORT_COLOR_END = '#0066FF';   // Electric Blue
-const IMPORT_COLOR_START = '#FF8800'; // Orange
-const IMPORT_COLOR_END = '#FF2222';   // Red
-
-// ─── Regional fill colors (bold, saturated) ───
-const REGION_FILLS: Record<string, { light: string; dark: string }> = {
-  northAmerica: { light: 'hsla(220, 70%, 45%, 0.85)', dark: 'hsla(220, 65%, 35%, 0.85)' },
-  southAmerica: { light: 'hsla(175, 60%, 38%, 0.85)', dark: 'hsla(175, 55%, 30%, 0.85)' },
-  europe:       { light: 'hsla(0, 60%, 50%, 0.75)',   dark: 'hsla(0, 55%, 38%, 0.80)' },
-  asia:         { light: 'hsla(40, 80%, 48%, 0.85)',   dark: 'hsla(40, 70%, 40%, 0.85)' },
-  africa:       { light: 'hsla(155, 65%, 35%, 0.85)',  dark: 'hsla(155, 55%, 28%, 0.85)' },
-  oceania:      { light: 'hsla(270, 55%, 50%, 0.80)',  dark: 'hsla(270, 50%, 40%, 0.80)' },
-  malaysia:     { light: 'hsla(187, 80%, 38%, 0.9)',   dark: 'hsla(187, 75%, 45%, 0.9)' },
-};
+// ─── Bloomberg-style trade arc colors ───
+const EXPORT_CYAN = '#06B6D4';
+const EXPORT_CYAN_END = '#0891B2';
+const IMPORT_MAGENTA = '#EC4899';
+const IMPORT_MAGENTA_END = '#DB2777';
 
 // ISO numeric → alpha-3
 const NUM_TO_ALPHA3: Record<string, string> = {
@@ -59,15 +48,6 @@ const NUM_TO_ALPHA3: Record<string, string> = {
   '854': 'BFA', '858': 'URY', '860': 'UZB', '862': 'VEN', '887': 'YEM',
   '894': 'ZMB', '716': 'ZWE', '048': 'BHR', '512': 'OMN',
 };
-
-// Country → region mapping
-const COUNTRY_REGION: Record<string, string> = {};
-['USA','CAN','MEX','GTM','HND','CRI','PAN','CUB','JAM','HTI','TTO'].forEach(c => COUNTRY_REGION[c] = 'northAmerica');
-['BRA','ARG','CHL','COL','PER','ECU','VEN','URY','BOL','PRY','SUR'].forEach(c => COUNTRY_REGION[c] = 'southAmerica');
-['GBR','FRA','DEU','ITA','ESP','NLD','BEL','CHE','AUT','SWE','NOR','DNK','FIN','PRT','IRL','POL','CZE','HUN','ROU','GRC','BGR','HRV','SVK','SVN','EST','LTU','LUX','ISL','CYP','UKR'].forEach(c => COUNTRY_REGION[c] = 'europe');
-['CHN','JPN','KOR','IND','IDN','THA','VNM','PHL','MYS','SGP','MMR','KHM','LAO','BRN','BGD','PAK','LKA','NPL','BTN','TWN','HKG','MAC','MNG','AFG','IRN','IRQ','ISR','JOR','KWT','LBN','QAT','SAU','ARE','BHR','OMN','SYR','TUR','UZB','YEM'].forEach(c => COUNTRY_REGION[c] = 'asia');
-['ZAF','NGA','EGY','KEN','GHA','ETH','TZA','MOZ','SEN','CMR','DZA','MAR','TUN','LBY','AGO','COD','UGA','BFA','ZMB','ZWE','NAM','MLI','SYC'].forEach(c => COUNTRY_REGION[c] = 'africa');
-['AUS','NZL','PNG'].forEach(c => COUNTRY_REGION[c] = 'oceania');
 
 // ─── Country centroid coordinates ───
 const COUNTRY_COORDS: Record<string, [number, number]> = {
@@ -149,8 +129,8 @@ const COUNTRY_NAMES: Record<string, { bm: string; en: string }> = {
 };
 
 const MALAYSIA_COORDS: [number, number] = [101.7, 3.1];
-const DEFAULT_CENTER: [number, number] = [50, 5];
-const DEFAULT_ZOOM = 1.8;
+const DEFAULT_CENTER: [number, number] = [40, 5];
+const DEFAULT_ZOOM = 1.6;
 
 export interface DestData {
   value: number;
@@ -184,6 +164,16 @@ export default function WorldMap({ destinations, allCountries }: WorldMapProps) 
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [tradeView, setTradeView] = useState<TradeViewMode>('all');
+  const [isDark, setIsDark] = useState(false);
+
+  // Reactively detect dark mode
+  useEffect(() => {
+    const check = () => setIsDark(document.documentElement.classList.contains('dark'));
+    check();
+    const observer = new MutationObserver(check);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    return () => observer.disconnect();
+  }, []);
 
   const normalizedDest = useMemo(() => {
     const result: Record<string, DestData> = {};
@@ -198,187 +188,132 @@ export default function WorldMap({ destinations, allCountries }: WorldMapProps) 
     return result;
   }, [destinations]);
 
-  const maxValue = useMemo(() => {
-    const values = Object.values(normalizedDest).map(d => d.value);
-    return Math.max(...values, 1);
-  }, [normalizedDest]);
+  const maxValue = useMemo(() => Math.max(...Object.values(normalizedDest).map(d => d.value), 1), [normalizedDest]);
 
   const topDest = useMemo(() => {
     return Object.entries(normalizedDest)
       .filter(([code]) => COUNTRY_COORDS[code])
       .sort((a, b) => b[1].value - a[1].value)
-      .slice(0, 20);
+      .slice(0, 25);
   }, [normalizedDest]);
 
   const countryList = useMemo(() => {
     const items = allCountries.map(c => {
       const alpha3 = ALPHA2_TO_ALPHA3[c.code] || c.code;
-      return {
-        code: alpha3,
-        name: COUNTRY_NAMES[alpha3]?.[lang] || c.name || alpha3,
-        value: normalizedDest[alpha3]?.value || 0,
-        hasCoords: !!COUNTRY_COORDS[alpha3],
-      };
+      return { code: alpha3, name: COUNTRY_NAMES[alpha3]?.[lang] || c.name || alpha3, value: normalizedDest[alpha3]?.value || 0 };
     });
     const seen = new Set<string>();
     return items
-      .filter(c => {
-        if (seen.has(c.code) || c.code === 'MYS') return false;
-        seen.add(c.code);
-        return true;
-      })
+      .filter(c => { if (seen.has(c.code) || c.code === 'MYS') return false; seen.add(c.code); return true; })
       .filter(c => !searchQuery || c.name.toLowerCase().includes(searchQuery.toLowerCase()))
       .sort((a, b) => b.value - a.value);
   }, [allCountries, lang, searchQuery, normalizedDest]);
 
-  const isDarkMode = useMemo(() => {
-    if (typeof document === 'undefined') return false;
-    return document.documentElement.classList.contains('dark');
-  }, []);
-
-  const getRegionFill = (alpha3: string): string => {
-    if (alpha3 === 'MYS') return isDarkMode ? REGION_FILLS.malaysia.dark : REGION_FILLS.malaysia.light;
-    const region = COUNTRY_REGION[alpha3];
-    if (region && REGION_FILLS[region]) {
-      return isDarkMode ? REGION_FILLS[region].dark : REGION_FILLS[region].light;
-    }
-    return isDarkMode ? 'hsla(220, 15%, 22%, 0.5)' : 'hsla(220, 15%, 82%, 0.4)';
-  };
-
   const handleZoomIn = () => setZoom(z => Math.min(z * 1.5, 8));
   const handleZoomOut = () => setZoom(z => Math.max(z / 1.5, 1));
-  const handleReset = () => {
-    setZoom(DEFAULT_ZOOM);
-    setCenter(DEFAULT_CENTER);
-    setSelectedCountry('');
-  };
+  const handleReset = useCallback(() => { setZoom(DEFAULT_ZOOM); setCenter(DEFAULT_CENTER); setSelectedCountry(''); }, []);
 
   const handleCountrySelect = useCallback((code: string) => {
-    if (!COUNTRY_COORDS[code]) {
-      setSelectedCountry(code);
-      setSearchOpen(false);
-      setSearchQuery('');
-      return;
+    if (COUNTRY_COORDS[code]) {
+      const coords = COUNTRY_COORDS[code];
+      setCenter([(MALAYSIA_COORDS[0] + coords[0]) / 2, (MALAYSIA_COORDS[1] + coords[1]) / 2]);
+      setZoom(3.5);
     }
-    const coords = COUNTRY_COORDS[code];
-    const mid: [number, number] = [
-      (MALAYSIA_COORDS[0] + coords[0]) / 2,
-      (MALAYSIA_COORDS[1] + coords[1]) / 2,
-    ];
-    setCenter(mid);
-    setZoom(3.5);
     setSelectedCountry(code);
     setSearchOpen(false);
     setSearchQuery('');
   }, []);
 
-  const getArcStrokeWidth = (value: number) => Math.max(1, (value / maxValue) * 6);
+  const getArcWidth = (value: number) => Math.max(0.8, (value / maxValue) * 5);
 
-  const visibleDest = selectedCountry
-    ? topDest.filter(([code]) => code === selectedCountry)
-    : topDest;
-
-  const dimmedDest = selectedCountry
-    ? topDest.filter(([code]) => code !== selectedCountry)
-    : [];
-
+  const visibleDest = selectedCountry ? topDest.filter(([code]) => code === selectedCountry) : topDest;
+  const dimmedDest = selectedCountry ? topDest.filter(([code]) => code !== selectedCountry) : [];
   const showExport = tradeView === 'all' || tradeView === 'export';
   const showImport = tradeView === 'all' || tradeView === 'import';
 
+  // Theme colors
+  const oceanColor = isDark ? '#0F172A' : '#0077B6';
+  const landColor = isDark ? '#1E293B' : '#F8FAFC';
+  const landStroke = isDark ? '#334155' : '#CBD5E1';
+  const labelColor = isDark ? '#FFFFFF' : '#1E293B';
+
   return (
-    <div className="relative w-full overflow-hidden rounded-xl bg-card border border-border" style={{ height: 560 }}>
-      {/* SVG gradient defs */}
+    <div className="relative w-full overflow-hidden rounded-xl border border-border" style={{ aspectRatio: '21/9', minHeight: 380, background: isDark ? '#111827' : '#E0F2FE' }}>
+      {/* ─── SVG Defs ─── */}
       <svg width="0" height="0" className="absolute">
         <defs>
-          <linearGradient id="exportArcGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor={EXPORT_COLOR_START} />
-            <stop offset="100%" stopColor={EXPORT_COLOR_END} />
+          <linearGradient id="bmb-export-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor={EXPORT_CYAN} />
+            <stop offset="100%" stopColor={EXPORT_CYAN_END} />
           </linearGradient>
-          <linearGradient id="importArcGrad" x1="100%" y1="0%" x2="0%" y2="0%">
-            <stop offset="0%" stopColor={IMPORT_COLOR_START} />
-            <stop offset="100%" stopColor={IMPORT_COLOR_END} />
+          <linearGradient id="bmb-import-grad" x1="100%" y1="0%" x2="0%" y2="0%">
+            <stop offset="0%" stopColor={IMPORT_MAGENTA} />
+            <stop offset="100%" stopColor={IMPORT_MAGENTA_END} />
           </linearGradient>
-          <filter id="arcGlow">
-            <feGaussianBlur stdDeviation="2" result="blur" />
-            <feMerge>
-              <feMergeNode in="blur" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
+          <filter id="bmb-glow-cyan">
+            <feGaussianBlur stdDeviation="3" result="blur" />
+            <feComposite in="SourceGraphic" in2="blur" operator="over" />
           </filter>
-          <filter id="malaysiaGlow">
-            <feGaussianBlur stdDeviation="4" result="blur" />
-            <feMerge>
-              <feMergeNode in="blur" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
+          <filter id="bmb-glow-magenta">
+            <feGaussianBlur stdDeviation="3" result="blur" />
+            <feComposite in="SourceGraphic" in2="blur" operator="over" />
           </filter>
-          {/* Inner shadow for 3D country depth */}
-          <filter id="countryDepth" x="-5%" y="-5%" width="110%" height="110%">
-            <feComponentTransfer in="SourceAlpha" result="shadow">
-              <feFuncA type="linear" slope="0.3" />
-            </feComponentTransfer>
-            <feGaussianBlur in="shadow" stdDeviation="1.5" result="blur" />
-            <feOffset dx="0" dy="0.5" result="offsetBlur" />
-            <feMerge>
-              <feMergeNode in="offsetBlur" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
+          <filter id="bmb-hub-glow">
+            <feGaussianBlur stdDeviation="5" result="blur" />
+            <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
           </filter>
         </defs>
       </svg>
 
-      {/* ─── Controls: Search ─── */}
-      <div className="absolute top-3 left-3 z-20 flex flex-col gap-2">
+      {/* ─── Top-Left: Country Search ─── */}
+      <div className="absolute top-3 left-3 z-20">
         <div className="relative">
           <button
             onClick={() => setSearchOpen(!searchOpen)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-card/90 backdrop-blur-sm border border-border text-xs font-medium text-foreground shadow-sm hover:bg-accent/10 transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg backdrop-blur-md border text-xs font-medium shadow-lg transition-colors"
+            style={{
+              background: isDark ? 'rgba(15,23,42,0.85)' : 'rgba(255,255,255,0.9)',
+              borderColor: isDark ? '#334155' : '#CBD5E1',
+              color: labelColor,
+            }}
           >
             <Search className="w-3.5 h-3.5" />
-            {selectedCountry
-              ? COUNTRY_NAMES[selectedCountry]?.[lang] || selectedCountry
-              : t('searchCountry')}
+            {selectedCountry ? (COUNTRY_NAMES[selectedCountry]?.[lang] || selectedCountry) : t('searchCountry')}
           </button>
           <AnimatePresence>
             {searchOpen && (
               <motion.div
-                initial={{ opacity: 0, y: -4 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -4 }}
-                className="absolute top-full left-0 mt-1 w-64 bg-card border border-border rounded-lg shadow-lg overflow-hidden z-30"
+                initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }}
+                className="absolute top-full left-0 mt-1 w-64 rounded-lg shadow-2xl overflow-hidden z-30 border"
+                style={{ background: isDark ? '#0F172A' : '#FFFFFF', borderColor: isDark ? '#334155' : '#E2E8F0' }}
               >
-                <div className="p-2 border-b border-border">
+                <div className="p-2 border-b" style={{ borderColor: isDark ? '#1E293B' : '#F1F5F9' }}>
                   <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={e => setSearchQuery(e.target.value)}
-                    placeholder={t('searchCountryPlaceholder')}
-                    className="w-full px-2 py-1 text-xs bg-secondary/50 rounded border-none outline-none text-foreground placeholder:text-muted-foreground"
-                    autoFocus
+                    type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
+                    placeholder={t('searchCountryPlaceholder')} autoFocus
+                    className="w-full px-2 py-1 text-xs rounded outline-none"
+                    style={{ background: isDark ? '#1E293B' : '#F8FAFC', color: labelColor }}
                   />
                 </div>
                 <div className="max-h-56 overflow-y-auto">
-                  <button
-                    onClick={() => { handleReset(); setSearchOpen(false); }}
-                    className="w-full text-left px-3 py-1.5 text-xs text-muted-foreground hover:bg-accent/10 transition-colors"
+                  <button onClick={() => { handleReset(); setSearchOpen(false); }}
+                    className="w-full text-left px-3 py-1.5 text-xs transition-colors hover:bg-[#06B6D4]/10"
+                    style={{ color: isDark ? '#94A3B8' : '#64748B' }}
                   >
                     {t('allCountries')}
                   </button>
                   {countryList.map(c => (
-                    <button
-                      key={c.code}
-                      onClick={() => handleCountrySelect(c.code)}
-                      className={`w-full text-left px-3 py-1.5 text-xs hover:bg-accent/10 transition-colors flex items-center justify-between gap-2 ${
-                        selectedCountry === c.code ? 'bg-primary/10 text-primary font-medium' : 'text-foreground'
-                      }`}
+                    <button key={c.code} onClick={() => handleCountrySelect(c.code)}
+                      className="w-full text-left px-3 py-1.5 text-xs flex items-center justify-between gap-2 transition-colors hover:bg-[#06B6D4]/10"
+                      style={{
+                        color: selectedCountry === c.code ? EXPORT_CYAN : labelColor,
+                        fontWeight: selectedCountry === c.code ? 600 : 400,
+                      }}
                     >
                       <span className="truncate">{c.name}</span>
-                      {c.value > 0 && <span className="text-muted-foreground shrink-0">{formatRM(c.value)}</span>}
+                      {c.value > 0 && <span style={{ color: isDark ? '#64748B' : '#94A3B8' }}>{formatRM(c.value)}</span>}
                     </button>
                   ))}
-                  {countryList.length === 0 && (
-                    <p className="px-3 py-2 text-xs text-muted-foreground">{lang === 'bm' ? 'Tiada hasil' : 'No results'}</p>
-                  )}
                 </div>
               </motion.div>
             )}
@@ -386,34 +321,42 @@ export default function WorldMap({ destinations, allCountries }: WorldMapProps) 
         </div>
       </div>
 
-      {/* ─── Controls: Zoom + Reset (Bilingual) ─── */}
+      {/* ─── Top-Right: Zoom & Reset (Bilingual) ─── */}
       <div className="absolute top-3 right-3 z-20 flex flex-col gap-1">
-        <button onClick={handleZoomIn} className="w-8 h-8 rounded-lg bg-card/90 backdrop-blur-sm border border-border flex items-center justify-center text-foreground hover:bg-accent/10 transition-colors shadow-sm" title={lang === 'bm' ? 'Zum Masuk' : 'Zoom In'}>
-          <ZoomIn className="w-4 h-4" />
-        </button>
-        <button onClick={handleZoomOut} className="w-8 h-8 rounded-lg bg-card/90 backdrop-blur-sm border border-border flex items-center justify-center text-foreground hover:bg-accent/10 transition-colors shadow-sm" title={lang === 'bm' ? 'Zum Keluar' : 'Zoom Out'}>
-          <ZoomOut className="w-4 h-4" />
-        </button>
-        <button onClick={handleReset} className="w-8 h-8 rounded-lg bg-card/90 backdrop-blur-sm border border-border flex items-center justify-center text-foreground hover:bg-accent/10 transition-colors shadow-sm" title={lang === 'bm' ? 'Set Semula / Reset' : 'Reset View'}>
-          <RotateCcw className="w-3.5 h-3.5" />
-        </button>
+        {[
+          { action: handleZoomIn, icon: <ZoomIn className="w-4 h-4" />, tip: lang === 'bm' ? 'Zum Masuk' : 'Zoom In' },
+          { action: handleZoomOut, icon: <ZoomOut className="w-4 h-4" />, tip: lang === 'bm' ? 'Zum Keluar' : 'Zoom Out' },
+          { action: handleReset, icon: <RotateCcw className="w-3.5 h-3.5" />, tip: lang === 'bm' ? 'Set Semula' : 'Reset View' },
+        ].map((btn, i) => (
+          <button key={i} onClick={btn.action} title={btn.tip}
+            className="w-8 h-8 rounded-lg backdrop-blur-md border flex items-center justify-center shadow-lg transition-all hover:scale-105"
+            style={{
+              background: isDark ? 'rgba(15,23,42,0.85)' : 'rgba(255,255,255,0.9)',
+              borderColor: isDark ? '#334155' : '#CBD5E1',
+              color: labelColor,
+            }}
+          >
+            {btn.icon}
+          </button>
+        ))}
       </div>
 
-      {/* ─── Trade Type Toggle ─── */}
-      <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20 flex gap-1 bg-card/90 backdrop-blur-sm border border-border rounded-lg p-1 shadow-sm">
+      {/* ─── Top-Center: Trade Type Toggle ─── */}
+      <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20 flex gap-0.5 rounded-lg p-1 shadow-lg backdrop-blur-md border"
+        style={{ background: isDark ? 'rgba(15,23,42,0.9)' : 'rgba(255,255,255,0.92)', borderColor: isDark ? '#334155' : '#CBD5E1' }}
+      >
         {([
-          { key: 'all' as TradeViewMode, label: lang === 'bm' ? 'Semua' : 'All' },
-          { key: 'export' as TradeViewMode, label: lang === 'bm' ? 'Eksport' : 'Export' },
-          { key: 'import' as TradeViewMode, label: lang === 'bm' ? 'Import' : 'Import' },
+          { key: 'all' as TradeViewMode, label: lang === 'bm' ? 'Semua' : 'All', color: '#8B5CF6' },
+          { key: 'export' as TradeViewMode, label: lang === 'bm' ? 'Eksport' : 'Export', color: EXPORT_CYAN },
+          { key: 'import' as TradeViewMode, label: lang === 'bm' ? 'Import' : 'Import', color: IMPORT_MAGENTA },
         ]).map(opt => (
-          <button
-            key={opt.key}
-            onClick={() => setTradeView(opt.key)}
-            className={`px-3 py-1 rounded-md text-[10px] font-semibold transition-all ${
-              tradeView === opt.key
-                ? 'bg-primary text-primary-foreground shadow-sm'
-                : 'text-muted-foreground hover:text-foreground'
-            }`}
+          <button key={opt.key} onClick={() => setTradeView(opt.key)}
+            className="px-3 py-1 rounded-md text-[10px] font-bold tracking-wide transition-all"
+            style={{
+              background: tradeView === opt.key ? opt.color : 'transparent',
+              color: tradeView === opt.key ? '#FFFFFF' : (isDark ? '#94A3B8' : '#64748B'),
+              boxShadow: tradeView === opt.key ? `0 0 12px ${opt.color}44` : 'none',
+            }}
           >
             {opt.label}
           </button>
@@ -424,35 +367,48 @@ export default function WorldMap({ destinations, allCountries }: WorldMapProps) 
       <AnimatePresence>
         {hoveredCountry && normalizedDest[hoveredCountry] && (
           <motion.div
-            initial={{ opacity: 0, y: 5 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0 }}
-            className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 bg-card/95 backdrop-blur-md border border-border rounded-xl shadow-xl px-5 py-3.5 min-w-[260px]"
+            initial={{ opacity: 0, y: 8, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
+            className="absolute bottom-14 left-1/2 -translate-x-1/2 z-30 rounded-xl shadow-2xl px-5 py-4 min-w-[280px] border"
+            style={{
+              background: isDark ? 'rgba(15,23,42,0.95)' : 'rgba(255,255,255,0.97)',
+              borderColor: isDark ? '#334155' : '#E2E8F0',
+              backdropFilter: 'blur(16px)',
+            }}
           >
-            <p className="text-sm font-bold text-foreground dark:text-white">
+            <p className="text-sm font-bold" style={{ color: isDark ? '#FFFFFF' : '#0F172A' }}>
               Malaysia → {COUNTRY_NAMES[hoveredCountry]?.[lang] || hoveredCountry}
             </p>
-            <div className="mt-2 space-y-1">
-              <p className="text-xs dark:text-white/80">
-                {lang === 'bm' ? 'Jumlah Dagangan' : 'Total Trade'}:{' '}
-                <span className="font-bold text-primary">{formatRM(normalizedDest[hoveredCountry].value)}</span>
-              </p>
+            <div className="mt-2.5 space-y-1.5">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px]" style={{ color: isDark ? '#CBD5E1' : '#475569' }}>
+                  {lang === 'bm' ? 'Jumlah Dagangan' : 'Total Trade'}
+                </span>
+                <span className="text-sm font-bold" style={{ color: EXPORT_CYAN }}>{formatRM(normalizedDest[hoveredCountry].value)}</span>
+              </div>
               <div className="flex gap-4">
-                <p className="text-xs dark:text-white/70">
-                  <span className="inline-block w-2.5 h-2.5 rounded-full mr-1" style={{ background: `linear-gradient(135deg, ${EXPORT_COLOR_START}, ${EXPORT_COLOR_END})` }} />
-                  {lang === 'bm' ? 'Eksport' : 'Exports'}:{' '}
-                  <span className="font-semibold dark:text-white">{formatRM(normalizedDest[hoveredCountry].exportValue)}</span>
-                </p>
-                <p className="text-xs dark:text-white/70">
-                  <span className="inline-block w-2.5 h-2.5 rounded-full mr-1" style={{ background: `linear-gradient(135deg, ${IMPORT_COLOR_START}, ${IMPORT_COLOR_END})` }} />
-                  {lang === 'bm' ? 'Import' : 'Imports'}:{' '}
-                  <span className="font-semibold dark:text-white">{formatRM(normalizedDest[hoveredCountry].importValue)}</span>
-                </p>
+                <div className="flex items-center gap-1.5">
+                  <div className="w-2 h-2 rounded-full" style={{ background: EXPORT_CYAN }} />
+                  <span className="text-[10px]" style={{ color: isDark ? '#94A3B8' : '#64748B' }}>
+                    {lang === 'bm' ? 'Eksport' : 'Export'}
+                  </span>
+                  <span className="text-[11px] font-semibold" style={{ color: isDark ? '#FFFFFF' : '#0F172A' }}>
+                    {formatRM(normalizedDest[hoveredCountry].exportValue)}
+                  </span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <div className="w-2 h-2 rounded-full" style={{ background: IMPORT_MAGENTA }} />
+                  <span className="text-[10px]" style={{ color: isDark ? '#94A3B8' : '#64748B' }}>
+                    {lang === 'bm' ? 'Import' : 'Import'}
+                  </span>
+                  <span className="text-[11px] font-semibold" style={{ color: isDark ? '#FFFFFF' : '#0F172A' }}>
+                    {formatRM(normalizedDest[hoveredCountry].importValue)}
+                  </span>
+                </div>
               </div>
               {normalizedDest[hoveredCountry].topCommodity && (
-                <p className="text-xs dark:text-white/70 pt-0.5">
+                <p className="text-[10px] pt-1 border-t" style={{ borderColor: isDark ? '#1E293B' : '#F1F5F9', color: isDark ? '#94A3B8' : '#64748B' }}>
                   {lang === 'bm' ? 'Barangan Utama' : 'Top Commodity'}:{' '}
-                  <span className="font-medium text-foreground dark:text-white">{normalizedDest[hoveredCountry].topCommodity}</span>
+                  <span className="font-semibold" style={{ color: isDark ? '#FFFFFF' : '#0F172A' }}>{normalizedDest[hoveredCountry].topCommodity}</span>
                 </p>
               )}
             </div>
@@ -461,63 +417,57 @@ export default function WorldMap({ destinations, allCountries }: WorldMapProps) 
       </AnimatePresence>
 
       {/* ─── Legend ─── */}
-      <div className="absolute bottom-3 right-3 z-10 bg-card/85 backdrop-blur-sm rounded-lg border border-border px-3 py-2">
-        <div className="flex items-center gap-4 text-[10px] text-muted-foreground dark:text-white/70">
+      <div className="absolute bottom-3 right-3 z-10 rounded-lg border px-3 py-2 backdrop-blur-md"
+        style={{ background: isDark ? 'rgba(15,23,42,0.85)' : 'rgba(255,255,255,0.9)', borderColor: isDark ? '#334155' : '#CBD5E1' }}
+      >
+        <div className="flex items-center gap-4" style={{ fontSize: 10 }}>
           <div className="flex items-center gap-1.5">
-            <div className="w-5 h-1.5 rounded-full" style={{ background: `linear-gradient(90deg, ${EXPORT_COLOR_START}, ${EXPORT_COLOR_END})` }} />
-            <span>{lang === 'bm' ? 'Eksport' : 'Export'}</span>
+            <div className="w-6 h-1 rounded-full" style={{ background: `linear-gradient(90deg, ${EXPORT_CYAN}, ${EXPORT_CYAN_END})`, boxShadow: `0 0 6px ${EXPORT_CYAN}66` }} />
+            <span style={{ color: isDark ? '#FFFFFF' : '#475569', fontWeight: 600 }}>{lang === 'bm' ? 'Eksport' : 'Export'}</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <div className="w-5 h-1.5 rounded-full" style={{ background: `linear-gradient(90deg, ${IMPORT_COLOR_START}, ${IMPORT_COLOR_END})` }} />
-            <span>{lang === 'bm' ? 'Import' : 'Import'}</span>
+            <div className="w-6 h-1 rounded-full" style={{ background: `linear-gradient(90deg, ${IMPORT_MAGENTA}, ${IMPORT_MAGENTA_END})`, boxShadow: `0 0 6px ${IMPORT_MAGENTA}66` }} />
+            <span style={{ color: isDark ? '#FFFFFF' : '#475569', fontWeight: 600 }}>{lang === 'bm' ? 'Import' : 'Import'}</span>
           </div>
         </div>
       </div>
 
-      {/* ─── Compass Rose (Labeled N/S/E/W) ─── */}
-      <div className="absolute bottom-3 left-3 z-10 opacity-50">
-        <svg width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="28" cy="28" r="26" stroke="currentColor" strokeWidth="0.6" className="text-muted-foreground" />
-          <circle cx="28" cy="28" r="18" stroke="currentColor" strokeWidth="0.3" strokeDasharray="2 2" className="text-muted-foreground/40" />
-          {/* North arrow */}
-          <polygon points="28,5 25,22 31,22" className="fill-foreground/70 dark:fill-white/70" />
-          <polygon points="28,5 25,22 28,19" className="fill-foreground/40 dark:fill-white/40" />
-          {/* South */}
-          <polygon points="28,51 25,34 31,34" className="fill-muted-foreground/30" />
-          <polygon points="28,51 25,34 28,37" className="fill-muted-foreground/15" />
-          {/* East */}
-          <polygon points="51,28 34,25 34,31" className="fill-muted-foreground/30" />
-          {/* West */}
-          <polygon points="5,28 22,25 22,31" className="fill-muted-foreground/30" />
-          {/* Directional labels */}
-          <text x="28" y="3.5" textAnchor="middle" className="fill-foreground dark:fill-white" style={{ fontSize: '7px', fontWeight: 700, fontFamily: 'system-ui, sans-serif' }}>N</text>
-          <text x="28" y="55.5" textAnchor="middle" className="fill-muted-foreground" style={{ fontSize: '6px', fontWeight: 600, fontFamily: 'system-ui, sans-serif' }}>S</text>
-          <text x="54.5" y="29.5" textAnchor="middle" className="fill-muted-foreground" style={{ fontSize: '6px', fontWeight: 600, fontFamily: 'system-ui, sans-serif' }}>E</text>
-          <text x="1.5" y="29.5" textAnchor="middle" className="fill-muted-foreground" style={{ fontSize: '6px', fontWeight: 600, fontFamily: 'system-ui, sans-serif' }}>W</text>
-          {/* Center dot */}
-          <circle cx="28" cy="28" r="1.5" className="fill-foreground/50 dark:fill-white/50" />
+      {/* ─── Compass Rose (N/S/E/W) ─── */}
+      <div className="absolute bottom-3 left-3 z-10" style={{ opacity: 0.55 }}>
+        <svg width="52" height="52" viewBox="0 0 52 52" fill="none">
+          <circle cx="26" cy="26" r="24" stroke={isDark ? '#475569' : '#94A3B8'} strokeWidth="0.6" />
+          <circle cx="26" cy="26" r="16" stroke={isDark ? '#334155' : '#CBD5E1'} strokeWidth="0.3" strokeDasharray="2 2" />
+          <polygon points="26,4 23,21 29,21" fill={isDark ? '#FFFFFF' : '#1E293B'} opacity="0.8" />
+          <polygon points="26,4 23,21 26,18" fill={isDark ? '#94A3B8' : '#64748B'} opacity="0.5" />
+          <polygon points="26,48 23,31 29,31" fill={isDark ? '#475569' : '#94A3B8'} opacity="0.4" />
+          <polygon points="48,26 31,23 31,29" fill={isDark ? '#475569' : '#94A3B8'} opacity="0.4" />
+          <polygon points="4,26 21,23 21,29" fill={isDark ? '#475569' : '#94A3B8'} opacity="0.4" />
+          <circle cx="26" cy="26" r="1.5" fill={isDark ? '#FFFFFF' : '#1E293B'} opacity="0.5" />
+          <text x="26" y="2.5" textAnchor="middle" fill={isDark ? '#FFFFFF' : '#1E293B'} style={{ fontSize: '7px', fontWeight: 700, fontFamily: 'system-ui' }}>N</text>
+          <text x="26" y="51.5" textAnchor="middle" fill={isDark ? '#94A3B8' : '#64748B'} style={{ fontSize: '6px', fontWeight: 600, fontFamily: 'system-ui' }}>S</text>
+          <text x="51" y="27.5" textAnchor="middle" fill={isDark ? '#94A3B8' : '#64748B'} style={{ fontSize: '6px', fontWeight: 600, fontFamily: 'system-ui' }}>E</text>
+          <text x="1" y="27.5" textAnchor="middle" fill={isDark ? '#94A3B8' : '#64748B'} style={{ fontSize: '6px', fontWeight: 600, fontFamily: 'system-ui' }}>W</text>
         </svg>
       </div>
 
-      {/* ─── Map ─── */}
+      {/* ─── THE MAP ─── */}
       <ComposableMap
         projection="geoNaturalEarth1"
-        projectionConfig={{ scale: 155 }}
+        projectionConfig={{ scale: 148 }}
         style={{ width: '100%', height: '100%' }}
       >
         <ZoomableGroup
-          zoom={zoom}
-          center={center}
+          zoom={zoom} center={center}
           onMoveEnd={({ coordinates, zoom: z }) => { setCenter(coordinates as [number, number]); setZoom(z); }}
-          minZoom={1}
-          maxZoom={8}
+          minZoom={1} maxZoom={8}
         >
-          {/* Ocean - Deep Blue (dark) / Light Azure (light) */}
-          <rect x={-1000} y={-600} width={3000} height={1800} className="fill-[hsl(210,60%,88%)] dark:fill-[hsl(215,50%,15%)]" />
+          {/* Ocean */}
+          <rect x={-1200} y={-700} width={3500} height={2000} fill={oceanColor} />
 
-          {/* Graticule grid */}
-          <Graticule stroke="currentColor" strokeWidth={0.3} strokeDasharray="4 4" className="text-[hsla(210,20%,50%,0.15)] dark:text-[hsla(210,30%,60%,0.1)]" />
+          {/* Graticule */}
+          <Graticule stroke={isDark ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.35)'} strokeWidth={0.3} strokeDasharray="4 4" />
 
+          {/* Countries */}
           <Geographies geography={GEO_URL}>
             {({ geographies }) =>
               geographies.map(geo => {
@@ -525,21 +475,30 @@ export default function WorldMap({ destinations, allCountries }: WorldMapProps) 
                 const alpha3 = NUM_TO_ALPHA3[String(geoId)];
                 const isSelected = selectedCountry && alpha3 === selectedCountry;
                 const isDimmed = selectedCountry && alpha3 !== selectedCountry && alpha3 !== 'MYS';
-                const fill = isSelected ? 'hsl(var(--primary) / 0.6)' : (alpha3 ? getRegionFill(alpha3) : (isDarkMode ? 'hsla(220,15%,22%,0.5)' : 'hsla(220,15%,82%,0.4)'));
+                const isMalaysia = alpha3 === 'MYS';
+
+                let fill = landColor;
+                if (isMalaysia) fill = EXPORT_CYAN;
+                else if (isSelected) fill = isDark ? '#3B82F6' : '#2563EB';
+
                 return (
                   <Geography
                     key={geo.rsmKey}
                     geography={geo}
                     fill={fill}
-                    stroke={isDarkMode ? '#FFFFFF' : '#333333'}
-                    strokeWidth={0.5}
-                    opacity={isDimmed ? 0.3 : 1}
-                    filter="url(#countryDepth)"
+                    stroke={isDark ? '#475569' : '#94A3B8'}
+                    strokeWidth={0.4}
+                    opacity={isDimmed ? 0.25 : 1}
                     onMouseEnter={() => { if (alpha3 && normalizedDest[alpha3]) setHoveredCountry(alpha3); }}
                     onMouseLeave={() => setHoveredCountry(null)}
                     style={{
-                      default: { outline: 'none', transition: 'opacity 0.3s, fill 0.3s' },
-                      hover: { fill: alpha3 && normalizedDest[alpha3] ? 'hsl(187, 65%, 50%)' : fill, outline: 'none', cursor: alpha3 && normalizedDest[alpha3] ? 'pointer' : 'default' },
+                      default: { outline: 'none', transition: 'all 0.3s ease' },
+                      hover: {
+                        fill: alpha3 && normalizedDest[alpha3] ? (isDark ? '#0EA5E9' : '#0284C7') : fill,
+                        outline: 'none',
+                        cursor: alpha3 && normalizedDest[alpha3] ? 'pointer' : 'default',
+                        strokeWidth: 0.6,
+                      },
                       pressed: { outline: 'none' },
                     }}
                   />
@@ -548,131 +507,96 @@ export default function WorldMap({ destinations, allCountries }: WorldMapProps) 
             }
           </Geographies>
 
-          {/* ─── Dimmed arcs ─── */}
+          {/* ─── Dimmed ghost arcs ─── */}
           {dimmedDest.map(([code]) => (
-            <Line
-              key={`dim-${code}`}
-              from={MALAYSIA_COORDS}
-              to={COUNTRY_COORDS[code]}
-              stroke="hsl(var(--muted-foreground))"
-              strokeWidth={0.6}
-              strokeOpacity={0.08}
-              strokeLinecap="round"
-            />
+            <Line key={`dim-${code}`} from={MALAYSIA_COORDS} to={COUNTRY_COORDS[code]}
+              stroke={isDark ? '#1E293B' : '#CBD5E1'} strokeWidth={0.4} strokeOpacity={0.15} strokeLinecap="round" />
           ))}
 
-          {/* ─── Export arcs (Cyan → Blue) ─── */}
+          {/* ─── EXPORT arcs (Cyan, Malaysia → Country) ─── */}
           {showExport && visibleDest.filter(([, d]) => d.exportValue > 0).map(([code, data]) => (
-            <React.Fragment key={`export-group-${code}`}>
-              {/* Glow underlayer */}
-              <Line
-                from={MALAYSIA_COORDS}
-                to={COUNTRY_COORDS[code]}
-                stroke={EXPORT_COLOR_START}
-                strokeWidth={getArcStrokeWidth(data.exportValue) + 2}
-                strokeOpacity={0.12}
-                strokeLinecap="round"
-              />
+            <React.Fragment key={`exp-${code}`}>
+              {/* Glow layer */}
+              <Line from={MALAYSIA_COORDS} to={COUNTRY_COORDS[code]}
+                stroke={EXPORT_CYAN} strokeWidth={getArcWidth(data.exportValue) + 3}
+                strokeOpacity={0.08} strokeLinecap="round" />
               {/* Main arc */}
-              <Line
-                from={MALAYSIA_COORDS}
-                to={COUNTRY_COORDS[code]}
-                stroke="url(#exportArcGrad)"
-                strokeWidth={getArcStrokeWidth(data.exportValue)}
-                strokeOpacity={0.75}
-                strokeLinecap="round"
-                strokeDasharray="6 3"
+              <Line from={MALAYSIA_COORDS} to={COUNTRY_COORDS[code]}
+                stroke="url(#bmb-export-grad)" strokeWidth={getArcWidth(data.exportValue)}
+                strokeOpacity={0.8} strokeLinecap="round" strokeDasharray="6 4"
               >
-                <animate attributeName="stroke-dashoffset" from="0" to="-18" dur="1.5s" repeatCount="indefinite" />
+                <animate attributeName="stroke-dashoffset" from="0" to="-20" dur="1.2s" repeatCount="indefinite" />
               </Line>
             </React.Fragment>
           ))}
 
-          {/* ─── Import arcs (Orange → Red) ─── */}
+          {/* ─── IMPORT arcs (Magenta, Country → Malaysia) ─── */}
           {showImport && visibleDest.filter(([, d]) => d.importValue > 0).map(([code, data]) => {
-            const coords = COUNTRY_COORDS[code];
-            const offset: [number, number] = [coords[0] + 1.2, coords[1] - 0.8];
+            const to = COUNTRY_COORDS[code];
             return (
-              <React.Fragment key={`import-group-${code}`}>
-                {/* Glow underlayer */}
-                <Line
-                  from={offset}
-                  to={MALAYSIA_COORDS}
-                  stroke={IMPORT_COLOR_START}
-                  strokeWidth={getArcStrokeWidth(data.importValue) + 2}
-                  strokeOpacity={0.1}
-                  strokeLinecap="round"
-                />
-                {/* Main arc */}
-                <Line
-                  from={offset}
-                  to={MALAYSIA_COORDS}
-                  stroke="url(#importArcGrad)"
-                  strokeWidth={getArcStrokeWidth(data.importValue)}
-                  strokeOpacity={0.65}
-                  strokeLinecap="round"
-                  strokeDasharray="4 4"
+              <React.Fragment key={`imp-${code}`}>
+                <Line from={[to[0] + 0.8, to[1] - 0.5]} to={MALAYSIA_COORDS}
+                  stroke={IMPORT_MAGENTA} strokeWidth={getArcWidth(data.importValue) + 3}
+                  strokeOpacity={0.06} strokeLinecap="round" />
+                <Line from={[to[0] + 0.8, to[1] - 0.5]} to={MALAYSIA_COORDS}
+                  stroke="url(#bmb-import-grad)" strokeWidth={getArcWidth(data.importValue)}
+                  strokeOpacity={0.75} strokeLinecap="round" strokeDasharray="4 5"
                 >
-                  <animate attributeName="stroke-dashoffset" from="0" to="-16" dur="2s" repeatCount="indefinite" />
+                  <animate attributeName="stroke-dashoffset" from="0" to="-18" dur="1.8s" repeatCount="indefinite" />
                 </Line>
               </React.Fragment>
             );
           })}
 
-          {/* ─── Pulse dots at destinations ─── */}
+          {/* ─── Destination pulse dots ─── */}
           {visibleDest.map(([code, data]) => {
-            const hasExport = data.exportValue > 0 && showExport;
-            const hasImport = data.importValue > 0 && showImport;
-            const color = hasExport && hasImport
-              ? (data.exportValue >= data.importValue ? EXPORT_COLOR_START : IMPORT_COLOR_START)
-              : hasExport ? EXPORT_COLOR_START : IMPORT_COLOR_START;
+            const hasExp = data.exportValue > 0 && showExport;
+            const hasImp = data.importValue > 0 && showImport;
+            const dotColor = hasExp && hasImp
+              ? (data.exportValue >= data.importValue ? EXPORT_CYAN : IMPORT_MAGENTA)
+              : hasExp ? EXPORT_CYAN : IMPORT_MAGENTA;
             return (
-              <Marker key={`pulse-${code}`} coordinates={COUNTRY_COORDS[code]}>
-                <circle r={3.5 / zoom} fill={color} opacity={0.85}>
-                  <animate attributeName="r" values={`${3 / zoom};${7 / zoom};${3 / zoom}`} dur="2.5s" repeatCount="indefinite" />
-                  <animate attributeName="opacity" values="0.85;0.25;0.85" dur="2.5s" repeatCount="indefinite" />
+              <Marker key={`dot-${code}`} coordinates={COUNTRY_COORDS[code]}>
+                <circle r={3.5 / zoom} fill={dotColor} opacity={0.9}>
+                  <animate attributeName="r" values={`${3 / zoom};${7 / zoom};${3 / zoom}`} dur="2s" repeatCount="indefinite" />
+                  <animate attributeName="opacity" values="0.9;0.2;0.9" dur="2s" repeatCount="indefinite" />
                 </circle>
+                <circle r={2 / zoom} fill={dotColor} />
               </Marker>
             );
           })}
 
-          {/* ─── Malaysia hub marker with glow ─── */}
+          {/* ─── Malaysia hub ─── */}
           <Marker coordinates={MALAYSIA_COORDS}>
-            {/* Halo */}
-            <circle r={18 / zoom} fill="hsl(var(--primary))" opacity={0.06} filter="url(#malaysiaGlow)">
-              <animate attributeName="r" values={`${18 / zoom};${25 / zoom};${18 / zoom}`} dur="4s" repeatCount="indefinite" />
-              <animate attributeName="opacity" values="0.06;0.02;0.06" dur="4s" repeatCount="indefinite" />
+            <circle r={22 / zoom} fill={EXPORT_CYAN} opacity={0.05} filter="url(#bmb-hub-glow)">
+              <animate attributeName="r" values={`${22 / zoom};${30 / zoom};${22 / zoom}`} dur="4s" repeatCount="indefinite" />
             </circle>
-            {/* Pulse ring */}
-            <circle r={10 / zoom} fill="none" stroke="hsl(var(--primary))" strokeWidth={1.5 / zoom} opacity={0.3}>
-              <animate attributeName="r" values={`${10 / zoom};${16 / zoom};${10 / zoom}`} dur="3s" repeatCount="indefinite" />
-              <animate attributeName="opacity" values="0.3;0.05;0.3" dur="3s" repeatCount="indefinite" />
+            <circle r={12 / zoom} fill="none" stroke={EXPORT_CYAN} strokeWidth={1.2 / zoom} opacity={0.25}>
+              <animate attributeName="r" values={`${12 / zoom};${18 / zoom};${12 / zoom}`} dur="3s" repeatCount="indefinite" />
+              <animate attributeName="opacity" values="0.25;0.05;0.25" dur="3s" repeatCount="indefinite" />
             </circle>
-            {/* Core */}
-            <circle r={5 / zoom} fill="hsl(var(--primary))" filter="url(#malaysiaGlow)" />
-            <text textAnchor="middle" y={-12 / zoom} style={{ fontSize: `${11 / zoom}px`, fontWeight: 800, fill: isDarkMode ? '#FFFFFF' : 'hsl(var(--foreground))' }}>
+            <circle r={5 / zoom} fill={EXPORT_CYAN} filter="url(#bmb-hub-glow)" opacity={0.9} />
+            <text textAnchor="middle" y={-10 / zoom}
+              style={{ fontSize: `${11 / zoom}px`, fontWeight: 800, fill: isDark ? '#FFFFFF' : '#0F172A', fontFamily: 'system-ui' }}
+            >
               Malaysia
             </text>
           </Marker>
 
           {/* ─── Country labels ─── */}
           {visibleDest.map(([code]) => (
-            <Marker
-              key={`label-${code}`}
-              coordinates={COUNTRY_COORDS[code]}
-              onMouseEnter={() => setHoveredCountry(code)}
-              onMouseLeave={() => setHoveredCountry(null)}
+            <Marker key={`lbl-${code}`} coordinates={COUNTRY_COORDS[code]}
+              onMouseEnter={() => setHoveredCountry(code)} onMouseLeave={() => setHoveredCountry(null)}
             >
-              <text
-                textAnchor="middle"
-                y={-10 / zoom}
+              <text textAnchor="middle" y={-9 / zoom}
                 style={{
-                  fontSize: `${hoveredCountry === code ? 9 : 7}px`,
-                  fill: isDarkMode ? '#FFFFFF' : 'hsl(var(--foreground))',
-                  fontWeight: hoveredCountry === code ? 700 : 400,
-                  opacity: hoveredCountry === code ? 1 : 0.8,
+                  fontSize: `${hoveredCountry === code ? 8.5 : 6.5}px`,
+                  fill: isDark ? '#FFFFFF' : '#1E293B',
+                  fontWeight: hoveredCountry === code ? 700 : 500,
+                  opacity: hoveredCountry === code ? 1 : 0.75,
                   transition: 'all 0.2s',
                   pointerEvents: 'none',
+                  fontFamily: 'system-ui',
                 }}
               >
                 {COUNTRY_NAMES[code]?.[lang]?.slice(0, 14) || code}
