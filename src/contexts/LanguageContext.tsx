@@ -85,6 +85,7 @@ const translations: Translations = {
   exportIntensity: { bm: 'Keamatan Eksport', en: 'Export Intensity' },
   stateAnalysis: { bm: 'Analisis Dagangan Negeri', en: 'State Trade Analysis' },
   storyEnd: { bm: 'Data → Wawasan → Pemahaman Ekonomi Lebih Baik', en: 'Data → Insight → Better Economic Understanding' },
+  loadingData: { bm: 'Memuatkan data dagangan...', en: 'Loading trade data...' },
 
   // SITC labels
   sitc0: { bm: 'Makanan & Binatang Hidup', en: 'Food & Live Animals' },

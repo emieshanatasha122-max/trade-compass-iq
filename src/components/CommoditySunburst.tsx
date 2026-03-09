@@ -12,15 +12,15 @@ const SITC_ICONS = [Utensils, Wine, Leaf, Fuel, Droplets, FlaskConical, Hammer, 
 const SITC_LANG_KEYS = ['sitc0','sitc1','sitc2','sitc3','sitc4','sitc5','sitc6','sitc7','sitc8','sitc9'];
 
 const SITC_RULES: { code: string; num: number; keywords: string[] }[] = [
-  { code: 'SITC 0', num: 0, keywords: ['makanan', 'ikan', 'sayur', 'buah', 'gula', 'kopi', 'teh'] },
-  { code: 'SITC 1', num: 1, keywords: ['tembakau', 'minuman'] },
-  { code: 'SITC 2', num: 2, keywords: ['getah', 'bijih', 'kulit'] },
-  { code: 'SITC 3', num: 3, keywords: ['petroleum', 'gas asli', 'arang batu', 'minyak mentah'] },
-  { code: 'SITC 4', num: 4, keywords: ['kelapa sawit', 'minyak sawit', 'oleokimia'] },
-  { code: 'SITC 5', num: 5, keywords: ['kimia', 'farmaseutikal', 'baja', 'racun'] },
-  { code: 'SITC 6', num: 6, keywords: ['logam', 'kayu', 'gergaji', 'perabut', 'rotan', 'kertas', 'simen', 'kaca'] },
-  { code: 'SITC 7', num: 7, keywords: ['elektrik', 'elektronik', 'litar', 'jentera', 'mesin', 'alat ganti', 'motokar', 'kapal'] },
-  { code: 'SITC 8', num: 8, keywords: ['pakaian', 'tekstil', 'kasut', 'kekemasan', 'mainan', 'sukan', 'optik'] },
+  { code: 'SITC 0', num: 0, keywords: ['makanan', 'ikan', 'sayur', 'buah', 'gula', 'kopi', 'teh', 'beras', 'daging', 'susu', 'telur', 'rempah', 'gandum'] },
+  { code: 'SITC 1', num: 1, keywords: ['tembakau', 'minuman', 'rokok'] },
+  { code: 'SITC 2', num: 2, keywords: ['getah asli', 'bijih', 'kulit', 'bulu', 'kayu kumai', 'kayu balak', 'sisa logam'] },
+  { code: 'SITC 3', num: 3, keywords: ['petroleum', 'gas asli', 'arang batu', 'minyak mentah', 'lng', 'gas cecair'] },
+  { code: 'SITC 4', num: 4, keywords: ['kelapa sawit', 'minyak sawit', 'oleokimia', 'minyak kelapa', 'lemak'] },
+  { code: 'SITC 5', num: 5, keywords: ['kimia', 'farmaseutikal', 'baja', 'racun', 'plastik', 'polimer'] },
+  { code: 'SITC 6', num: 6, keywords: ['logam', 'kayu gergaji', 'perabut', 'rotan', 'kertas', 'simen', 'kaca', 'besi', 'keluli', 'tembaga', 'aluminium', 'getah dikilang', 'permaidani'] },
+  { code: 'SITC 7', num: 7, keywords: ['elektrik', 'elektronik', 'litar', 'jentera', 'mesin', 'alat ganti', 'motokar', 'kapal', 'telekomunikasi', 'pendingin', 'pemprosesan data', 'piezo', 'pengangkutan', 'kelengkapan pejabat'] },
+  { code: 'SITC 8', num: 8, keywords: ['pakaian', 'tekstil', 'kasut', 'kekemasan', 'mainan', 'sukan', 'optik', 'jam', 'kemas', 'permata', 'perabot', 'alat muzik', 'fotografi'] },
   { code: 'SITC 9', num: 9, keywords: [] },
 ];
 
@@ -40,11 +40,11 @@ function formatRM(value: number): string {
   return `RM ${value.toLocaleString()}`;
 }
 
-const STATE_TO_REGION: Record<string, string> = {
-  'Sabah': 'Sabah', 'Sarawak': 'Sarawak',
-  'W.P. Labuan': 'Zon Bebas', 'Supra': 'Zon Bebas', 'Agent': 'Zon Bebas',
-};
-function mapStateToRegion(s: string) { return STATE_TO_REGION[s] || 'Semenanjung'; }
+// Normalize kawasan from CSV to display format
+function normalizeKawasan(k: string): string {
+  const map: Record<string, string> = { 'SEMENANJUNG': 'Semenanjung', 'SABAH': 'Sabah', 'SARAWAK': 'Sarawak', 'ZON BEBAS': 'Zon Bebas' };
+  return map[k?.toUpperCase()] || k || 'Semenanjung';
+}
 
 interface SITCItem { code: string; num: number; total: number; topState: string; topRegion: string }
 
@@ -129,7 +129,7 @@ export default function CommoditySunburst({ data }: Props) {
       records.forEach(r => { stateMap[r.negeri] = (stateMap[r.negeri] || 0) + r.jumlahDaganganRM; });
       const topState = Object.entries(stateMap).sort((a, b) => b[1] - a[1])[0]?.[0] || 'Selangor';
       const regionMap: Record<string, number> = {};
-      records.forEach(r => { const rg = mapStateToRegion(r.negeri); regionMap[rg] = (regionMap[rg] || 0) + r.jumlahDaganganRM; });
+      records.forEach(r => { const rg = normalizeKawasan(r.kawasan); regionMap[rg] = (regionMap[rg] || 0) + r.jumlahDaganganRM; });
       const topRegion = Object.entries(regionMap).sort((a, b) => b[1] - a[1])[0]?.[0] || 'Semenanjung';
       return { code: rule.code, num: rule.num, total, topState, topRegion };
     });

@@ -1,5 +1,6 @@
-import React, { createContext, useContext, useState, useMemo, ReactNode } from 'react';
-import { tradeData, TradeRecord } from '@/data/mockTradeData';
+import React, { createContext, useContext, useState, useMemo, useEffect, ReactNode } from 'react';
+import { loadTradeData } from '@/data/tradeDataLoader';
+import type { TradeRecord } from '@/data/tradeDataLoader';
 
 interface FilterState {
   tahun: string;
@@ -15,11 +16,18 @@ interface FilterContextType {
   setFilter: (key: keyof FilterState, value: string) => void;
   filteredData: TradeRecord[];
   allData: TradeRecord[];
+  isLoading: boolean;
+  uniqueNegeri: string[];
+  uniqueKomoditi: string[];
+  uniqueKeluasan: string[];
+  uniqueYears: number[];
 }
 
 const FilterContext = createContext<FilterContextType | undefined>(undefined);
 
 export function FilterProvider({ children }: { children: ReactNode }) {
+  const [allData, setAllData] = useState<TradeRecord[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [filters, setFilters] = useState<FilterState>({
     tahun: 'all',
     bulan: 'all',
@@ -29,12 +37,25 @@ export function FilterProvider({ children }: { children: ReactNode }) {
     keluasan: 'all',
   });
 
+  useEffect(() => {
+    loadTradeData().then(data => {
+      setAllData(data);
+      setIsLoading(false);
+    });
+  }, []);
+
   const setFilter = (key: keyof FilterState, value: string) => {
     setFilters(prev => ({ ...prev, [key]: value }));
   };
 
+  // Derive unique filter options from loaded data
+  const uniqueNegeri = useMemo(() => [...new Set(allData.map(r => r.negeri))].sort(), [allData]);
+  const uniqueKomoditi = useMemo(() => [...new Set(allData.map(r => r.komoditiUtama))].sort(), [allData]);
+  const uniqueKeluasan = useMemo(() => [...new Set(allData.map(r => r.keluasanSyarikat))].sort(), [allData]);
+  const uniqueYears = useMemo(() => [...new Set(allData.map(r => r.tahun))].sort((a, b) => a - b), [allData]);
+
   const filteredData = useMemo(() => {
-    return tradeData.filter(r => {
+    return allData.filter(r => {
       if (filters.tahun !== 'all' && r.tahun !== Number(filters.tahun)) return false;
       if (filters.bulan !== 'all' && r.bulan !== Number(filters.bulan)) return false;
       if (filters.jenisDagangan !== 'all' && r.jenisDagangan !== filters.jenisDagangan) return false;
@@ -43,10 +64,10 @@ export function FilterProvider({ children }: { children: ReactNode }) {
       if (filters.keluasan !== 'all' && r.keluasanSyarikat !== filters.keluasan) return false;
       return true;
     });
-  }, [filters]);
+  }, [filters, allData]);
 
   return (
-    <FilterContext.Provider value={{ filters, setFilter, filteredData, allData: tradeData }}>
+    <FilterContext.Provider value={{ filters, setFilter, filteredData, allData, isLoading, uniqueNegeri, uniqueKomoditi, uniqueKeluasan, uniqueYears }}>
       {children}
     </FilterContext.Provider>
   );

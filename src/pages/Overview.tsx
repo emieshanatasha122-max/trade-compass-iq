@@ -40,7 +40,7 @@ function SectionHeader({ title, description, icon: Icon }: { title: string; desc
 
 
 export default function Overview() {
-  const { filteredData } = useFilters();
+  const { filteredData, isLoading } = useFilters();
   const { t } = useLanguage();
 
   // KPIs
@@ -82,11 +82,11 @@ export default function Overview() {
       }));
   }, [filteredData]);
 
-  // Export destinations
+  // Export destinations - use 2-letter codes from CSV
   const exportDestinations = useMemo(() => {
     const map: Record<string, { value: number; code: string }> = {};
     filteredData
-      .filter(r => r.jenisDagangan === 'Eksport' && r.kodDestinasiEksportImport)
+      .filter(r => r.jenisDagangan === 'Eksport' && r.kodDestinasiEksportImport && r.kodDestinasiEksportImport !== 'MY')
       .forEach(r => {
         const code = r.kodDestinasiEksportImport;
         if (!map[code]) map[code] = { value: 0, code };
@@ -120,6 +120,17 @@ export default function Overview() {
     fontSize: '11px',
     color: 'hsl(var(--foreground))',
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-[60vh]">
+        <div className="text-center space-y-3">
+          <div className="w-10 h-10 border-3 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
+          <p className="text-sm text-muted-foreground">Loading trade data...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">
