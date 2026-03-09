@@ -312,6 +312,18 @@ export default function WorldMap({ destinations, allCountries }: WorldMapProps) 
               <feMergeNode in="SourceGraphic" />
             </feMerge>
           </filter>
+          {/* Inner shadow for 3D country depth */}
+          <filter id="countryDepth" x="-5%" y="-5%" width="110%" height="110%">
+            <feComponentTransfer in="SourceAlpha" result="shadow">
+              <feFuncA type="linear" slope="0.3" />
+            </feComponentTransfer>
+            <feGaussianBlur in="shadow" stdDeviation="1.5" result="blur" />
+            <feOffset dx="0" dy="0.5" result="offsetBlur" />
+            <feMerge>
+              <feMergeNode in="offsetBlur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
         </defs>
       </svg>
 
