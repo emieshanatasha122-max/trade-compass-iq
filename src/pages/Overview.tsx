@@ -248,21 +248,6 @@ export default function Overview() {
         </div>
       </section>
 
-      {/* SECTION 6: Enterprise Size vs Economic Region */}
-      <section>
-        <SectionHeader title={t('enterpriseParticipation')} description={t('enterpriseParticipationDesc')} icon={Building2} />
-        <div className="chart-container">
-          <DualDonutSection data={filteredData} />
-        </div>
-      </section>
-
-      {/* SECTION 7: Top Trade Rankings */}
-      <section>
-        <SectionHeader title={t('topTradeRankings')} description={t('topTradeRankingsDesc')} icon={Award} />
-        <div className="chart-container">
-          <TopRankings data={filteredData} />
-        </div>
-      </section>
 
       {/* End note */}
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }} className="text-center py-6">
