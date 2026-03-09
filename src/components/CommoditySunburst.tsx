@@ -40,11 +40,11 @@ function formatRM(value: number): string {
   return `RM ${value.toLocaleString()}`;
 }
 
-const STATE_TO_REGION: Record<string, string> = {
-  'Sabah': 'Sabah', 'Sarawak': 'Sarawak',
-  'W.P. Labuan': 'Zon Bebas', 'Supra': 'Zon Bebas', 'Agent': 'Zon Bebas',
-};
-function mapStateToRegion(s: string) { return STATE_TO_REGION[s] || 'Semenanjung'; }
+// Normalize kawasan from CSV to display format
+function normalizeKawasan(k: string): string {
+  const map: Record<string, string> = { 'SEMENANJUNG': 'Semenanjung', 'SABAH': 'Sabah', 'SARAWAK': 'Sarawak', 'ZON BEBAS': 'Zon Bebas' };
+  return map[k?.toUpperCase()] || k || 'Semenanjung';
+}
 
 interface SITCItem { code: string; num: number; total: number; topState: string; topRegion: string }
 
