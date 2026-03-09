@@ -293,7 +293,7 @@ export default function WorldMap({ destinations, allCountries }: WorldMapProps) 
   const textFill = isDarkMode ? '#FFFFFF' : 'hsl(var(--foreground))';
 
   return (
-    <div className="relative w-full overflow-hidden rounded-xl border border-border" style={{ minHeight: 480 }}>
+    <div className="relative w-full overflow-hidden rounded-xl border border-border" style={{ height: 500 }}>
       {/* CSS animations for arc pulse */}
       <style>{`
         @keyframes arcPulseExport {
