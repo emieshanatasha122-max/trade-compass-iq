@@ -475,8 +475,11 @@ export default function WorldMap({ destinations, allCountries }: WorldMapProps) 
           minZoom={1}
           maxZoom={8}
         >
-          {/* Ocean */}
-          <rect x={-1000} y={-600} width={3000} height={1800} className="fill-secondary/30 dark:fill-[#0B1F3B]" />
+          {/* Ocean - Deep Blue (dark) / Light Azure (light) */}
+          <rect x={-1000} y={-600} width={3000} height={1800} className="fill-[hsl(210,60%,88%)] dark:fill-[hsl(215,50%,15%)]" />
+
+          {/* Graticule grid */}
+          <Graticule stroke="currentColor" strokeWidth={0.3} strokeDasharray="4 4" className="text-[hsla(210,20%,50%,0.15)] dark:text-[hsla(210,30%,60%,0.1)]" />
 
           <Geographies geography={GEO_URL}>
             {({ geographies }) =>
