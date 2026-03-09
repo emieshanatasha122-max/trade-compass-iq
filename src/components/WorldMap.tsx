@@ -462,21 +462,28 @@ export default function WorldMap({ destinations, allCountries }: WorldMapProps) 
         </div>
       </div>
 
-      {/* ─── Compass Rose ─── */}
-      <div className="absolute bottom-3 left-3 z-10 opacity-40">
-        <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="24" cy="24" r="22" stroke="currentColor" strokeWidth="0.5" className="text-muted-foreground" />
+      {/* ─── Compass Rose (Labeled N/S/E/W) ─── */}
+      <div className="absolute bottom-3 left-3 z-10 opacity-50">
+        <svg width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="28" cy="28" r="26" stroke="currentColor" strokeWidth="0.6" className="text-muted-foreground" />
+          <circle cx="28" cy="28" r="18" stroke="currentColor" strokeWidth="0.3" strokeDasharray="2 2" className="text-muted-foreground/40" />
           {/* North arrow */}
-          <polygon points="24,4 21,20 27,20" className="fill-muted-foreground" />
-          <polygon points="24,4 21,20 24,17" className="fill-foreground/60" />
+          <polygon points="28,5 25,22 31,22" className="fill-foreground/70 dark:fill-white/70" />
+          <polygon points="28,5 25,22 28,19" className="fill-foreground/40 dark:fill-white/40" />
           {/* South */}
-          <polygon points="24,44 21,28 27,28" className="fill-muted-foreground/40" />
+          <polygon points="28,51 25,34 31,34" className="fill-muted-foreground/30" />
+          <polygon points="28,51 25,34 28,37" className="fill-muted-foreground/15" />
           {/* East */}
-          <polygon points="44,24 28,21 28,27" className="fill-muted-foreground/40" />
+          <polygon points="51,28 34,25 34,31" className="fill-muted-foreground/30" />
           {/* West */}
-          <polygon points="4,24 20,21 20,27" className="fill-muted-foreground/40" />
-          {/* N label */}
-          <text x="24" y="3" textAnchor="middle" className="fill-foreground dark:fill-white" style={{ fontSize: '6px', fontWeight: 700 }}>N</text>
+          <polygon points="5,28 22,25 22,31" className="fill-muted-foreground/30" />
+          {/* Directional labels */}
+          <text x="28" y="3.5" textAnchor="middle" className="fill-foreground dark:fill-white" style={{ fontSize: '7px', fontWeight: 700, fontFamily: 'system-ui, sans-serif' }}>N</text>
+          <text x="28" y="55.5" textAnchor="middle" className="fill-muted-foreground" style={{ fontSize: '6px', fontWeight: 600, fontFamily: 'system-ui, sans-serif' }}>S</text>
+          <text x="54.5" y="29.5" textAnchor="middle" className="fill-muted-foreground" style={{ fontSize: '6px', fontWeight: 600, fontFamily: 'system-ui, sans-serif' }}>E</text>
+          <text x="1.5" y="29.5" textAnchor="middle" className="fill-muted-foreground" style={{ fontSize: '6px', fontWeight: 600, fontFamily: 'system-ui, sans-serif' }}>W</text>
+          {/* Center dot */}
+          <circle cx="28" cy="28" r="1.5" className="fill-foreground/50 dark:fill-white/50" />
         </svg>
       </div>
 
