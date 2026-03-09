@@ -6,6 +6,7 @@ import {
   Utensils, Wine, Leaf, Fuel, Droplets, FlaskConical,
   Hammer, Cpu, ShirtIcon, Package
 } from 'lucide-react';
+import EnterpriseDonut from './EnterpriseDonut';
 
 const SITC_ICONS = [Utensils, Wine, Leaf, Fuel, Droplets, FlaskConical, Hammer, Cpu, ShirtIcon, Package];
 const SITC_LANG_KEYS = ['sitc0','sitc1','sitc2','sitc3','sitc4','sitc5','sitc6','sitc7','sitc8','sitc9'];
@@ -281,8 +282,10 @@ export default function CommoditySunburst({ data }: Props) {
         </div>
       </div>
 
-      {/* Right column: Reserved (40%) */}
-      <div className="hidden lg:block w-[40%] border-l border-border" />
+      {/* Right column: Enterprise Donut (40%) */}
+      <div className="w-full lg:w-[40%] lg:border-l border-border lg:pl-6">
+        <EnterpriseDonut data={data} />
+      </div>
     </div>
   );
 }
