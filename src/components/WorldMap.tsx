@@ -15,11 +15,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 const GEO_URL = 'https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json';
 
-// ─── Bloomberg-style trade arc colors ───
-const EXPORT_CYAN = '#06B6D4';
-const EXPORT_CYAN_END = '#0891B2';
-const IMPORT_MAGENTA = '#EC4899';
-const IMPORT_MAGENTA_END = '#DB2777';
+// ─── New high-contrast trade arc colors ───
+const EXPORT_GREEN = '#10B981';
+const EXPORT_GREEN_END = '#059669';
+const IMPORT_RED = '#EF4444';
+const IMPORT_RED_END = '#DC2626';
+const MALAYSIA_HUB_COLOR = '#FBBF24';
 
 // ISO numeric → alpha-3
 const NUM_TO_ALPHA3: Record<string, string> = {
@@ -47,6 +48,56 @@ const NUM_TO_ALPHA3: Record<string, string> = {
   '804': 'UKR', '818': 'EGY', '826': 'GBR', '834': 'TZA', '840': 'USA',
   '854': 'BFA', '858': 'URY', '860': 'UZB', '862': 'VEN', '887': 'YEM',
   '894': 'ZMB', '716': 'ZWE', '048': 'BHR', '512': 'OMN',
+};
+
+// ─── Regional color assignments ───
+const REGION_MAP: Record<string, string> = {
+  // Asia — Teal
+  SGP: 'asia', CHN: 'asia', JPN: 'asia', THA: 'asia', KOR: 'asia', IND: 'asia',
+  TWN: 'asia', HKG: 'asia', PHL: 'asia', VNM: 'asia', IDN: 'asia', BGD: 'asia',
+  PAK: 'asia', LKA: 'asia', MMR: 'asia', KHM: 'asia', BRN: 'asia', MYS: 'asia',
+  MNG: 'asia', LAO: 'asia', MAC: 'asia', NPL: 'asia', BTN: 'asia', AFG: 'asia',
+  // Middle East — Yellow/Amber
+  ARE: 'middleeast', SAU: 'middleeast', QAT: 'middleeast', KWT: 'middleeast',
+  BHR: 'middleeast', OMN: 'middleeast', IRQ: 'middleeast', IRN: 'middleeast',
+  ISR: 'middleeast', JOR: 'middleeast', SYR: 'middleeast', LBN: 'middleeast',
+  YEM: 'middleeast',
+  // Europe — Blue
+  DEU: 'europe', GBR: 'europe', FRA: 'europe', ITA: 'europe', NLD: 'europe',
+  BEL: 'europe', ESP: 'europe', CHE: 'europe', TUR: 'europe', RUS: 'europe',
+  POL: 'europe', SWE: 'europe', PRT: 'europe', AUT: 'europe', IRL: 'europe',
+  CZE: 'europe', HUN: 'europe', ROU: 'europe', GRC: 'europe', DNK: 'europe',
+  NOR: 'europe', FIN: 'europe', BGR: 'europe', HRV: 'europe', SVK: 'europe',
+  SVN: 'europe', EST: 'europe', LTU: 'europe', LUX: 'europe', ISL: 'europe',
+  CYP: 'europe', UKR: 'europe', ALB: 'europe',
+  // Africa — Green
+  ZAF: 'africa', NGA: 'africa', EGY: 'africa', KEN: 'africa', GHA: 'africa',
+  DZA: 'africa', AGO: 'africa', CMR: 'africa', ETH: 'africa', TZA: 'africa',
+  MOZ: 'africa', UGA: 'africa', COD: 'africa', NAM: 'africa', ZMB: 'africa',
+  ZWE: 'africa', BFA: 'africa', MLI: 'africa', SEN: 'africa', SYC: 'africa',
+  LBY: 'africa', TUN: 'africa', MAR: 'africa',
+  // North America — Red
+  USA: 'namerica', CAN: 'namerica', MEX: 'namerica', CUB: 'namerica',
+  JAM: 'namerica', TTO: 'namerica', HTI: 'namerica', GTM: 'namerica',
+  HND: 'namerica', CRI: 'namerica', PAN: 'namerica',
+  // South America — Purple
+  BRA: 'samerica', ARG: 'samerica', CHL: 'samerica', COL: 'samerica',
+  PER: 'samerica', ECU: 'samerica', VEN: 'samerica', URY: 'samerica',
+  BOL: 'samerica', PRY: 'samerica', SUR: 'samerica',
+  // Oceania — Orange
+  AUS: 'oceania', NZL: 'oceania', PNG: 'oceania',
+  // Central Asia
+  UZB: 'asia',
+};
+
+const REGION_COLORS: Record<string, { light: string; dark: string }> = {
+  asia:       { light: '#0D9488', dark: '#14B8A6' },
+  middleeast: { light: '#D97706', dark: '#F59E0B' },
+  europe:     { light: '#2563EB', dark: '#3B82F6' },
+  africa:     { light: '#16A34A', dark: '#22C55E' },
+  namerica:   { light: '#DC2626', dark: '#EF4444' },
+  samerica:   { light: '#7C3AED', dark: '#8B5CF6' },
+  oceania:    { light: '#EA580C', dark: '#F97316' },
 };
 
 // ─── Country centroid coordinates ───
@@ -153,6 +204,12 @@ function formatRM(value: number): string {
   return `RM ${value.toLocaleString()}`;
 }
 
+function getRegionFill(alpha3: string, isDark: boolean): string {
+  const region = REGION_MAP[alpha3];
+  if (!region) return isDark ? '#334155' : '#D1D5DB';
+  return isDark ? REGION_COLORS[region].dark : REGION_COLORS[region].light;
+}
+
 type TradeViewMode = 'all' | 'export' | 'import';
 
 export default function WorldMap({ destinations, allCountries }: WorldMapProps) {
@@ -166,7 +223,6 @@ export default function WorldMap({ destinations, allCountries }: WorldMapProps) 
   const [tradeView, setTradeView] = useState<TradeViewMode>('all');
   const [isDark, setIsDark] = useState(false);
 
-  // Reactively detect dark mode
   useEffect(() => {
     const check = () => setIsDark(document.documentElement.classList.contains('dark'));
     check();
@@ -231,30 +287,29 @@ export default function WorldMap({ destinations, allCountries }: WorldMapProps) 
   const showExport = tradeView === 'all' || tradeView === 'export';
   const showImport = tradeView === 'all' || tradeView === 'import';
 
-  // Theme colors
-  const oceanColor = isDark ? '#0F172A' : '#0077B6';
-  const landColor = isDark ? '#1E293B' : '#F8FAFC';
-  const landStroke = isDark ? '#334155' : '#CBD5E1';
+  // Very Light Azure Blue ocean
+  const oceanColor = isDark ? '#0F172A' : '#BFDBFE';
+  const borderColor = isDark ? '#1F2937' : '#374151';
   const labelColor = isDark ? '#FFFFFF' : '#1E293B';
 
   return (
-    <div className="relative w-full overflow-hidden rounded-xl border border-border" style={{ aspectRatio: '21/9', minHeight: 380, background: isDark ? '#111827' : '#E0F2FE' }}>
+    <div className="relative w-full overflow-hidden rounded-xl border border-border" style={{ aspectRatio: '21/9', minHeight: 380, background: isDark ? '#111827' : '#DBEAFE' }}>
       {/* ─── SVG Defs ─── */}
       <svg width="0" height="0" className="absolute">
         <defs>
           <linearGradient id="bmb-export-grad" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor={EXPORT_CYAN} />
-            <stop offset="100%" stopColor={EXPORT_CYAN_END} />
+            <stop offset="0%" stopColor={EXPORT_GREEN} />
+            <stop offset="100%" stopColor={EXPORT_GREEN_END} />
           </linearGradient>
           <linearGradient id="bmb-import-grad" x1="100%" y1="0%" x2="0%" y2="0%">
-            <stop offset="0%" stopColor={IMPORT_MAGENTA} />
-            <stop offset="100%" stopColor={IMPORT_MAGENTA_END} />
+            <stop offset="0%" stopColor={IMPORT_RED} />
+            <stop offset="100%" stopColor={IMPORT_RED_END} />
           </linearGradient>
-          <filter id="bmb-glow-cyan">
+          <filter id="bmb-glow-green">
             <feGaussianBlur stdDeviation="3" result="blur" />
             <feComposite in="SourceGraphic" in2="blur" operator="over" />
           </filter>
-          <filter id="bmb-glow-magenta">
+          <filter id="bmb-glow-red">
             <feGaussianBlur stdDeviation="3" result="blur" />
             <feComposite in="SourceGraphic" in2="blur" operator="over" />
           </filter>
@@ -272,8 +327,8 @@ export default function WorldMap({ destinations, allCountries }: WorldMapProps) 
             onClick={() => setSearchOpen(!searchOpen)}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg backdrop-blur-md border text-xs font-medium shadow-lg transition-colors"
             style={{
-              background: isDark ? 'rgba(15,23,42,0.85)' : 'rgba(255,255,255,0.9)',
-              borderColor: isDark ? '#334155' : '#CBD5E1',
+              background: isDark ? 'rgba(15,23,42,0.9)' : 'rgba(255,255,255,0.95)',
+              borderColor: isDark ? '#334155' : '#94A3B8',
               color: labelColor,
             }}
           >
@@ -297,16 +352,16 @@ export default function WorldMap({ destinations, allCountries }: WorldMapProps) 
                 </div>
                 <div className="max-h-56 overflow-y-auto">
                   <button onClick={() => { handleReset(); setSearchOpen(false); }}
-                    className="w-full text-left px-3 py-1.5 text-xs transition-colors hover:bg-[#06B6D4]/10"
+                    className="w-full text-left px-3 py-1.5 text-xs transition-colors hover:bg-accent/20"
                     style={{ color: isDark ? '#94A3B8' : '#64748B' }}
                   >
                     {t('allCountries')}
                   </button>
                   {countryList.map(c => (
                     <button key={c.code} onClick={() => handleCountrySelect(c.code)}
-                      className="w-full text-left px-3 py-1.5 text-xs flex items-center justify-between gap-2 transition-colors hover:bg-[#06B6D4]/10"
+                      className="w-full text-left px-3 py-1.5 text-xs flex items-center justify-between gap-2 transition-colors hover:bg-accent/20"
                       style={{
-                        color: selectedCountry === c.code ? EXPORT_CYAN : labelColor,
+                        color: selectedCountry === c.code ? EXPORT_GREEN : labelColor,
                         fontWeight: selectedCountry === c.code ? 600 : 400,
                       }}
                     >
@@ -321,7 +376,7 @@ export default function WorldMap({ destinations, allCountries }: WorldMapProps) 
         </div>
       </div>
 
-      {/* ─── Top-Right: Zoom & Reset (Bilingual) ─── */}
+      {/* ─── Top-Right: Zoom & Reset ─── */}
       <div className="absolute top-3 right-3 z-20 flex flex-col gap-1">
         {[
           { action: handleZoomIn, icon: <ZoomIn className="w-4 h-4" />, tip: lang === 'bm' ? 'Zum Masuk' : 'Zoom In' },
@@ -331,8 +386,8 @@ export default function WorldMap({ destinations, allCountries }: WorldMapProps) 
           <button key={i} onClick={btn.action} title={btn.tip}
             className="w-8 h-8 rounded-lg backdrop-blur-md border flex items-center justify-center shadow-lg transition-all hover:scale-105"
             style={{
-              background: isDark ? 'rgba(15,23,42,0.85)' : 'rgba(255,255,255,0.9)',
-              borderColor: isDark ? '#334155' : '#CBD5E1',
+              background: isDark ? 'rgba(15,23,42,0.9)' : 'rgba(255,255,255,0.95)',
+              borderColor: isDark ? '#334155' : '#94A3B8',
               color: labelColor,
             }}
           >
@@ -343,12 +398,12 @@ export default function WorldMap({ destinations, allCountries }: WorldMapProps) 
 
       {/* ─── Top-Center: Trade Type Toggle ─── */}
       <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20 flex gap-0.5 rounded-lg p-1 shadow-lg backdrop-blur-md border"
-        style={{ background: isDark ? 'rgba(15,23,42,0.9)' : 'rgba(255,255,255,0.92)', borderColor: isDark ? '#334155' : '#CBD5E1' }}
+        style={{ background: isDark ? 'rgba(15,23,42,0.9)' : 'rgba(255,255,255,0.95)', borderColor: isDark ? '#334155' : '#94A3B8' }}
       >
         {([
-          { key: 'all' as TradeViewMode, label: lang === 'bm' ? 'Semua' : 'All', color: '#8B5CF6' },
-          { key: 'export' as TradeViewMode, label: lang === 'bm' ? 'Eksport' : 'Export', color: EXPORT_CYAN },
-          { key: 'import' as TradeViewMode, label: lang === 'bm' ? 'Import' : 'Import', color: IMPORT_MAGENTA },
+          { key: 'all' as TradeViewMode, label: lang === 'bm' ? 'Semua' : 'All', color: '#6366F1' },
+          { key: 'export' as TradeViewMode, label: lang === 'bm' ? 'Eksport' : 'Export', color: EXPORT_GREEN },
+          { key: 'import' as TradeViewMode, label: lang === 'bm' ? 'Import' : 'Import', color: IMPORT_RED },
         ]).map(opt => (
           <button key={opt.key} onClick={() => setTradeView(opt.key)}
             className="px-3 py-1 rounded-md text-[10px] font-bold tracking-wide transition-all"
@@ -370,7 +425,7 @@ export default function WorldMap({ destinations, allCountries }: WorldMapProps) 
             initial={{ opacity: 0, y: 8, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
             className="absolute bottom-14 left-1/2 -translate-x-1/2 z-30 rounded-xl shadow-2xl px-5 py-4 min-w-[280px] border"
             style={{
-              background: isDark ? 'rgba(15,23,42,0.95)' : 'rgba(255,255,255,0.97)',
+              background: isDark ? 'rgba(15,23,42,0.96)' : 'rgba(255,255,255,0.97)',
               borderColor: isDark ? '#334155' : '#E2E8F0',
               backdropFilter: 'blur(16px)',
             }}
@@ -383,11 +438,11 @@ export default function WorldMap({ destinations, allCountries }: WorldMapProps) 
                 <span className="text-[11px]" style={{ color: isDark ? '#CBD5E1' : '#475569' }}>
                   {lang === 'bm' ? 'Jumlah Dagangan' : 'Total Trade'}
                 </span>
-                <span className="text-sm font-bold" style={{ color: EXPORT_CYAN }}>{formatRM(normalizedDest[hoveredCountry].value)}</span>
+                <span className="text-sm font-bold" style={{ color: isDark ? '#FFFFFF' : '#0F172A' }}>{formatRM(normalizedDest[hoveredCountry].value)}</span>
               </div>
               <div className="flex gap-4">
                 <div className="flex items-center gap-1.5">
-                  <div className="w-2 h-2 rounded-full" style={{ background: EXPORT_CYAN }} />
+                  <div className="w-2 h-2 rounded-full" style={{ background: EXPORT_GREEN }} />
                   <span className="text-[10px]" style={{ color: isDark ? '#94A3B8' : '#64748B' }}>
                     {lang === 'bm' ? 'Eksport' : 'Export'}
                   </span>
@@ -396,7 +451,7 @@ export default function WorldMap({ destinations, allCountries }: WorldMapProps) 
                   </span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <div className="w-2 h-2 rounded-full" style={{ background: IMPORT_MAGENTA }} />
+                  <div className="w-2 h-2 rounded-full" style={{ background: IMPORT_RED }} />
                   <span className="text-[10px]" style={{ color: isDark ? '#94A3B8' : '#64748B' }}>
                     {lang === 'bm' ? 'Import' : 'Import'}
                   </span>
@@ -418,35 +473,47 @@ export default function WorldMap({ destinations, allCountries }: WorldMapProps) 
 
       {/* ─── Legend ─── */}
       <div className="absolute bottom-3 right-3 z-10 rounded-lg border px-3 py-2 backdrop-blur-md"
-        style={{ background: isDark ? 'rgba(15,23,42,0.85)' : 'rgba(255,255,255,0.9)', borderColor: isDark ? '#334155' : '#CBD5E1' }}
+        style={{ background: isDark ? 'rgba(15,23,42,0.9)' : 'rgba(255,255,255,0.95)', borderColor: isDark ? '#334155' : '#94A3B8' }}
       >
         <div className="flex items-center gap-4" style={{ fontSize: 10 }}>
           <div className="flex items-center gap-1.5">
-            <div className="w-6 h-1 rounded-full" style={{ background: `linear-gradient(90deg, ${EXPORT_CYAN}, ${EXPORT_CYAN_END})`, boxShadow: `0 0 6px ${EXPORT_CYAN}66` }} />
-            <span style={{ color: isDark ? '#FFFFFF' : '#475569', fontWeight: 600 }}>{lang === 'bm' ? 'Eksport' : 'Export'}</span>
+            <div className="w-6 h-1 rounded-full" style={{ background: `linear-gradient(90deg, ${EXPORT_GREEN}, ${EXPORT_GREEN_END})`, boxShadow: `0 0 6px ${EXPORT_GREEN}66` }} />
+            <span style={{ color: isDark ? '#FFFFFF' : '#1E293B', fontWeight: 600 }}>{lang === 'bm' ? 'Eksport' : 'Export'}</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <div className="w-6 h-1 rounded-full" style={{ background: `linear-gradient(90deg, ${IMPORT_MAGENTA}, ${IMPORT_MAGENTA_END})`, boxShadow: `0 0 6px ${IMPORT_MAGENTA}66` }} />
-            <span style={{ color: isDark ? '#FFFFFF' : '#475569', fontWeight: 600 }}>{lang === 'bm' ? 'Import' : 'Import'}</span>
+            <div className="w-6 h-1 rounded-full" style={{ background: `linear-gradient(90deg, ${IMPORT_RED}, ${IMPORT_RED_END})`, boxShadow: `0 0 6px ${IMPORT_RED}66` }} />
+            <span style={{ color: isDark ? '#FFFFFF' : '#1E293B', fontWeight: 600 }}>{lang === 'bm' ? 'Import' : 'Import'}</span>
           </div>
         </div>
       </div>
 
-      {/* ─── Compass Rose (N/S/E/W) ─── */}
-      <div className="absolute bottom-3 left-3 z-10" style={{ opacity: 0.55 }}>
-        <svg width="52" height="52" viewBox="0 0 52 52" fill="none">
-          <circle cx="26" cy="26" r="24" stroke={isDark ? '#475569' : '#94A3B8'} strokeWidth="0.6" />
-          <circle cx="26" cy="26" r="16" stroke={isDark ? '#334155' : '#CBD5E1'} strokeWidth="0.3" strokeDasharray="2 2" />
-          <polygon points="26,4 23,21 29,21" fill={isDark ? '#FFFFFF' : '#1E293B'} opacity="0.8" />
-          <polygon points="26,4 23,21 26,18" fill={isDark ? '#94A3B8' : '#64748B'} opacity="0.5" />
-          <polygon points="26,48 23,31 29,31" fill={isDark ? '#475569' : '#94A3B8'} opacity="0.4" />
-          <polygon points="48,26 31,23 31,29" fill={isDark ? '#475569' : '#94A3B8'} opacity="0.4" />
-          <polygon points="4,26 21,23 21,29" fill={isDark ? '#475569' : '#94A3B8'} opacity="0.4" />
-          <circle cx="26" cy="26" r="1.5" fill={isDark ? '#FFFFFF' : '#1E293B'} opacity="0.5" />
-          <text x="26" y="2.5" textAnchor="middle" fill={isDark ? '#FFFFFF' : '#1E293B'} style={{ fontSize: '7px', fontWeight: 700, fontFamily: 'system-ui' }}>N</text>
-          <text x="26" y="51.5" textAnchor="middle" fill={isDark ? '#94A3B8' : '#64748B'} style={{ fontSize: '6px', fontWeight: 600, fontFamily: 'system-ui' }}>S</text>
-          <text x="51" y="27.5" textAnchor="middle" fill={isDark ? '#94A3B8' : '#64748B'} style={{ fontSize: '6px', fontWeight: 600, fontFamily: 'system-ui' }}>E</text>
-          <text x="1" y="27.5" textAnchor="middle" fill={isDark ? '#94A3B8' : '#64748B'} style={{ fontSize: '6px', fontWeight: 600, fontFamily: 'system-ui' }}>W</text>
+      {/* ─── Compass Rose (Bold, Bilingual N/S/E/W) ─── */}
+      <div className="absolute bottom-3 left-3 z-10">
+        <svg width="68" height="68" viewBox="0 0 68 68" fill="none">
+          {/* Outer ring */}
+          <circle cx="34" cy="34" r="30" stroke={isDark ? '#FFFFFF' : '#000000'} strokeWidth="1.2" opacity="0.6" />
+          <circle cx="34" cy="34" r="20" stroke={isDark ? '#FFFFFF' : '#000000'} strokeWidth="0.4" strokeDasharray="3 3" opacity="0.3" />
+          {/* North pointer (dark, bold) */}
+          <polygon points="34,6 30,28 38,28" fill={isDark ? '#FFFFFF' : '#000000'} opacity="0.9" />
+          <polygon points="34,6 30,28 34,24" fill={isDark ? '#94A3B8' : '#6B7280'} opacity="0.5" />
+          {/* South */}
+          <polygon points="34,62 30,40 38,40" fill={isDark ? '#9CA3AF' : '#6B7280'} opacity="0.5" />
+          {/* East */}
+          <polygon points="62,34 40,30 40,38" fill={isDark ? '#9CA3AF' : '#6B7280'} opacity="0.5" />
+          {/* West */}
+          <polygon points="6,34 28,30 28,38" fill={isDark ? '#9CA3AF' : '#6B7280'} opacity="0.5" />
+          {/* Center dot */}
+          <circle cx="34" cy="34" r="2" fill={isDark ? '#FFFFFF' : '#000000'} opacity="0.7" />
+          {/* Labels — Bilingual */}
+          <text x="34" y="4" textAnchor="middle" fill={isDark ? '#FFFFFF' : '#000000'} style={{ fontSize: '7px', fontWeight: 800, fontFamily: 'system-ui' }}>N</text>
+          <text x="34" y="67.5" textAnchor="middle" fill={isDark ? '#D1D5DB' : '#374151'} style={{ fontSize: '7px', fontWeight: 700, fontFamily: 'system-ui' }}>S</text>
+          <text x="66" y="36" textAnchor="middle" fill={isDark ? '#D1D5DB' : '#374151'} style={{ fontSize: '7px', fontWeight: 700, fontFamily: 'system-ui' }}>E</text>
+          <text x="2" y="36" textAnchor="middle" fill={isDark ? '#D1D5DB' : '#374151'} style={{ fontSize: '7px', fontWeight: 700, fontFamily: 'system-ui' }}>W</text>
+          {/* BM sub-labels */}
+          <text x="34" y="10" textAnchor="middle" fill={isDark ? '#9CA3AF' : '#6B7280'} style={{ fontSize: '4px', fontWeight: 500, fontFamily: 'system-ui' }}>Utara</text>
+          <text x="34" y="63" textAnchor="middle" fill={isDark ? '#9CA3AF' : '#6B7280'} style={{ fontSize: '4px', fontWeight: 500, fontFamily: 'system-ui' }}>Selatan</text>
+          <text x="60" y="39" textAnchor="middle" fill={isDark ? '#9CA3AF' : '#6B7280'} style={{ fontSize: '4px', fontWeight: 500, fontFamily: 'system-ui' }}>Timur</text>
+          <text x="8" y="39" textAnchor="middle" fill={isDark ? '#9CA3AF' : '#6B7280'} style={{ fontSize: '4px', fontWeight: 500, fontFamily: 'system-ui' }}>Barat</text>
         </svg>
       </div>
 
@@ -461,13 +528,13 @@ export default function WorldMap({ destinations, allCountries }: WorldMapProps) 
           onMoveEnd={({ coordinates, zoom: z }) => { setCenter(coordinates as [number, number]); setZoom(z); }}
           minZoom={1} maxZoom={8}
         >
-          {/* Ocean */}
+          {/* Ocean — Very Light Azure */}
           <rect x={-1200} y={-700} width={3500} height={2000} fill={oceanColor} />
 
-          {/* Graticule */}
-          <Graticule stroke={isDark ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.35)'} strokeWidth={0.3} strokeDasharray="4 4" />
+          {/* Graticule — subtle */}
+          <Graticule stroke={isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.08)'} strokeWidth={0.3} strokeDasharray="4 4" />
 
-          {/* Countries */}
+          {/* Countries — solid regional colors with crisp borders */}
           <Geographies geography={GEO_URL}>
             {({ geographies }) =>
               geographies.map(geo => {
@@ -477,27 +544,28 @@ export default function WorldMap({ destinations, allCountries }: WorldMapProps) 
                 const isDimmed = selectedCountry && alpha3 !== selectedCountry && alpha3 !== 'MYS';
                 const isMalaysia = alpha3 === 'MYS';
 
-                let fill = landColor;
-                if (isMalaysia) fill = EXPORT_CYAN;
-                else if (isSelected) fill = isDark ? '#3B82F6' : '#2563EB';
+                let fill = getRegionFill(alpha3 || '', isDark);
+                if (isMalaysia) fill = MALAYSIA_HUB_COLOR;
+                else if (isSelected) fill = isDark ? '#60A5FA' : '#2563EB';
 
                 return (
                   <Geography
                     key={geo.rsmKey}
                     geography={geo}
                     fill={fill}
-                    stroke={isDark ? '#475569' : '#94A3B8'}
-                    strokeWidth={0.4}
-                    opacity={isDimmed ? 0.25 : 1}
+                    stroke={isDark ? '#111827' : '#374151'}
+                    strokeWidth={0.5}
+                    opacity={isDimmed ? 0.2 : 0.92}
                     onMouseEnter={() => { if (alpha3 && normalizedDest[alpha3]) setHoveredCountry(alpha3); }}
                     onMouseLeave={() => setHoveredCountry(null)}
                     style={{
                       default: { outline: 'none', transition: 'all 0.3s ease' },
                       hover: {
-                        fill: alpha3 && normalizedDest[alpha3] ? (isDark ? '#0EA5E9' : '#0284C7') : fill,
+                        fill: alpha3 && normalizedDest[alpha3] ? (isDark ? '#F59E0B' : '#F59E0B') : fill,
                         outline: 'none',
                         cursor: alpha3 && normalizedDest[alpha3] ? 'pointer' : 'default',
-                        strokeWidth: 0.6,
+                        strokeWidth: 0.8,
+                        opacity: 1,
                       },
                       pressed: { outline: 'none' },
                     }}
@@ -510,37 +578,35 @@ export default function WorldMap({ destinations, allCountries }: WorldMapProps) 
           {/* ─── Dimmed ghost arcs ─── */}
           {dimmedDest.map(([code]) => (
             <Line key={`dim-${code}`} from={MALAYSIA_COORDS} to={COUNTRY_COORDS[code]}
-              stroke={isDark ? '#1E293B' : '#CBD5E1'} strokeWidth={0.4} strokeOpacity={0.15} strokeLinecap="round" />
+              stroke={isDark ? '#1E293B' : '#94A3B8'} strokeWidth={0.4} strokeOpacity={0.12} strokeLinecap="round" />
           ))}
 
-          {/* ─── EXPORT arcs (Cyan, Malaysia → Country) ─── */}
+          {/* ─── EXPORT arcs (Green, Malaysia → Country) ─── */}
           {showExport && visibleDest.filter(([, d]) => d.exportValue > 0).map(([code, data]) => (
             <React.Fragment key={`exp-${code}`}>
-              {/* Glow layer */}
               <Line from={MALAYSIA_COORDS} to={COUNTRY_COORDS[code]}
-                stroke={EXPORT_CYAN} strokeWidth={getArcWidth(data.exportValue) + 3}
+                stroke={EXPORT_GREEN} strokeWidth={getArcWidth(data.exportValue) + 3}
                 strokeOpacity={0.08} strokeLinecap="round" />
-              {/* Main arc */}
               <Line from={MALAYSIA_COORDS} to={COUNTRY_COORDS[code]}
                 stroke="url(#bmb-export-grad)" strokeWidth={getArcWidth(data.exportValue)}
-                strokeOpacity={0.8} strokeLinecap="round" strokeDasharray="6 4"
+                strokeOpacity={0.85} strokeLinecap="round" strokeDasharray="6 4"
               >
                 <animate attributeName="stroke-dashoffset" from="0" to="-20" dur="1.2s" repeatCount="indefinite" />
               </Line>
             </React.Fragment>
           ))}
 
-          {/* ─── IMPORT arcs (Magenta, Country → Malaysia) ─── */}
+          {/* ─── IMPORT arcs (Red, Country → Malaysia) ─── */}
           {showImport && visibleDest.filter(([, d]) => d.importValue > 0).map(([code, data]) => {
             const to = COUNTRY_COORDS[code];
             return (
               <React.Fragment key={`imp-${code}`}>
                 <Line from={[to[0] + 0.8, to[1] - 0.5]} to={MALAYSIA_COORDS}
-                  stroke={IMPORT_MAGENTA} strokeWidth={getArcWidth(data.importValue) + 3}
+                  stroke={IMPORT_RED} strokeWidth={getArcWidth(data.importValue) + 3}
                   strokeOpacity={0.06} strokeLinecap="round" />
                 <Line from={[to[0] + 0.8, to[1] - 0.5]} to={MALAYSIA_COORDS}
                   stroke="url(#bmb-import-grad)" strokeWidth={getArcWidth(data.importValue)}
-                  strokeOpacity={0.75} strokeLinecap="round" strokeDasharray="4 5"
+                  strokeOpacity={0.8} strokeLinecap="round" strokeDasharray="4 5"
                 >
                   <animate attributeName="stroke-dashoffset" from="0" to="-18" dur="1.8s" repeatCount="indefinite" />
                 </Line>
@@ -553,8 +619,8 @@ export default function WorldMap({ destinations, allCountries }: WorldMapProps) 
             const hasExp = data.exportValue > 0 && showExport;
             const hasImp = data.importValue > 0 && showImport;
             const dotColor = hasExp && hasImp
-              ? (data.exportValue >= data.importValue ? EXPORT_CYAN : IMPORT_MAGENTA)
-              : hasExp ? EXPORT_CYAN : IMPORT_MAGENTA;
+              ? (data.exportValue >= data.importValue ? EXPORT_GREEN : IMPORT_RED)
+              : hasExp ? EXPORT_GREEN : IMPORT_RED;
             return (
               <Marker key={`dot-${code}`} coordinates={COUNTRY_COORDS[code]}>
                 <circle r={3.5 / zoom} fill={dotColor} opacity={0.9}>
@@ -568,14 +634,14 @@ export default function WorldMap({ destinations, allCountries }: WorldMapProps) 
 
           {/* ─── Malaysia hub ─── */}
           <Marker coordinates={MALAYSIA_COORDS}>
-            <circle r={22 / zoom} fill={EXPORT_CYAN} opacity={0.05} filter="url(#bmb-hub-glow)">
+            <circle r={22 / zoom} fill={MALAYSIA_HUB_COLOR} opacity={0.06} filter="url(#bmb-hub-glow)">
               <animate attributeName="r" values={`${22 / zoom};${30 / zoom};${22 / zoom}`} dur="4s" repeatCount="indefinite" />
             </circle>
-            <circle r={12 / zoom} fill="none" stroke={EXPORT_CYAN} strokeWidth={1.2 / zoom} opacity={0.25}>
+            <circle r={12 / zoom} fill="none" stroke={MALAYSIA_HUB_COLOR} strokeWidth={1.2 / zoom} opacity={0.25}>
               <animate attributeName="r" values={`${12 / zoom};${18 / zoom};${12 / zoom}`} dur="3s" repeatCount="indefinite" />
               <animate attributeName="opacity" values="0.25;0.05;0.25" dur="3s" repeatCount="indefinite" />
             </circle>
-            <circle r={5 / zoom} fill={EXPORT_CYAN} filter="url(#bmb-hub-glow)" opacity={0.9} />
+            <circle r={5 / zoom} fill={MALAYSIA_HUB_COLOR} filter="url(#bmb-hub-glow)" opacity={0.9} />
             <text textAnchor="middle" y={-10 / zoom}
               style={{ fontSize: `${11 / zoom}px`, fontWeight: 800, fill: isDark ? '#FFFFFF' : '#0F172A', fontFamily: 'system-ui' }}
             >
@@ -593,7 +659,7 @@ export default function WorldMap({ destinations, allCountries }: WorldMapProps) 
                   fontSize: `${hoveredCountry === code ? 8.5 : 6.5}px`,
                   fill: isDark ? '#FFFFFF' : '#1E293B',
                   fontWeight: hoveredCountry === code ? 700 : 500,
-                  opacity: hoveredCountry === code ? 1 : 0.75,
+                  opacity: hoveredCountry === code ? 1 : 0.8,
                   transition: 'all 0.2s',
                   pointerEvents: 'none',
                   fontFamily: 'system-ui',
