@@ -35,7 +35,7 @@ function SectionHeader({ title, description, icon: Icon }: { title: string; desc
 }
 
 export default function Overview() {
-  const { filteredData, isLoading } = useFilters();
+  const { filteredData, allData, isLoading } = useFilters();
   const { t } = useLanguage();
   const [trendMode, setTrendMode] = useState<'yearly' | 'monthly'>('yearly');
 
