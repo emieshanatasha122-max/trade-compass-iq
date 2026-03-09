@@ -50,10 +50,10 @@ interface SITCItem { code: string; num: number; total: number; topState: string;
 // Radar geometry
 const CX = 350;
 const CY = 350;
-const R_MAX = 280;
+const R_MAX = 260;
 const R_GRID = [0.2, 0.4, 0.6, 0.8, 1.0];
-const LABEL_R = R_MAX + 38;
-const ICON_R = R_MAX + 16;
+const LABEL_R = R_MAX + 52;
+const ICON_R = R_MAX + 28;
 const SVG_SIZE = CX * 2;
 
 function polarToXY(angle: number, r: number): [number, number] {
