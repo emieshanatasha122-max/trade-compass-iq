@@ -483,9 +483,11 @@ export default function WorldMap({ destinations, allCountries }: WorldMapProps) 
 
       {/* ─── Map ─── */}
       <ComposableMap
-        projection="geoNaturalEarth1"
-        projectionConfig={{ scale: 148 }}
-        style={{ width: '100%', height: '100%', minHeight: 480 }}
+        projection="geoEqualEarth"
+        projectionConfig={{ scale: 160, center: [0, 0] }}
+        style={{ width: '100%', height: '100%' }}
+        width={900}
+        height={460}
       >
         <ZoomableGroup
           zoom={zoom}
