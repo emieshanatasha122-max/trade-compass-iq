@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
-import type { TradeRecord } from '@/data/mockTradeData';
+import type { TradeRecord } from '@/data/tradeDataLoader';
 import { motion } from 'framer-motion';
 
 // Map state names to their official flag file paths in public/flags/
