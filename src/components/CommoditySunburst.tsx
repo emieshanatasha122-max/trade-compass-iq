@@ -154,134 +154,135 @@ export default function CommoditySunburst({ data }: Props) {
   }));
 
   return (
-    <div className="flex justify-center">
-      <div className="relative w-full max-w-[780px]">
-        <svg viewBox={`0 0 ${SVG_SIZE} ${SVG_SIZE}`} className="w-full h-auto">
-          {/* Concentric grid circles */}
-          {R_GRID.map((pct, i) => (
-            <circle
-              key={i}
-              cx={CX} cy={CY}
-              r={R_MAX * pct}
-              fill="none"
-              stroke="hsl(var(--border))"
-              strokeWidth={i === R_GRID.length - 1 ? 1 : 0.5}
-              strokeDasharray={i < R_GRID.length - 1 ? '4 4' : 'none'}
-              opacity={0.45}
-            />
-          ))}
-
-          {/* Axis lines */}
-          {sitcItems.map((_, i) => {
-            const angle = i * angleStep;
-            const [x, y] = polarToXY(angle, R_MAX);
-            return (
-              <line
+    <div className="flex flex-col lg:flex-row gap-6">
+      {/* Left column: Radar Chart (60%) */}
+      <div className="w-full lg:w-[60%]">
+        <div className="relative w-full max-w-[520px] mx-auto">
+          <svg viewBox={`0 0 ${SVG_SIZE} ${SVG_SIZE}`} className="w-full h-auto">
+            {/* Concentric grid circles */}
+            {R_GRID.map((pct, i) => (
+              <circle
                 key={i}
-                x1={CX} y1={CY} x2={x} y2={y}
+                cx={CX} cy={CY}
+                r={R_MAX * pct}
+                fill="none"
                 stroke="hsl(var(--border))"
-                strokeWidth={0.5}
-                opacity={0.35}
+                strokeWidth={i === R_GRID.length - 1 ? 1 : 0.5}
+                strokeDasharray={i < R_GRID.length - 1 ? '4 4' : 'none'}
+                opacity={0.45}
               />
-            );
-          })}
+            ))}
 
-          {/* Scale labels hidden for minimalist look - values shown in tooltips */}
+            {/* Axis lines */}
+            {sitcItems.map((_, i) => {
+              const angle = i * angleStep;
+              const [x, y] = polarToXY(angle, R_MAX);
+              return (
+                <line
+                  key={i}
+                  x1={CX} y1={CY} x2={x} y2={y}
+                  stroke="hsl(var(--border))"
+                  strokeWidth={0.5}
+                  opacity={0.35}
+                />
+              );
+            })}
 
-          {/* Data polygon */}
-          <motion.path
-            d={polygonPath}
-            fill="hsl(var(--primary) / 0.14)"
-            stroke="hsl(var(--primary))"
-            strokeWidth={2.5}
-            strokeLinejoin="round"
-            initial={{ opacity: 0, scale: 0.85 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5, ease: 'easeOut' }}
-            style={{ transformOrigin: `${CX}px ${CY}px` }}
-          />
-
-          {/* Data points */}
-          {dataPoints.map((dp, i) => (
-            <motion.circle
-              key={i}
-              cx={dp.x} cy={dp.y}
-              r={hoveredIdx === i ? 8 : 5}
-              fill={hoveredIdx === i ? 'hsl(var(--primary))' : 'hsl(var(--background))'}
+            {/* Data polygon */}
+            <motion.path
+              d={polygonPath}
+              fill="hsl(var(--primary) / 0.14)"
               stroke="hsl(var(--primary))"
               strokeWidth={2.5}
-              className="cursor-pointer"
-              initial={{ opacity: 0, scale: 0 }}
+              strokeLinejoin="round"
+              initial={{ opacity: 0, scale: 0.85 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.3, delay: 0.04 * i }}
-              onMouseEnter={() => setHoveredIdx(i)}
-              onMouseLeave={() => setHoveredIdx(null)}
+              transition={{ duration: 0.5, ease: 'easeOut' }}
+              style={{ transformOrigin: `${CX}px ${CY}px` }}
             />
-          ))}
 
-          {/* Axis icons + labels */}
-          {sitcItems.map((item, i) => {
-            const angle = i * angleStep;
-            const [ix, iy] = polarToXY(angle, ICON_R);
-            const [lx, ly] = polarToXY(angle, LABEL_R);
-            const isLeft = lx < CX - 30;
-            const isRight = lx > CX + 30;
-            const anchor = isLeft ? 'end' : isRight ? 'start' : 'middle';
-            const isHovered = hoveredIdx === i;
-            const Icon = SITC_ICONS[item.num] || Package;
-
-            return (
-              <g
+            {/* Data points */}
+            {dataPoints.map((dp, i) => (
+              <motion.circle
                 key={i}
+                cx={dp.x} cy={dp.y}
+                r={hoveredIdx === i ? 7 : 4.5}
+                fill={hoveredIdx === i ? 'hsl(var(--primary))' : 'hsl(var(--background))'}
+                stroke="hsl(var(--primary))"
+                strokeWidth={2}
                 className="cursor-pointer"
+                initial={{ opacity: 0, scale: 0 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.3, delay: 0.04 * i }}
                 onMouseEnter={() => setHoveredIdx(i)}
                 onMouseLeave={() => setHoveredIdx(null)}
-              >
-                {/* Icon background circle */}
-                <circle
-                  cx={ix} cy={iy} r={14}
-                  fill={isHovered ? 'hsl(var(--primary) / 0.12)' : 'hsl(var(--secondary) / 0.5)'}
-                  stroke={isHovered ? 'hsl(var(--primary))' : 'hsl(var(--border))'}
-                  strokeWidth={1}
-                />
-                {/* Icon as foreignObject */}
-                <foreignObject x={ix - 9} y={iy - 9} width={18} height={18}>
-                  <div className="flex items-center justify-center w-full h-full">
-                    <Icon className={`w-3.5 h-3.5 ${isHovered ? 'text-primary' : 'text-muted-foreground'}`} />
-                  </div>
-                </foreignObject>
-                {/* Label */}
-                <text
-                  x={lx} y={ly}
-                  fontSize="13"
-                  fontWeight={isHovered ? 700 : 600}
-                  fill={isHovered ? 'hsl(var(--primary))' : 'hsl(var(--foreground))'}
-                  textAnchor={anchor}
-                  dominantBaseline="middle"
-                >
-                  {item.code}
-                </text>
-              </g>
-            );
-          })}
-        </svg>
+              />
+            ))}
 
-        {/* Tooltip */}
-        {hoveredIdx !== null && (() => {
-          const dp = dataPoints[hoveredIdx];
-          const pctX = (dp.x / SVG_SIZE) * 780;
-          const pctY = (dp.y / SVG_SIZE) * 780;
-          return (
-            <RadarTooltipCard
-              item={dp.item}
-              x={pctX}
-              y={pctY}
-              maxVal={maxVal}
-              t={t}
-            />
-          );
-        })()}
+            {/* Axis icons + labels */}
+            {sitcItems.map((item, i) => {
+              const angle = i * angleStep;
+              const [ix, iy] = polarToXY(angle, ICON_R);
+              const [lx, ly] = polarToXY(angle, LABEL_R);
+              const isLeft = lx < CX - 30;
+              const isRight = lx > CX + 30;
+              const anchor = isLeft ? 'end' : isRight ? 'start' : 'middle';
+              const isHovered = hoveredIdx === i;
+              const Icon = SITC_ICONS[item.num] || Package;
+
+              return (
+                <g
+                  key={i}
+                  className="cursor-pointer"
+                  onMouseEnter={() => setHoveredIdx(i)}
+                  onMouseLeave={() => setHoveredIdx(null)}
+                >
+                  <circle
+                    cx={ix} cy={iy} r={12}
+                    fill={isHovered ? 'hsl(var(--primary) / 0.12)' : 'hsl(var(--secondary) / 0.5)'}
+                    stroke={isHovered ? 'hsl(var(--primary))' : 'hsl(var(--border))'}
+                    strokeWidth={1}
+                  />
+                  <foreignObject x={ix - 7} y={iy - 7} width={14} height={14}>
+                    <div className="flex items-center justify-center w-full h-full">
+                      <Icon className={`w-3 h-3 ${isHovered ? 'text-primary' : 'text-muted-foreground'}`} />
+                    </div>
+                  </foreignObject>
+                  <text
+                    x={lx} y={ly}
+                    fontSize="11"
+                    fontWeight={isHovered ? 700 : 600}
+                    fill={isHovered ? 'hsl(var(--primary))' : 'hsl(var(--foreground))'}
+                    textAnchor={anchor}
+                    dominantBaseline="middle"
+                  >
+                    {item.code}
+                  </text>
+                </g>
+              );
+            })}
+          </svg>
+
+          {/* Tooltip */}
+          {hoveredIdx !== null && (() => {
+            const dp = dataPoints[hoveredIdx];
+            const pctX = (dp.x / SVG_SIZE) * 520;
+            const pctY = (dp.y / SVG_SIZE) * 520;
+            return (
+              <RadarTooltipCard
+                item={dp.item}
+                x={pctX}
+                y={pctY}
+                maxVal={maxVal}
+                t={t}
+              />
+            );
+          })()}
+        </div>
       </div>
+
+      {/* Right column: Reserved (40%) */}
+      <div className="hidden lg:block w-[40%] border-l border-border" />
     </div>
   );
 }
