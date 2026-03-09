@@ -14,6 +14,31 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 const GEO_URL = 'https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json';
 
+/* ── Region → color mapping ── */
+const REGION_COLORS: Record<string, string> = {
+  AFTA: 'hsl(175, 80%, 45%)',
+  ASEAN: 'hsl(175, 80%, 45%)',
+  EU: 'hsl(270, 65%, 58%)',
+  NAFTA: 'hsl(30, 85%, 55%)',
+  'ASIA TIMUR': 'hsl(210, 70%, 55%)',
+  'ASIA BARAT': 'hsl(340, 70%, 55%)',
+  'ASIA SELATAN': 'hsl(50, 75%, 50%)',
+  OCEANIA: 'hsl(145, 60%, 45%)',
+  AFRIKA: 'hsl(15, 75%, 50%)',
+  'AMERIKA SELATAN': 'hsl(290, 55%, 55%)',
+};
+const DEFAULT_ARC_COLOR = 'hsl(325, 70%, 55%)'; // vibrant pink fallback
+
+function getRegionColor(region?: string): string {
+  if (!region) return DEFAULT_ARC_COLOR;
+  const upper = region.toUpperCase();
+  for (const [key, color] of Object.entries(REGION_COLORS)) {
+    if (upper.includes(key)) return color;
+  }
+  return DEFAULT_ARC_COLOR;
+}
+
+/* ── Coordinates ── */
 const COUNTRY_COORDS: Record<string, [number, number]> = {
   SGP: [103.8, 1.35], CHN: [104.2, 35.9], USA: [-95.7, 37.1],
   JPN: [138.3, 36.2], THA: [100.5, 15.9], KOR: [127.8, 35.9],
@@ -27,7 +52,16 @@ const COUNTRY_COORDS: Record<string, [number, number]> = {
   TUR: [35.2, 38.9], RUS: [105.3, 61.5], POL: [19.1, 51.9],
   SWE: [18.6, 60.1], BGD: [90.4, 23.7], PAK: [69.3, 30.4],
   LKA: [80.8, 7.9], MMR: [96.0, 21.9], KHM: [105.0, 12.6],
-  BRN: [114.7, 4.9],
+  BRN: [114.7, 4.9], ZAF: [-22.9, -30.6], NGA: [8.7, 9.1],
+  EGY: [30.8, 26.8], KEN: [37.9, -0.0], GHA: [-1.0, 7.9],
+  CHL: [-71.5, -35.7], ARG: [-63.6, -38.4], COL: [-74.3, 4.6],
+  PER: [-75.0, -9.2], QAT: [51.2, 25.3], KWT: [47.5, 29.3],
+  BHR: [50.6, 26.0], OMN: [55.9, 21.5], IRQ: [43.7, 33.2],
+  IRN: [53.7, 32.4], ISR: [34.9, 31.0], JOR: [36.2, 30.6],
+  DNK: [9.5, 56.3], NOR: [8.5, 60.5], FIN: [25.7, 61.9],
+  PRT: [-8.2, 39.4], AUT: [14.6, 47.5], IRL: [-8.2, 53.4],
+  CZE: [15.5, 49.8], HUN: [19.5, 47.2], ROU: [24.9, 45.9],
+  GRC: [21.8, 39.1],
 };
 
 const COUNTRY_NAMES: Record<string, { bm: string; en: string }> = {
@@ -57,8 +91,16 @@ const NUM_TO_ALPHA3: Record<string, string> = {
   '484': 'MEX',
 };
 
+interface DestData {
+  value: number;
+  code: string;
+  topCommodity?: string;
+  kawasanEkonomi?: string;
+}
+
 interface WorldMapProps {
-  destinations: Record<string, { value: number; code: string; topCommodity?: string }>;
+  destinations: Record<string, DestData>;
+  allCountries: { code: string; name: string }[];
 }
 
 function formatRM(value: number): string {
@@ -69,7 +111,7 @@ function formatRM(value: number): string {
   return `RM ${value.toLocaleString()}`;
 }
 
-export default function WorldMap({ destinations }: WorldMapProps) {
+export default function WorldMap({ destinations, allCountries }: WorldMapProps) {
   const { lang, t } = useLanguage();
   const [zoom, setZoom] = useState(1);
   const [center, setCenter] = useState<[number, number]>([80, 10]);
@@ -80,10 +122,10 @@ export default function WorldMap({ destinations }: WorldMapProps) {
 
   // Normalize 2-letter codes to 3-letter
   const normalizedDest = useMemo(() => {
-    const result: Record<string, { value: number; code: string; topCommodity?: string }> = {};
+    const result: Record<string, DestData> = {};
     Object.entries(destinations).forEach(([code, data]) => {
       const alpha3 = ALPHA2_TO_ALPHA3[code] || code;
-      if (!result[alpha3]) result[alpha3] = { value: 0, code: alpha3, topCommodity: data.topCommodity };
+      if (!result[alpha3]) result[alpha3] = { value: 0, code: alpha3, topCommodity: data.topCommodity, kawasanEkonomi: data.kawasanEkonomi };
       result[alpha3].value += data.value;
     });
     return result;
@@ -98,25 +140,39 @@ export default function WorldMap({ destinations }: WorldMapProps) {
     return Object.entries(normalizedDest)
       .filter(([code]) => COUNTRY_COORDS[code])
       .sort((a, b) => b[1].value - a[1].value)
-      .slice(0, 12);
+      .slice(0, 15);
   }, [normalizedDest]);
 
-  // Country list for dropdown
+  // Full country list for dropdown — merge allCountries with map-able ones
   const countryList = useMemo(() => {
-    return topDest
-      .map(([code, data]) => ({
-        code,
-        name: COUNTRY_NAMES[code]?.[lang] || code,
-        value: data.value,
-      }))
-      .filter(c => !searchQuery || c.name.toLowerCase().includes(searchQuery.toLowerCase()));
-  }, [topDest, lang, searchQuery]);
+    // Start with all countries from data
+    const items = allCountries.map(c => {
+      const alpha3 = ALPHA2_TO_ALPHA3[c.code] || c.code;
+      return {
+        code: alpha3,
+        name: COUNTRY_NAMES[alpha3]?.[lang] || c.name || alpha3,
+        value: normalizedDest[alpha3]?.value || 0,
+        hasCoords: !!COUNTRY_COORDS[alpha3],
+      };
+    });
+    // Deduplicate by code
+    const seen = new Set<string>();
+    const unique = items.filter(c => {
+      if (seen.has(c.code) || c.code === 'MYS') return false;
+      seen.add(c.code);
+      return true;
+    });
+    // Filter by search
+    return unique
+      .filter(c => !searchQuery || c.name.toLowerCase().includes(searchQuery.toLowerCase()))
+      .sort((a, b) => b.value - a.value);
+  }, [allCountries, lang, searchQuery, normalizedDest]);
 
   const getCountryFill = (geoId: string) => {
     const alpha3 = NUM_TO_ALPHA3[geoId];
     if (alpha3 === 'MYS') return 'hsl(var(--primary))';
     if (alpha3 && normalizedDest[alpha3]) {
-      const intensity = Math.max(0.2, normalizedDest[alpha3].value / maxValue);
+      const intensity = Math.max(0.25, normalizedDest[alpha3].value / maxValue);
       return `hsla(187, 72%, 42%, ${intensity})`;
     }
     return 'hsl(var(--muted))';
@@ -131,7 +187,13 @@ export default function WorldMap({ destinations }: WorldMapProps) {
   };
 
   const handleCountrySelect = useCallback((code: string) => {
-    if (!COUNTRY_COORDS[code]) return;
+    if (!COUNTRY_COORDS[code]) {
+      // Country exists in data but no coords — just highlight in list
+      setSelectedCountry(code);
+      setSearchOpen(false);
+      setSearchQuery('');
+      return;
+    }
     const coords = COUNTRY_COORDS[code];
     const mid: [number, number] = [
       (MALAYSIA_COORDS[0] + coords[0]) / 2,
@@ -144,45 +206,31 @@ export default function WorldMap({ destinations }: WorldMapProps) {
     setSearchQuery('');
   }, []);
 
-  // Arc line color based on value rank
-  const getArcColor = (value: number) => {
-    const ratio = value / maxValue;
-    if (ratio > 0.6) return 'url(#arcGradientHigh)';
-    if (ratio > 0.3) return 'url(#arcGradientMid)';
-    return 'url(#arcGradientLow)';
-  };
-
-  const getArcStrokeWidth = (value: number) => {
-    return Math.max(1, (value / maxValue) * 4);
-  };
+  const getArcStrokeWidth = (value: number) => Math.max(1.2, (value / maxValue) * 5);
 
   const visibleDest = selectedCountry
     ? topDest.filter(([code]) => code === selectedCountry)
     : topDest;
 
-  return (
-    <div className="relative w-full overflow-hidden rounded-xl" style={{ height: 420 }}>
-      {/* SVG gradient defs */}
-      <svg width="0" height="0" style={{ position: 'absolute' }}>
-        <defs>
-          <linearGradient id="arcGradientHigh" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="hsl(180, 80%, 50%)" />
-            <stop offset="100%" stopColor="hsl(270, 70%, 60%)" />
-          </linearGradient>
-          <linearGradient id="arcGradientMid" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="hsl(187, 72%, 50%)" />
-            <stop offset="100%" stopColor="hsl(220, 60%, 55%)" />
-          </linearGradient>
-          <linearGradient id="arcGradientLow" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="hsl(187, 50%, 55%)" />
-            <stop offset="100%" stopColor="hsl(200, 40%, 60%)" />
-          </linearGradient>
-        </defs>
-      </svg>
+  const dimmedDest = selectedCountry
+    ? topDest.filter(([code]) => code !== selectedCountry)
+    : [];
 
+  // Region legend from visible destinations
+  const regionLegend = useMemo(() => {
+    const seen = new Map<string, string>();
+    topDest.forEach(([_, data]) => {
+      if (data.kawasanEkonomi && !seen.has(data.kawasanEkonomi)) {
+        seen.set(data.kawasanEkonomi, getRegionColor(data.kawasanEkonomi));
+      }
+    });
+    return Array.from(seen.entries()).slice(0, 5);
+  }, [topDest]);
+
+  return (
+    <div className="relative w-full overflow-hidden rounded-xl bg-card" style={{ height: 450 }}>
       {/* Controls overlay */}
       <div className="absolute top-3 left-3 z-20 flex flex-col gap-2">
-        {/* Country search */}
         <div className="relative">
           <button
             onClick={() => setSearchOpen(!searchOpen)}
@@ -199,7 +247,7 @@ export default function WorldMap({ destinations }: WorldMapProps) {
                 initial={{ opacity: 0, y: -4 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -4 }}
-                className="absolute top-full left-0 mt-1 w-56 bg-card border border-border rounded-lg shadow-lg overflow-hidden z-30"
+                className="absolute top-full left-0 mt-1 w-64 bg-card border border-border rounded-lg shadow-lg overflow-hidden z-30"
               >
                 <div className="p-2 border-b border-border">
                   <input
@@ -211,7 +259,7 @@ export default function WorldMap({ destinations }: WorldMapProps) {
                     autoFocus
                   />
                 </div>
-                <div className="max-h-48 overflow-y-auto">
+                <div className="max-h-56 overflow-y-auto">
                   <button
                     onClick={() => { handleReset(); setSearchOpen(false); }}
                     className="w-full text-left px-3 py-1.5 text-xs text-muted-foreground hover:bg-accent/10 transition-colors"
@@ -222,14 +270,17 @@ export default function WorldMap({ destinations }: WorldMapProps) {
                     <button
                       key={c.code}
                       onClick={() => handleCountrySelect(c.code)}
-                      className={`w-full text-left px-3 py-1.5 text-xs hover:bg-accent/10 transition-colors flex items-center justify-between ${
+                      className={`w-full text-left px-3 py-1.5 text-xs hover:bg-accent/10 transition-colors flex items-center justify-between gap-2 ${
                         selectedCountry === c.code ? 'bg-primary/10 text-primary font-medium' : 'text-foreground'
                       }`}
                     >
-                      <span>{c.name}</span>
-                      <span className="text-muted-foreground">{formatRM(c.value)}</span>
+                      <span className="truncate">{c.name}</span>
+                      {c.value > 0 && <span className="text-muted-foreground shrink-0">{formatRM(c.value)}</span>}
                     </button>
                   ))}
+                  {countryList.length === 0 && (
+                    <p className="px-3 py-2 text-xs text-muted-foreground">{lang === 'bm' ? 'Tiada hasil' : 'No results'}</p>
+                  )}
                 </div>
               </motion.div>
             )}
@@ -257,7 +308,7 @@ export default function WorldMap({ destinations }: WorldMapProps) {
             initial={{ opacity: 0, y: 5 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
-            className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 bg-card/95 backdrop-blur-sm border border-border rounded-xl shadow-lg px-4 py-3 min-w-[200px]"
+            className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 bg-card/95 backdrop-blur-sm border border-border rounded-xl shadow-lg px-4 py-3 min-w-[220px]"
           >
             <p className="text-sm font-bold text-foreground">
               {COUNTRY_NAMES[hoveredCountry]?.[lang] || hoveredCountry}
@@ -270,21 +321,24 @@ export default function WorldMap({ destinations }: WorldMapProps) {
                 {t('topCommodities')}: <span className="font-medium text-foreground">{normalizedDest[hoveredCountry].topCommodity}</span>
               </p>
             )}
+            {normalizedDest[hoveredCountry].kawasanEkonomi && (
+              <p className="text-xs text-muted-foreground mt-0.5">
+                {lang === 'bm' ? 'Kawasan' : 'Region'}: <span className="font-medium" style={{ color: getRegionColor(normalizedDest[hoveredCountry].kawasanEkonomi) }}>{normalizedDest[hoveredCountry].kawasanEkonomi}</span>
+              </p>
+            )}
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Legend */}
+      {/* Region legend */}
       <div className="absolute bottom-3 right-3 z-10 bg-card/80 backdrop-blur-sm rounded-lg border border-border px-3 py-2">
-        <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
-          <div className="flex items-center gap-1">
-            <div className="w-6 h-1 rounded-full" style={{ background: 'linear-gradient(90deg, hsl(180,80%,50%), hsl(270,70%,60%))' }} />
-            <span>{t('highValue')}</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <div className="w-6 h-1 rounded-full" style={{ background: 'linear-gradient(90deg, hsl(187,50%,55%), hsl(200,40%,60%))' }} />
-            <span>{t('lowValue')}</span>
-          </div>
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] text-muted-foreground">
+          {regionLegend.map(([name, color]) => (
+            <div key={name} className="flex items-center gap-1">
+              <div className="w-5 h-1.5 rounded-full" style={{ backgroundColor: color }} />
+              <span>{name}</span>
+            </div>
+          ))}
         </div>
       </div>
 
@@ -294,23 +348,33 @@ export default function WorldMap({ destinations }: WorldMapProps) {
         projectionConfig={{ scale: 130, center: [0, 0] }}
         style={{ width: '100%', height: '100%' }}
       >
-        <ZoomableGroup zoom={zoom} center={center} onMoveEnd={({ coordinates, zoom: z }) => { setCenter(coordinates as [number, number]); setZoom(z); }}>
+        <ZoomableGroup
+          zoom={zoom}
+          center={center}
+          onMoveEnd={({ coordinates, zoom: z }) => { setCenter(coordinates as [number, number]); setZoom(z); }}
+        >
+          {/* Dark mode: darken ocean via rect */}
+          <rect x={-1000} y={-500} width={3000} height={1500} fill="hsl(var(--muted) / 0.15)" />
+
           <Geographies geography={GEO_URL}>
             {({ geographies }) =>
               geographies.map(geo => {
                 const geoId = geo.id || geo.properties?.iso_a3_eh;
                 const alpha3 = NUM_TO_ALPHA3[String(geoId)];
+                const isSelected = selectedCountry && alpha3 === selectedCountry;
+                const isDimmed = selectedCountry && alpha3 !== selectedCountry && alpha3 !== 'MYS';
                 return (
                   <Geography
                     key={geo.rsmKey}
                     geography={geo}
-                    fill={getCountryFill(String(geoId))}
+                    fill={isSelected ? 'hsl(var(--primary) / 0.6)' : getCountryFill(String(geoId))}
                     stroke="hsl(var(--border))"
                     strokeWidth={0.3}
+                    opacity={isDimmed ? 0.4 : 1}
                     onMouseEnter={() => { if (alpha3 && normalizedDest[alpha3]) setHoveredCountry(alpha3); }}
                     onMouseLeave={() => setHoveredCountry(null)}
                     style={{
-                      default: { outline: 'none' },
+                      default: { outline: 'none', transition: 'opacity 0.3s' },
                       hover: { fill: alpha3 && normalizedDest[alpha3] ? 'hsl(187, 65%, 50%)' : 'hsl(var(--muted))', outline: 'none', cursor: alpha3 && normalizedDest[alpha3] ? 'pointer' : 'default' },
                       pressed: { outline: 'none' },
                     }}
@@ -320,29 +384,42 @@ export default function WorldMap({ destinations }: WorldMapProps) {
             }
           </Geographies>
 
-          {/* Flow arcs */}
-          {visibleDest.map(([code, data]) => (
-            <React.Fragment key={`arc-${code}`}>
-              <Line
-                from={MALAYSIA_COORDS}
-                to={COUNTRY_COORDS[code]}
-                stroke={getArcColor(data.value)}
-                strokeWidth={getArcStrokeWidth(data.value)}
-                strokeOpacity={0.6}
-                strokeLinecap="round"
-                style={{
-                  pointerEvents: 'visibleStroke',
-                }}
-              />
-              {/* Pulse dot at destination */}
-              <Marker coordinates={COUNTRY_COORDS[code]}>
-                <circle r={2.5 / zoom} fill="hsl(270, 70%, 60%)" opacity={0.9}>
-                  <animate attributeName="r" values={`${2 / zoom};${5 / zoom};${2 / zoom}`} dur="2s" repeatCount="indefinite" />
-                  <animate attributeName="opacity" values="0.9;0.3;0.9" dur="2s" repeatCount="indefinite" />
-                </circle>
-              </Marker>
-            </React.Fragment>
+          {/* Dimmed arcs (when a country is selected) */}
+          {dimmedDest.map(([code, data]) => (
+            <Line
+              key={`dim-${code}`}
+              from={MALAYSIA_COORDS}
+              to={COUNTRY_COORDS[code]}
+              stroke="hsl(var(--muted-foreground))"
+              strokeWidth={1}
+              strokeOpacity={0.15}
+              strokeLinecap="round"
+            />
           ))}
+
+          {/* Active flow arcs — colored by KAWASAN_EKONOMI */}
+          {visibleDest.map(([code, data]) => {
+            const regionColor = getRegionColor(data.kawasanEkonomi);
+            return (
+              <React.Fragment key={`arc-${code}`}>
+                <Line
+                  from={MALAYSIA_COORDS}
+                  to={COUNTRY_COORDS[code]}
+                  stroke={regionColor}
+                  strokeWidth={getArcStrokeWidth(data.value)}
+                  strokeOpacity={0.7}
+                  strokeLinecap="round"
+                />
+                {/* Pulse dot at destination */}
+                <Marker coordinates={COUNTRY_COORDS[code]}>
+                  <circle r={3 / zoom} fill={regionColor} opacity={0.9}>
+                    <animate attributeName="r" values={`${2.5 / zoom};${6 / zoom};${2.5 / zoom}`} dur="2s" repeatCount="indefinite" />
+                    <animate attributeName="opacity" values="0.9;0.3;0.9" dur="2s" repeatCount="indefinite" />
+                  </circle>
+                </Marker>
+              </React.Fragment>
+            );
+          })}
 
           {/* Malaysia marker */}
           <Marker coordinates={MALAYSIA_COORDS}>
@@ -351,13 +428,13 @@ export default function WorldMap({ destinations }: WorldMapProps) {
               <animate attributeName="r" values={`${10 / zoom};${15 / zoom};${10 / zoom}`} dur="3s" repeatCount="indefinite" />
               <animate attributeName="opacity" values="0.2;0.05;0.2" dur="3s" repeatCount="indefinite" />
             </circle>
-            <text textAnchor="middle" y={-10 / zoom} style={{ fontSize: `${10 / zoom}px`, fill: 'hsl(var(--foreground))', fontWeight: 700, fontFamily: 'Inter' }}>
+            <text textAnchor="middle" y={-10 / zoom} style={{ fontSize: `${10 / zoom}px`, fill: 'hsl(var(--foreground))', fontWeight: 700 }}>
               Malaysia
             </text>
           </Marker>
 
           {/* Country labels */}
-          {visibleDest.map(([code, data]) => (
+          {visibleDest.map(([code]) => (
             <Marker
               key={`label-${code}`}
               coordinates={COUNTRY_COORDS[code]}
@@ -370,7 +447,6 @@ export default function WorldMap({ destinations }: WorldMapProps) {
                 style={{
                   fontSize: `${hoveredCountry === code ? 9 : 7.5}px`,
                   fill: hoveredCountry === code ? 'hsl(var(--foreground))' : 'hsl(var(--muted-foreground))',
-                  fontFamily: 'Inter',
                   fontWeight: hoveredCountry === code ? 600 : 400,
                   transition: 'all 0.2s',
                   pointerEvents: 'none',
