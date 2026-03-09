@@ -236,11 +236,15 @@ export default function Overview() {
         </div>
       </section>
 
-      {/* SECTION 5: Commodity Analysis - Horizontal Bar */}
+      {/* SECTION 5: Commodity Analysis - Stacked Area */}
       <section>
-        <SectionHeader title={t('commodityStructure')} description={t('commodityStructureDesc')} icon={Package} />
+        <SectionHeader
+          title={lang === 'bm' ? 'Aliran Dagangan mengikut Komoditi' : 'Trade Flow by Commodity'}
+          description={lang === 'bm' ? 'Evolusi dagangan mengikut kategori SITC sepanjang masa' : 'Evolution of trade by SITC category over time'}
+          icon={Package}
+        />
         <div className="chart-container">
-          <CommodityBarChart data={filteredData} />
+          <CommodityStackedAreaChart data={filteredData} />
         </div>
       </section>
 
