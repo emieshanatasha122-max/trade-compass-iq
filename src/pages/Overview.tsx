@@ -12,7 +12,7 @@ import {
   XAxis, YAxis, Tooltip, ResponsiveContainer,
   CartesianGrid, LineChart, Line, Legend
 } from 'recharts';
-import { TrendingUp, ArrowUpRight, ArrowDownRight, Globe, Building2, Package, MapPin, BarChart3, Award } from 'lucide-react';
+import { TrendingUp, ArrowUpRight, ArrowDownRight, Globe, Building2, Package, MapPin, BarChart3 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 function formatRM(value: number): string {
