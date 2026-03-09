@@ -7,13 +7,11 @@ import WorldMap from '@/components/WorldMap';
 import StateFlagGrid from '@/components/StateFlagGrid';
 import StateStackedAreaChart from '@/components/StateStackedAreaChart';
 import CommodityStackedAreaChart from '@/components/CommodityStackedAreaChart';
-import DualDonutSection from '@/components/DualDonutSection';
-import TopRankings from '@/components/TopRankings';
 import {
   XAxis, YAxis, Tooltip, ResponsiveContainer,
   CartesianGrid, LineChart, Line, Legend
 } from 'recharts';
-import { TrendingUp, ArrowUpRight, ArrowDownRight, Globe, Building2, Package, MapPin, BarChart3, Award } from 'lucide-react';
+import { TrendingUp, ArrowUpRight, ArrowDownRight, Globe, Building2, Package, MapPin, BarChart3 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 function formatRM(value: number): string {
@@ -248,21 +246,6 @@ export default function Overview() {
         </div>
       </section>
 
-      {/* SECTION 6: Enterprise Size vs Economic Region */}
-      <section>
-        <SectionHeader title={t('enterpriseParticipation')} description={t('enterpriseParticipationDesc')} icon={Building2} />
-        <div className="chart-container">
-          <DualDonutSection data={filteredData} />
-        </div>
-      </section>
-
-      {/* SECTION 7: Top Trade Rankings */}
-      <section>
-        <SectionHeader title={t('topTradeRankings')} description={t('topTradeRankingsDesc')} icon={Award} />
-        <div className="chart-container">
-          <TopRankings data={filteredData} />
-        </div>
-      </section>
 
       {/* End note */}
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }} className="text-center py-6">
