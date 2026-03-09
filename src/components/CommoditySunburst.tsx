@@ -50,10 +50,10 @@ interface SITCItem { code: string; num: number; total: number; topState: string;
 // Radar geometry
 const CX = 350;
 const CY = 350;
-const R_MAX = 280;
+const R_MAX = 260;
 const R_GRID = [0.2, 0.4, 0.6, 0.8, 1.0];
-const LABEL_R = R_MAX + 38;
-const ICON_R = R_MAX + 16;
+const LABEL_R = R_MAX + 52;
+const ICON_R = R_MAX + 28;
 const SVG_SIZE = CX * 2;
 
 function polarToXY(angle: number, r: number): [number, number] {
@@ -186,20 +186,23 @@ export default function CommoditySunburst({ data }: Props) {
             );
           })}
 
-          {/* Scale labels */}
-          {gridLabels.map((gl, i) => (
-            <text
-              key={i}
-              x={CX + 6}
-              y={CY - gl.r + 4}
-              fontSize="11"
-              fontWeight={500}
-              fill="hsl(var(--muted-foreground))"
-              opacity={0.7}
-            >
-              {gl.value}
-            </text>
-          ))}
+          {/* Scale labels at 45° angle (between SITC 1 and SITC 2) */}
+          {gridLabels.map((gl, i) => {
+            const [sx, sy] = polarToXY(135, gl.r);
+            return (
+              <text
+                key={i}
+                x={sx + 6}
+                y={sy - 4}
+                fontSize="9"
+                fontWeight={400}
+                fill="hsl(var(--muted-foreground))"
+                opacity={0.45}
+              >
+                {gl.value}
+              </text>
+            );
+          })}
 
           {/* Data polygon */}
           <motion.path
