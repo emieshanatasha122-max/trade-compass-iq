@@ -89,14 +89,22 @@ export default function Overview() {
 
   // Export destinations
   const exportDestinations = useMemo(() => {
-    const map: Record<string, { value: number; code: string }> = {};
+    const map: Record<string, { value: number; code: string; topCommodity?: string }> = {};
+    const commodityMap: Record<string, Record<string, number>> = {};
     filteredData
       .filter(r => r.jenisDagangan === 'Eksport' && r.kodDestinasiEksportImport && r.kodDestinasiEksportImport !== 'MY')
       .forEach(r => {
         const code = r.kodDestinasiEksportImport;
         if (!map[code]) map[code] = { value: 0, code };
         map[code].value += r.jumlahDaganganRM;
+        if (!commodityMap[code]) commodityMap[code] = {};
+        commodityMap[code][r.komoditiUtama] = (commodityMap[code][r.komoditiUtama] || 0) + r.jumlahDaganganRM;
       });
+    // Attach top commodity per country
+    Object.entries(commodityMap).forEach(([code, comms]) => {
+      const top = Object.entries(comms).sort((a, b) => b[1] - a[1])[0];
+      if (top && map[code]) map[code].topCommodity = top[0].length > 30 ? top[0].slice(0, 30) + '…' : top[0];
+    });
     return map;
   }, [filteredData]);
 

@@ -101,6 +101,11 @@ const translations: Translations = {
   tooltipExportIntensity: { bm: 'Keamatan warna menunjukkan jumlah nilai eksport Malaysia ke setiap negara.', en: 'Color intensity shows total Malaysian export value to each country.' },
 
   exportIntensity: { bm: 'Keamatan Eksport', en: 'Export Intensity' },
+  searchCountry: { bm: 'Cari Negara', en: 'Search Country' },
+  searchCountryPlaceholder: { bm: 'Taip nama negara...', en: 'Type country name...' },
+  allCountries: { bm: '— Semua Negara —', en: '— All Countries —' },
+  highValue: { bm: 'Nilai Tinggi', en: 'High Value' },
+  lowValue: { bm: 'Nilai Rendah', en: 'Low Value' },
   storyEnd: { bm: 'Data → Wawasan → Pemahaman Ekonomi Lebih Baik', en: 'Data → Insight → Better Economic Understanding' },
   loadingData: { bm: 'Memuatkan data dagangan...', en: 'Loading trade data...' },
 
