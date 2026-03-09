@@ -193,7 +193,7 @@ export default function Overview() {
       <section>
         <SectionHeader title={t('globalTradeMap')} description={t('globalTradeMapDesc')} icon={Globe} />
         <div className="chart-container">
-          <WorldMap destinations={exportDestinations} />
+          <WorldMap destinations={exportDestinations} allCountries={allCountries} />
         </div>
       </section>
 
