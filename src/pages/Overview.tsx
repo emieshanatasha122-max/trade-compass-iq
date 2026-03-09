@@ -6,7 +6,7 @@ import InfoTooltip from '@/components/InfoTooltip';
 import WorldMap from '@/components/WorldMap';
 import StateFlagGrid from '@/components/StateFlagGrid';
 import StateStackedAreaChart from '@/components/StateStackedAreaChart';
-import CommodityBarChart from '@/components/CommodityBarChart';
+import CommodityStackedAreaChart from '@/components/CommodityStackedAreaChart';
 import DualDonutSection from '@/components/DualDonutSection';
 import TopRankings from '@/components/TopRankings';
 import {
