@@ -21,15 +21,15 @@ const EXPORT_COLOR_END = '#0066FF';   // Electric Blue
 const IMPORT_COLOR_START = '#FF8800'; // Orange
 const IMPORT_COLOR_END = '#FF2222';   // Red
 
-// ─── Regional fill colors (subtle, not overpowering) ───
+// ─── Regional fill colors (bold, saturated) ───
 const REGION_FILLS: Record<string, { light: string; dark: string }> = {
-  northAmerica: { light: 'hsla(210, 55%, 65%, 0.35)', dark: 'hsla(210, 55%, 40%, 0.35)' },
-  southAmerica: { light: 'hsla(175, 50%, 55%, 0.35)', dark: 'hsla(175, 50%, 35%, 0.35)' },
-  europe:       { light: 'hsla(0, 50%, 65%, 0.30)',   dark: 'hsla(0, 45%, 40%, 0.30)' },
-  asia:         { light: 'hsla(40, 60%, 60%, 0.35)',  dark: 'hsla(40, 55%, 38%, 0.35)' },
-  africa:       { light: 'hsla(140, 45%, 55%, 0.35)', dark: 'hsla(140, 40%, 32%, 0.35)' },
-  oceania:      { light: 'hsla(270, 50%, 60%, 0.35)', dark: 'hsla(270, 45%, 38%, 0.35)' },
-  malaysia:     { light: 'hsla(187, 72%, 42%, 0.7)',  dark: 'hsla(187, 72%, 50%, 0.7)' },
+  northAmerica: { light: 'hsla(220, 70%, 45%, 0.85)', dark: 'hsla(220, 65%, 35%, 0.85)' },
+  southAmerica: { light: 'hsla(175, 60%, 38%, 0.85)', dark: 'hsla(175, 55%, 30%, 0.85)' },
+  europe:       { light: 'hsla(0, 60%, 50%, 0.75)',   dark: 'hsla(0, 55%, 38%, 0.80)' },
+  asia:         { light: 'hsla(40, 80%, 48%, 0.85)',   dark: 'hsla(40, 70%, 40%, 0.85)' },
+  africa:       { light: 'hsla(155, 65%, 35%, 0.85)',  dark: 'hsla(155, 55%, 28%, 0.85)' },
+  oceania:      { light: 'hsla(270, 55%, 50%, 0.80)',  dark: 'hsla(270, 50%, 40%, 0.80)' },
+  malaysia:     { light: 'hsla(187, 80%, 38%, 0.9)',   dark: 'hsla(187, 75%, 45%, 0.9)' },
 };
 
 // ISO numeric → alpha-3
