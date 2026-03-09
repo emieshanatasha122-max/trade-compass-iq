@@ -374,15 +374,15 @@ export default function WorldMap({ destinations, allCountries }: WorldMapProps) 
         </div>
       </div>
 
-      {/* ─── Controls: Zoom + Reset ─── */}
+      {/* ─── Controls: Zoom + Reset (Bilingual) ─── */}
       <div className="absolute top-3 right-3 z-20 flex flex-col gap-1">
-        <button onClick={handleZoomIn} className="w-8 h-8 rounded-lg bg-card/90 backdrop-blur-sm border border-border flex items-center justify-center text-foreground hover:bg-accent/10 transition-colors shadow-sm">
+        <button onClick={handleZoomIn} className="w-8 h-8 rounded-lg bg-card/90 backdrop-blur-sm border border-border flex items-center justify-center text-foreground hover:bg-accent/10 transition-colors shadow-sm" title={lang === 'bm' ? 'Zum Masuk' : 'Zoom In'}>
           <ZoomIn className="w-4 h-4" />
         </button>
-        <button onClick={handleZoomOut} className="w-8 h-8 rounded-lg bg-card/90 backdrop-blur-sm border border-border flex items-center justify-center text-foreground hover:bg-accent/10 transition-colors shadow-sm">
+        <button onClick={handleZoomOut} className="w-8 h-8 rounded-lg bg-card/90 backdrop-blur-sm border border-border flex items-center justify-center text-foreground hover:bg-accent/10 transition-colors shadow-sm" title={lang === 'bm' ? 'Zum Keluar' : 'Zoom Out'}>
           <ZoomOut className="w-4 h-4" />
         </button>
-        <button onClick={handleReset} className="w-8 h-8 rounded-lg bg-card/90 backdrop-blur-sm border border-border flex items-center justify-center text-foreground hover:bg-accent/10 transition-colors shadow-sm" title={lang === 'bm' ? 'Set Semula' : 'Reset View'}>
+        <button onClick={handleReset} className="w-8 h-8 rounded-lg bg-card/90 backdrop-blur-sm border border-border flex items-center justify-center text-foreground hover:bg-accent/10 transition-colors shadow-sm" title={lang === 'bm' ? 'Set Semula / Reset' : 'Reset View'}>
           <RotateCcw className="w-3.5 h-3.5" />
         </button>
       </div>
