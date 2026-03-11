@@ -3,7 +3,7 @@ import { useFilters } from '@/contexts/FilterContext';
 import { useLanguage, ENTERPRISE_LABEL_MAP } from '@/contexts/LanguageContext';
 import FilterBar from '@/components/FilterBar';
 import InfoTooltip from '@/components/InfoTooltip';
-import WorldMap from '@/components/WorldMap';
+import Globe3D from '@/components/Globe3D';
 import StateFlagGrid from '@/components/StateFlagGrid';
 import StateStackedAreaChart from '@/components/StateStackedAreaChart';
 import CommodityStackedAreaChart from '@/components/CommodityStackedAreaChart';
@@ -88,41 +88,8 @@ export default function Overview() {
     }
   }, [filteredData, trendMode]);
 
-  // Destinations with export/import split
-  const exportDestinations = useMemo(() => {
-    const map: Record<string, { value: number; code: string; topCommodity?: string; exportValue: number; importValue: number }> = {};
-    const commodityMap: Record<string, Record<string, number>> = {};
-    filteredData
-      .filter(r => r.kodDestinasiEksportImport && r.kodDestinasiEksportImport !== 'MY')
-      .forEach(r => {
-        const code = r.kodDestinasiEksportImport;
-        if (!map[code]) map[code] = { value: 0, code, exportValue: 0, importValue: 0 };
-        map[code].value += r.jumlahDaganganRM;
-        if (r.jenisDagangan === 'Eksport') map[code].exportValue += r.jumlahDaganganRM;
-        else map[code].importValue += r.jumlahDaganganRM;
-        if (!commodityMap[code]) commodityMap[code] = {};
-        commodityMap[code][r.komoditiUtama] = (commodityMap[code][r.komoditiUtama] || 0) + r.jumlahDaganganRM;
-      });
-    Object.entries(commodityMap).forEach(([code, comms]) => {
-      const top = Object.entries(comms).sort((a, b) => b[1] - a[1])[0];
-      if (top && map[code]) map[code].topCommodity = top[0].length > 30 ? top[0].slice(0, 30) + '…' : top[0];
-    });
-    return map;
-  }, [filteredData]);
 
-  // Full country list for map filter (all unique countries from data)
-  const allCountries = useMemo(() => {
-    const set = new Map<string, string>();
-    filteredData.forEach(r => {
-      if (r.jenisDagangan === 'Eksport' && r.kodDestinasiEksportImport && r.kodDestinasiEksportImport !== 'MY') {
-        set.set(r.kodDestinasiEksportImport, r.destinasiEksport);
-      }
-      if (r.jenisDagangan === 'Import' && r.kodDestinasiEksportImport && r.kodDestinasiEksportImport !== 'MY') {
-        set.set(r.kodDestinasiEksportImport, r.negaraAsal);
-      }
-    });
-    return Array.from(set.entries()).map(([code, name]) => ({ code, name })).sort((a, b) => a.name.localeCompare(b.name));
-  }, [filteredData]);
+
 
   const kpis = [
     { icon: TrendingUp, label: t('totalTradeValue'), value: formatRM(totalTrade), tooltip: t('tooltipTotalTrade'), gradient: 'from-[hsl(187,72%,42%)] to-[hsl(200,65%,50%)]' },
@@ -185,8 +152,8 @@ export default function Overview() {
       {/* SECTION 2: Global Trade Mapping */}
       <section>
         <SectionHeader title={t('globalTradeMap')} description={t('globalTradeMapDesc')} icon={Globe} />
-        <div className="chart-container">
-          <WorldMap destinations={exportDestinations} allCountries={allCountries} />
+        <div className="chart-container p-0 overflow-hidden">
+          <Globe3D data={filteredData} />
         </div>
       </section>
 
