@@ -185,8 +185,8 @@ export default function Overview() {
       {/* SECTION 2: Global Trade Mapping */}
       <section>
         <SectionHeader title={t('globalTradeMap')} description={t('globalTradeMapDesc')} icon={Globe} />
-        <div className="chart-container">
-          <WorldMap destinations={exportDestinations} allCountries={allCountries} />
+        <div className="chart-container p-0 overflow-hidden">
+          <Globe3D data={filteredData} />
         </div>
       </section>
 
