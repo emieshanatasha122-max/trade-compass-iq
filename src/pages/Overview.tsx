@@ -3,7 +3,7 @@ import { useFilters } from '@/contexts/FilterContext';
 import { useLanguage, ENTERPRISE_LABEL_MAP } from '@/contexts/LanguageContext';
 import FilterBar from '@/components/FilterBar';
 import InfoTooltip from '@/components/InfoTooltip';
-import WorldMap from '@/components/WorldMap';
+import Globe3D from '@/components/Globe3D';
 import StateFlagGrid from '@/components/StateFlagGrid';
 import StateStackedAreaChart from '@/components/StateStackedAreaChart';
 import CommodityStackedAreaChart from '@/components/CommodityStackedAreaChart';
