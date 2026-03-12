@@ -34,10 +34,10 @@ export default function CountryFilter({ countries, selected, onSelect, lang }: C
   const selectedName = countries.find(c => c.code === selected)?.name;
 
   return (
-    <div ref={ref} className="absolute bottom-3 left-3 z-20 w-56">
+    <div ref={ref} className="relative w-48">
       <button
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center gap-2 px-3 py-2 rounded-lg bg-card/90 backdrop-blur-sm border border-border text-xs text-foreground hover:bg-accent transition-colors"
+        className="w-full flex items-center gap-2 px-3 py-1.5 rounded-lg bg-card/90 backdrop-blur-sm border border-border text-xs text-foreground hover:bg-accent transition-colors"
       >
         <MapPin className="w-3.5 h-3.5 text-primary flex-shrink-0" />
         <span className="truncate flex-1 text-left">
@@ -54,7 +54,7 @@ export default function CountryFilter({ countries, selected, onSelect, lang }: C
       </button>
 
       {open && (
-        <div className="absolute bottom-full mb-1 left-0 w-full bg-card border border-border rounded-lg shadow-lg overflow-hidden">
+        <div className="absolute top-full mt-1 left-0 w-full bg-card border border-border rounded-lg shadow-lg overflow-hidden z-30">
           <div className="p-2 border-b border-border">
             <div className="flex items-center gap-1.5 px-2 py-1.5 rounded bg-secondary/50">
               <Search className="w-3 h-3 text-muted-foreground" />
