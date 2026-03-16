@@ -16,7 +16,6 @@ export interface TradeRecord {
   kawasanEkonomi: string;
 }
 
-// Normalize NEGERI from CSV uppercase to title case matching flag files
 const NEGERI_MAP: Record<string, string> = {
   'JOHOR': 'Johor',
   'SELANGOR': 'Selangor',
@@ -33,11 +32,15 @@ const NEGERI_MAP: Record<string, string> = {
   'PERLIS': 'Perlis',
   'WP KUALA LUMPUR': 'W.P. Kuala Lumpur',
   'WP LABUAN': 'W.P. Labuan',
-  'WP PUTRAJAYA': 'W.P. Putrajaya',
+  // Merge W.P. Putrajaya into W.P. Kuala Lumpur
+  'WP PUTRAJAYA': 'W.P. Kuala Lumpur',
   'SUPRA': 'Supra',
 };
 
-// ISO alpha-2 to alpha-3 mapping for WorldMap
+// Excluded negeri/enterprise values
+const EXCLUDED_NEGERI = new Set(['Supra', 'Agent']);
+const EXCLUDED_ENTERPRISE = new Set(['AGENTS']);
+
 export const ALPHA2_TO_ALPHA3: Record<string, string> = {
   SG: 'SGP', CN: 'CHN', US: 'USA', JP: 'JPN', TH: 'THA',
   KR: 'KOR', IN: 'IND', AU: 'AUS', DE: 'DEU', GB: 'GBR',
@@ -105,14 +108,20 @@ export async function loadTradeData(): Promise<TradeRecord[]> {
           const jenis = normalizeJenisDagangan(row.JENIS_DAGANGAN);
           const kodDest = (row.KOD_DESTINASI_EKSPORT || '').trim();
           const kodAsal = (row.KOD_NEGARA_ASAL || '').trim();
+          const negeri = normalizeNegeri(row.NEGERI);
+          const enterprise = (row.SAIZ_SYARIKAT || '').trim();
+
+          // Exclude Agent/Supra data
+          if (EXCLUDED_NEGERI.has(negeri)) continue;
+          if (EXCLUDED_ENTERPRISE.has(enterprise)) continue;
 
           records.push({
             jenisDagangan: jenis,
             bulan: parseInt(row.BULAN, 10),
             tahun: parseInt(row.TAHUN, 10),
-            negeri: normalizeNegeri(row.NEGERI),
+            negeri,
             kawasan: (row.KAWASAN || '').trim(),
-            keluasanSyarikat: (row.SAIZ_SYARIKAT || '').trim(),
+            keluasanSyarikat: enterprise,
             jumlahDaganganRM: val,
             komoditiUtama: (row.BARANGAN_UTAMA || '').trim(),
             destinasiEksport: (row.DESTINASI_EKSPORT || '').trim(),
@@ -132,7 +141,6 @@ export async function loadTradeData(): Promise<TradeRecord[]> {
   return loadingPromise;
 }
 
-// Country code mapping for world map (ISO 3166-1 alpha-3)
 export const COUNTRY_CODE_MAP: Record<string, string> = {
   'SGP': 'SGP', 'CHN': 'CHN', 'USA': 'USA', 'JPN': 'JPN',
   'THA': 'THA', 'KOR': 'KOR', 'IND': 'IND', 'AUS': 'AUS',

@@ -66,13 +66,13 @@
 
   .dark {
     --background: 222 40% 10%;
-    --foreground: 220 20% 92%;
+    --foreground: 0 0% 100%;
 
     --card: 222 38% 14%;
-    --card-foreground: 220 20% 92%;
+    --card-foreground: 0 0% 100%;
 
     --popover: 222 38% 14%;
-    --popover-foreground: 220 20% 92%;
+    --popover-foreground: 0 0% 100%;
 
     --primary: 187 72% 50%;
     --primary-foreground: 222 40% 8%;
@@ -87,7 +87,7 @@
     --accent-foreground: 222 40% 8%;
 
     --destructive: 0 60% 50%;
-    --destructive-foreground: 220 20% 92%;
+    --destructive-foreground: 0 0% 100%;
 
     --border: 222 25% 22%;
     --input: 222 25% 22%;

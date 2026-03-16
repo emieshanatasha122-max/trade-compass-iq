@@ -1,27 +1,19 @@
-import React, { useMemo, useState } from 'react';
+import React from 'react';
 import { useFilters } from '@/contexts/FilterContext';
-import { useLanguage, ENTERPRISE_LABEL_MAP } from '@/contexts/LanguageContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import FilterBar from '@/components/FilterBar';
-import InfoTooltip from '@/components/InfoTooltip';
+import KPICards from '@/components/KPICards';
 import Globe3D from '@/components/Globe3D';
 import StateFlagGrid from '@/components/StateFlagGrid';
 import StateStackedAreaChart from '@/components/StateStackedAreaChart';
 import CommodityStackedAreaChart from '@/components/CommodityStackedAreaChart';
 import DualDonutSection from '@/components/DualDonutSection';
 import TopRankings from '@/components/TopRankings';
-import {
-  XAxis, YAxis, Tooltip, ResponsiveContainer,
-  CartesianGrid, LineChart, Line, Legend
-} from 'recharts';
-import { TrendingUp, ArrowUpRight, ArrowDownRight, Globe, Building2, Package, MapPin, BarChart3, Award } from 'lucide-react';
+import TrendDrillDown from '@/components/TrendDrillDown';
+import DualTreeChart from '@/components/DualTreeChart';
+import TopCountryBars from '@/components/TopCountryBars';
+import { TrendingUp, Globe, BarChart3, MapPin, Package, Building2, Award, GitBranch, Flag } from 'lucide-react';
 import { motion } from 'framer-motion';
-
-function formatRM(value: number): string {
-  if (value >= 1e12) return `RM ${(value / 1e12).toFixed(1)}T`;
-  if (value >= 1e9) return `RM ${(value / 1e9).toFixed(1)}B`;
-  if (value >= 1e6) return `RM ${(value / 1e6).toFixed(1)}M`;
-  return `RM ${value.toLocaleString()}`;
-}
 
 function SectionHeader({ title, description, icon: Icon }: { title: string; description: string; icon?: React.ElementType }) {
   return (
@@ -38,73 +30,6 @@ function SectionHeader({ title, description, icon: Icon }: { title: string; desc
 export default function Overview() {
   const { filteredData, isLoading } = useFilters();
   const { t, lang } = useLanguage();
-  const [trendMode, setTrendMode] = useState<'yearly' | 'monthly'>('yearly');
-
-  // KPIs
-  const totalTrade = useMemo(() => filteredData.reduce((s, r) => s + r.jumlahDaganganRM, 0), [filteredData]);
-
-  const topState = useMemo(() => {
-    const map: Record<string, number> = {};
-    filteredData.forEach(r => { map[r.negeri] = (map[r.negeri] || 0) + r.jumlahDaganganRM; });
-    return Object.entries(map).sort((a, b) => b[1] - a[1])[0]?.[0] || '-';
-  }, [filteredData]);
-
-  const topCommodity = useMemo(() => {
-    const map: Record<string, number> = {};
-    filteredData.forEach(r => { map[r.komoditiUtama] = (map[r.komoditiUtama] || 0) + r.jumlahDaganganRM; });
-    const top = Object.entries(map).sort((a, b) => b[1] - a[1])[0];
-    return top ? (top[0].length > 20 ? top[0].slice(0, 20) + '…' : top[0]) : '-';
-  }, [filteredData]);
-
-  const mainEnterprise = useMemo(() => {
-    const map: Record<string, number> = {};
-    filteredData.forEach(r => { map[r.keluasanSyarikat] = (map[r.keluasanSyarikat] || 0) + r.jumlahDaganganRM; });
-    const top = Object.entries(map).sort((a, b) => b[1] - a[1])[0];
-    return top ? t(ENTERPRISE_LABEL_MAP[top[0]] || top[0]) : '-';
-  }, [filteredData, t]);
-
-  // Trade Trends
-  const trendData = useMemo(() => {
-    if (trendMode === 'yearly') {
-      const map: Record<number, { export: number; import: number }> = {};
-      filteredData.forEach(r => {
-        if (!map[r.tahun]) map[r.tahun] = { export: 0, import: 0 };
-        if (r.jenisDagangan === 'Eksport') map[r.tahun].export += r.jumlahDaganganRM;
-        else map[r.tahun].import += r.jumlahDaganganRM;
-      });
-      return Object.entries(map)
-        .sort(([a], [b]) => Number(a) - Number(b))
-        .map(([year, vals]) => ({ label: String(year), export: vals.export, import: vals.import }));
-    } else {
-      const map: Record<number, { export: number; import: number }> = {};
-      filteredData.forEach(r => {
-        if (!map[r.bulan]) map[r.bulan] = { export: 0, import: 0 };
-        if (r.jenisDagangan === 'Eksport') map[r.bulan].export += r.jumlahDaganganRM;
-        else map[r.bulan].import += r.jumlahDaganganRM;
-      });
-      return Array.from({ length: 12 }, (_, i) => i + 1)
-        .filter(m => map[m])
-        .map(m => ({ label: String(m), export: map[m].export, import: map[m].import }));
-    }
-  }, [filteredData, trendMode]);
-
-
-
-
-  const kpis = [
-    { icon: TrendingUp, label: t('totalTradeValue'), value: formatRM(totalTrade), tooltip: t('tooltipTotalTrade'), gradient: 'from-[hsl(187,72%,42%)] to-[hsl(200,65%,50%)]' },
-    { icon: MapPin, label: t('topTradingState'), value: topState, tooltip: t('tooltipTopState'), gradient: 'from-[hsl(155,50%,40%)] to-[hsl(170,50%,45%)]' },
-    { icon: Package, label: t('topSITCCategory'), value: topCommodity, tooltip: t('tooltipTopSITC'), gradient: 'from-[hsl(42,70%,50%)] to-[hsl(30,60%,50%)]' },
-    { icon: Building2, label: t('mainEnterpriseSize'), value: mainEnterprise, tooltip: t('tooltipMainEnterprise'), gradient: 'from-[hsl(220,50%,55%)] to-[hsl(280,40%,55%)]' },
-  ];
-
-  const tooltipStyle = {
-    backgroundColor: 'hsl(var(--card))',
-    border: '1px solid hsl(var(--border))',
-    borderRadius: '8px',
-    fontSize: '11px',
-    color: 'hsl(var(--foreground))',
-  };
 
   if (isLoading) {
     return (
@@ -121,35 +46,13 @@ export default function Overview() {
     <div className="space-y-8">
       <FilterBar />
 
-      {/* SECTION 1: Trade Overview KPI Cards */}
+      {/* SECTION 1: KPI Cards */}
       <section>
         <SectionHeader title={t('tradeOverview')} description={t('tradeOverviewDesc')} icon={TrendingUp} />
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          {kpis.map((kpi, i) => (
-            <motion.div
-              key={kpi.label}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.05 }}
-              className="rounded-xl border border-border bg-card shadow-sm p-4 relative overflow-hidden"
-            >
-              <div className={`absolute inset-0 bg-gradient-to-br ${kpi.gradient} opacity-[0.07]`} />
-              <div className="relative z-10">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <kpi.icon className="w-5 h-5 text-primary" />
-                  </div>
-                  <InfoTooltip text={kpi.tooltip} />
-                </div>
-                <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider mb-1">{kpi.label}</p>
-                <p className="text-lg font-bold text-foreground truncate">{kpi.value}</p>
-              </div>
-            </motion.div>
-          ))}
-        </div>
+        <KPICards data={filteredData} />
       </section>
 
-      {/* SECTION 2: Global Trade Mapping */}
+      {/* SECTION 2: 3D Globe */}
       <section>
         <SectionHeader title={t('globalTradeMap')} description={t('globalTradeMapDesc')} icon={Globe} />
         <div className="chart-container p-0 overflow-hidden">
@@ -157,39 +60,15 @@ export default function Overview() {
         </div>
       </section>
 
-      {/* SECTION 3: Trade Trend Analysis */}
+      {/* SECTION 3: Trade Trend Drill-Down */}
       <section>
         <SectionHeader title={t('tradeTrends')} description={t('tradeTrendsDesc')} icon={BarChart3} />
         <div className="chart-container">
-          <div className="flex items-center gap-2 mb-4">
-            <button
-              onClick={() => setTrendMode('monthly')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${trendMode === 'monthly' ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground hover:text-foreground'}`}
-            >
-              {t('monthlyTrend')}
-            </button>
-            <button
-              onClick={() => setTrendMode('yearly')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${trendMode === 'yearly' ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground hover:text-foreground'}`}
-            >
-              {t('yearlyTrend')}
-            </button>
-          </div>
-          <ResponsiveContainer width="100%" height={320}>
-            <LineChart data={trendData} margin={{ left: 10, right: 20, top: 10, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-              <XAxis dataKey="label" tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }} />
-              <YAxis tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} tickFormatter={v => formatRM(v)} />
-              <Tooltip contentStyle={tooltipStyle} formatter={(value: number) => [formatRM(value)]} />
-              <Legend wrapperStyle={{ fontSize: 11 }} />
-              <Line type="monotone" dataKey="export" name={t('export')} stroke="hsl(187, 72%, 42%)" strokeWidth={2.5} dot={{ r: 3 }} animationDuration={800} />
-              <Line type="monotone" dataKey="import" name={t('import')} stroke="hsl(42, 70%, 50%)" strokeWidth={2.5} dot={{ r: 3 }} animationDuration={800} />
-            </LineChart>
-          </ResponsiveContainer>
+          <TrendDrillDown data={filteredData} />
         </div>
       </section>
 
-      {/* SECTION 4: Trade by State - Flags + Stacked Area */}
+      {/* SECTION 4: Trade by State */}
       <section>
         <SectionHeader title={t('stateActivity')} description={t('stateActivityDesc')} icon={MapPin} />
         <div className="chart-container mb-4">
@@ -203,7 +82,7 @@ export default function Overview() {
         </div>
       </section>
 
-      {/* SECTION 5: Commodity Analysis - Stacked Area */}
+      {/* SECTION 5: Commodity Analysis */}
       <section>
         <SectionHeader
           title={lang === 'bm' ? 'Aliran Dagangan mengikut Komoditi' : 'Trade Flow by Commodity'}
@@ -215,7 +94,19 @@ export default function Overview() {
         </div>
       </section>
 
-      {/* SECTION 6: Enterprise Size vs Economic Region */}
+      {/* SECTION 6: Dual Hierarchical Tree Charts */}
+      <section>
+        <SectionHeader
+          title={lang === 'bm' ? 'Dagangan mengikut Kawasan Ekonomi' : 'Trade by Economic Region'}
+          description={lang === 'bm' ? 'Hierarki dagangan mengikut kawasan ekonomi dan negeri.' : 'Trade hierarchy by economic region and state.'}
+          icon={GitBranch}
+        />
+        <div className="chart-container">
+          <DualTreeChart data={filteredData} />
+        </div>
+      </section>
+
+      {/* SECTION 7: Enterprise Size + Region */}
       <section>
         <SectionHeader title={t('enterpriseParticipation')} description={t('enterpriseParticipationDesc')} icon={Building2} />
         <div className="chart-container">
@@ -223,7 +114,19 @@ export default function Overview() {
         </div>
       </section>
 
-      {/* SECTION 7: Top Trade Rankings */}
+      {/* SECTION 8: Top 10 Country Bars */}
+      <section>
+        <SectionHeader
+          title={lang === 'bm' ? '10 Negara Dagangan Teratas' : 'Top 10 Trading Countries'}
+          description={lang === 'bm' ? 'Import (kiri) dan Eksport (kanan) mengikut negara.' : 'Import (left) and Export (right) by country.'}
+          icon={Flag}
+        />
+        <div className="chart-container">
+          <TopCountryBars data={filteredData} />
+        </div>
+      </section>
+
+      {/* SECTION 9: Commodity Treemap + Rankings */}
       <section>
         <SectionHeader title={t('topTradeRankings')} description={t('topTradeRankingsDesc')} icon={Award} />
         <div className="chart-container">
@@ -231,7 +134,6 @@ export default function Overview() {
         </div>
       </section>
 
-      {/* End note */}
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }} className="text-center py-6">
         <p className="text-sm font-semibold gradient-text">{t('storyEnd')}</p>
       </motion.div>
