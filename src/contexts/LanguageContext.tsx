@@ -120,12 +120,15 @@ const translations: Translations = {
   radarRegion: { bm: 'Kawasan', en: 'Region' },
 };
 
-export const ENTERPRISE_LABEL_MAP: Record<string, string> = {
-  'LARGE': 'large',
-  'SME_MICRO': 'smeMicro',
-  'SME_SMALL': 'smeSmall',
-  'SME_MEDIUM': 'smeMedium',
-  'AGENTS': 'agents',
+export const ENTERPRISE_LABEL_MAP: Record<string, Record<string, string>> = {
+  'LARGE': { bm: 'Syarikat Besar', en: 'Large Enterprises' },
+  'SME MICRO': { bm: 'PKS Mikro', en: 'Micro SMEs' },
+  'SME SMALL': { bm: 'PKS Kecil', en: 'Small SMEs' },
+  'SME MEDIUM': { bm: 'PKS Sederhana', en: 'Medium SMEs' },
+  'SME_MICRO': { bm: 'PKS Mikro', en: 'Micro SMEs' },
+  'SME_SMALL': { bm: 'PKS Kecil', en: 'Small SMEs' },
+  'SME_MEDIUM': { bm: 'PKS Sederhana', en: 'Medium SMEs' },
+  'AGENTS': { bm: 'Ejen Perdagangan', en: 'Trading Agents' },
 };
 
 interface LanguageContextType {

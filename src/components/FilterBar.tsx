@@ -7,7 +7,7 @@ const MONTHS = Array.from({ length: 12 }, (_, i) => i + 1);
 
 export default function FilterBar() {
   const { filters, setFilter, uniqueNegeri, uniqueKomoditi, uniqueKeluasan, uniqueYears } = useFilters();
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
 
   const selectClass = "bg-card text-foreground border border-border rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-primary transition-colors";
 
@@ -47,7 +47,7 @@ export default function FilterBar() {
       <select value={filters.keluasan} onChange={e => setFilter('keluasan', e.target.value)} className={selectClass}>
         <option value="all">{t('enterpriseSize')} - {t('all')}</option>
         {uniqueKeluasan.map(k => (
-          <option key={k} value={k}>{t(ENTERPRISE_LABEL_MAP[k]) || k}</option>
+          <option key={k} value={k}>{ENTERPRISE_LABEL_MAP[k]?.[lang] || k}</option>
         ))}
       </select>
     </div>
