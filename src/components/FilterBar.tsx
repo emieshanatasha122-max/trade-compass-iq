@@ -47,7 +47,7 @@ export default function FilterBar() {
       <select value={filters.keluasan} onChange={e => setFilter('keluasan', e.target.value)} className={selectClass}>
         <option value="all">{t('enterpriseSize')} - {t('all')}</option>
         {uniqueKeluasan.map(k => (
-          <option key={k} value={k}>{t(ENTERPRISE_LABEL_MAP[k]) || k}</option>
+          <option key={k} value={k}>{ENTERPRISE_LABEL_MAP[k]?.[lang] || k}</option>
         ))}
       </select>
     </div>
