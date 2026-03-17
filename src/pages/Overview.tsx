@@ -4,15 +4,13 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import FilterBar from '@/components/FilterBar';
 import KPICards from '@/components/KPICards';
 import Globe3D from '@/components/Globe3D';
-import StateFlagGrid from '@/components/StateFlagGrid';
-import StateStackedAreaChart from '@/components/StateStackedAreaChart';
-import CommodityStackedAreaChart from '@/components/CommodityStackedAreaChart';
-import DualDonutSection from '@/components/DualDonutSection';
-import TopRankings from '@/components/TopRankings';
 import TrendDrillDown from '@/components/TrendDrillDown';
+import StateFlagGrid from '@/components/StateFlagGrid';
+import EnterpriseDonut from '@/components/EnterpriseDonut';
 import DualTreeChart from '@/components/DualTreeChart';
+import CommoditySunburst from '@/components/CommoditySunburst';
 import TopCountryBars from '@/components/TopCountryBars';
-import { TrendingUp, Globe, BarChart3, MapPin, Package, Building2, Award, GitBranch, Flag } from 'lucide-react';
+import { TrendingUp, Globe, BarChart3, MapPin, Building2, GitBranch, Package, Flag } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 function SectionHeader({ title, description, icon: Icon }: { title: string; description: string; icon?: React.ElementType }) {
@@ -68,29 +66,19 @@ export default function Overview() {
         </div>
       </section>
 
-      {/* SECTION 4: Trade by State */}
+      {/* SECTION 4: Trade by State (Flag Grid only) */}
       <section>
         <SectionHeader title={t('stateActivity')} description={t('stateActivityDesc')} icon={MapPin} />
-        <div className="chart-container mb-4">
-          <StateFlagGrid data={filteredData} />
-        </div>
         <div className="chart-container">
-          <h3 className="text-sm font-semibold text-foreground mb-3">
-            {lang === 'bm' ? 'Graf Garis Komponen Mengikut Negeri' : 'Stacked Area Chart by State'}
-          </h3>
-          <StateStackedAreaChart data={filteredData} />
+          <StateFlagGrid data={filteredData} />
         </div>
       </section>
 
-      {/* SECTION 5: Commodity Analysis */}
+      {/* SECTION 5: Enterprise Size Pie Chart */}
       <section>
-        <SectionHeader
-          title={lang === 'bm' ? 'Aliran Dagangan mengikut Komoditi' : 'Trade Flow by Commodity'}
-          description={lang === 'bm' ? 'Evolusi dagangan mengikut kategori SITC sepanjang masa' : 'Evolution of trade by SITC category over time'}
-          icon={Package}
-        />
+        <SectionHeader title={t('enterpriseParticipation')} description={t('enterpriseParticipationDesc')} icon={Building2} />
         <div className="chart-container">
-          <CommodityStackedAreaChart data={filteredData} />
+          <EnterpriseDonut data={filteredData} />
         </div>
       </section>
 
@@ -106,11 +94,15 @@ export default function Overview() {
         </div>
       </section>
 
-      {/* SECTION 7: Enterprise Size + Region */}
+      {/* SECTION 7: Full-width Commodity Treemap */}
       <section>
-        <SectionHeader title={t('enterpriseParticipation')} description={t('enterpriseParticipationDesc')} icon={Building2} />
+        <SectionHeader
+          title={lang === 'bm' ? 'Peta Pokok Komoditi' : 'Commodity Treemap'}
+          description={lang === 'bm' ? 'Taburan dagangan mengikut kategori SITC.' : 'Trade distribution by SITC category.'}
+          icon={Package}
+        />
         <div className="chart-container">
-          <DualDonutSection data={filteredData} />
+          <CommoditySunburst data={filteredData} />
         </div>
       </section>
 
@@ -123,14 +115,6 @@ export default function Overview() {
         />
         <div className="chart-container">
           <TopCountryBars data={filteredData} />
-        </div>
-      </section>
-
-      {/* SECTION 9: Commodity Treemap + Rankings */}
-      <section>
-        <SectionHeader title={t('topTradeRankings')} description={t('topTradeRankingsDesc')} icon={Award} />
-        <div className="chart-container">
-          <TopRankings data={filteredData} />
         </div>
       </section>
 
