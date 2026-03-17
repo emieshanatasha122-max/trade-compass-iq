@@ -47,7 +47,7 @@ export default function DualDonutSection({ data }: Props) {
     ENTERPRISE_ORDER.forEach(k => { totals[k] = 0; });
     data.forEach(r => { totals[r.keluasanSyarikat] = (totals[r.keluasanSyarikat] || 0) + r.jumlahDaganganRM; });
     return ENTERPRISE_ORDER.map(key => ({
-      name: t(ENTERPRISE_LABEL_MAP[key] || key),
+      name: ENTERPRISE_LABEL_MAP[key]?.[lang] || key,
       value: totals[key] || 0,
     }));
   }, [data, t]);
