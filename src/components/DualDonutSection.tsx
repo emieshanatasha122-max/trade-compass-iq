@@ -40,7 +40,7 @@ interface Props {
 }
 
 export default function DualDonutSection({ data }: Props) {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
 
   const enterpriseData = useMemo(() => {
     const totals: Record<string, number> = {};
