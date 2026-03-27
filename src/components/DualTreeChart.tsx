@@ -6,8 +6,8 @@ import { X } from 'lucide-react';
 
 const REGION_COLORS: Record<string, string> = {
   'AFTA': 'hsla(335, 100%, 48%, 1.00)',
-  'EU': 'hsl(42, 75%, 50%)',
-  'NAFTA': 'hsl(145, 55%, 42%)',
+  'EU': 'hsla(335, 100%, 48%, 1.00)',
+  'NAFTA': 'hsla(145, 61%, 7%, 1.00)',
   'CHINA': 'hsl(0, 65%, 55%)',
   'WEST ASIA': 'hsl(270, 50%, 55%)',
   'EAST ASIA': 'hsl(187, 65%, 42%)',
