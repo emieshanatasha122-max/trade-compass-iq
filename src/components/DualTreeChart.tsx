@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 
 const REGION_COLORS: Record<string, string> = {
-  'AFTA': 'hsl(207, 70%, 50%)',
+  'AFTA': 'hsla(335, 100%, 48%, 1.00)',
   'EU': 'hsl(42, 75%, 50%)',
   'NAFTA': 'hsl(145, 55%, 42%)',
   'CHINA': 'hsl(0, 65%, 55%)',
