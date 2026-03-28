@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useFilters } from '@/contexts/FilterContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import FilterBar from '@/components/FilterBar';
@@ -10,6 +10,7 @@ import EnterpriseDonut from '@/components/EnterpriseDonut';
 import DualTreeChart from '@/components/DualTreeChart';
 import CommoditySunburst from '@/components/CommoditySunburst';
 import TopCountryBars from '@/components/TopCountryBars';
+import CountryFilter from '@/components/globe/CountryFilter';
 import { TrendingUp, Globe, BarChart3, MapPin, Building2, GitBranch, Package, Flag } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -28,6 +29,21 @@ function SectionHeader({ title, description, icon: Icon }: { title: string; desc
 export default function Overview() {
   const { filteredData, isLoading } = useFilters();
   const { t, lang } = useLanguage();
+  
+  const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
+  
+  const countryOptions = [
+    { code: 'MY', name: 'Malaysia' },
+    { code: 'SG', name: 'Singapore' },
+    { code: 'ID', name: 'Indonesia' },
+    { code: 'TH', name: 'Thailand' },
+    { code: 'VN', name: 'Vietnam' },
+    { code: 'PH', name: 'Philippines' },
+    { code: 'MM', name: 'Myanmar' },
+    { code: 'KH', name: 'Cambodia' },
+    { code: 'LA', name: 'Laos' },
+    { code: 'BN', name: 'Brunei' },
+  ];
 
   if (isLoading) {
     return (
@@ -42,15 +58,22 @@ export default function Overview() {
 
   return (
     <div className="space-y-8">
+      <div className="flex justify-end">
+        <CountryFilter
+          countries={countryOptions}
+          selected={selectedCountry}
+          onSelect={setSelectedCountry}
+          lang={lang}
+        />
+      </div>
+      
       <FilterBar />
 
-      {/* SECTION 1: KPI Cards */}
       <section>
         <SectionHeader title={t('tradeOverview')} description={t('tradeOverviewDesc')} icon={TrendingUp} />
         <KPICards data={filteredData} />
       </section>
 
-      {/* SECTION 2: 3D Globe */}
       <section>
         <SectionHeader title={t('globalTradeMap')} description={t('globalTradeMapDesc')} icon={Globe} />
         <div className="chart-container p-0 overflow-hidden">
@@ -58,7 +81,6 @@ export default function Overview() {
         </div>
       </section>
 
-      {/* SECTION 3: Trade Trend Drill-Down */}
       <section>
         <SectionHeader title={t('tradeTrends')} description={t('tradeTrendsDesc')} icon={BarChart3} />
         <div className="chart-container">
@@ -66,7 +88,6 @@ export default function Overview() {
         </div>
       </section>
 
-      {/* SECTION 4: Trade by State (Flag Grid only) */}
       <section>
         <SectionHeader title={t('stateActivity')} description={t('stateActivityDesc')} icon={MapPin} />
         <div className="chart-container">
@@ -74,7 +95,6 @@ export default function Overview() {
         </div>
       </section>
 
-      {/* SECTION 5: Enterprise Size Pie Chart */}
       <section>
         <SectionHeader title={t('enterpriseParticipation')} description={t('enterpriseParticipationDesc')} icon={Building2} />
         <div className="chart-container">
@@ -82,7 +102,6 @@ export default function Overview() {
         </div>
       </section>
 
-      {/* SECTION 6: Dual Hierarchical Tree Charts */}
       <section>
         <SectionHeader
           title={lang === 'bm' ? 'Dagangan mengikut Kawasan Ekonomi' : 'Trade by Economic Region'}
@@ -94,7 +113,6 @@ export default function Overview() {
         </div>
       </section>
 
-      {/* SECTION 7: Full-width Commodity Treemap */}
       <section>
         <SectionHeader
           title={lang === 'bm' ? 'Peta Pokok Komoditi' : 'Commodity Treemap'}
@@ -106,7 +124,6 @@ export default function Overview() {
         </div>
       </section>
 
-      {/* SECTION 8: Top 10 Country Bars */}
       <section>
         <SectionHeader
           title={lang === 'bm' ? '10 Negara Dagangan Teratas' : 'Top 10 Trading Countries'}
