@@ -6,15 +6,15 @@ import { X } from 'lucide-react';
 
 const REGION_COLORS: Record<string, string> = {
   'AFTA': 'hsla(215, 100%, 48%, 1.00)',
-  'EU': 'hsla(335, 100%, 48%, 1.00)',
-  'NAFTA': 'hsla(0, 92%, 48%, 1.00)',
-  'CHINA': 'hsl(0, 65%, 55%)',
-  'WEST ASIA': 'hsla(335, 100%, 48%, 1.00)',
-  'EAST ASIA': 'hsla(12, 65%, 42%, 1.00)',
+  'EU': 'hsla(122, 100%, 48%, 1.00)',
+  'NAFTA': 'hsla(192, 92%, 48%, 1.00)',
+  'CHINA': 'hsla(50, 65%, 55%, 1.00)',
+  'WEST ASIA': 'hsla(300, 100%, 48%, 1.00)',
+  'EAST ASIA': 'hsla(65, 73%, 34%, 1.00)',
   'SOUTH ASIA': 'hsl(340, 60%, 52%)',
-  'OCEANIA': 'hsla(0, 73%, 48%, 1.00)',
-  'AFRICA': 'hsla(0, 77%, 50%, 1.00)',
-  'LATIN AMERICA': 'hsla(10, 82%, 50%, 1.00)',
+  'OCEANIA': 'hsla(142, 6%, 75%, 1.00)',
+  'AFRICA': 'hsla(308, 57%, 70%, 1.00)',
+  'LATIN AMERICA': 'hsla(185, 40%, 53%, 1.00)',
 };
 
 function getRegionColor(region: string, index: number): string {
