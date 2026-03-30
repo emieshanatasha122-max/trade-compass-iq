@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import type { TradeRecord } from '@/data/tradeDataLoader';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Treemap, ResponsiveContainer, Tooltip } from 'recharts';
@@ -17,44 +17,41 @@ function formatRM(value: number): string {
   return `RM ${value.toLocaleString()}`;
 }
 
-// Shorten long commodity names for better display
-function shortenName(name: string): string {
-  const shortNames: Record<string, string> = {
-    'KELUARAN PETROLEUM BERTAPIS': 'Petroleum',
-    'BARANGAN ELEKTRIK DAN ELEKTRONIK': 'Elektrik & Elektronik',
-    'ALAT-ALAT ELEKTRONIK': 'Alat Elektronik',
-    'GAS ASLI CECAIR-LNG': 'Gas Asli (LNG)',
-    'KRISTAL PIEZO ELEKTRIK & A': 'Kristal Piezo',
-    'PERKAKAS LITAR': 'Perkakas Litar',
-    'MINYAK KELAPA SAWIT': 'Minyak Sawit',
-    'JENTERA & SARUNG TANGAN': 'Jentera',
-    'PETROLEUM MENTAH': 'Petroleum Mentah',
-    'PERABUT KAYU': 'Perabot Kayu',
-    'PAKAIAN': 'Pakaian',
-    'KELUARAN': 'Lain-lain Keluaran',
+// Helper function to normalize commodity names
+function normalizeCommodityName(name: string): string {
+  // Convert to uppercase
+  let normalized = name.toUpperCase().trim();
+  
+  // Remove extra spaces and special characters
+  normalized = normalized.replace(/\s+/g, ' ').trim();
+  
+  // Group similar categories together
+  const groups: Record<string, string> = {
+    'KELUARAN PETROLEUM BERTAPIS': 'KELUARAN PETROLEUM BERTAPIS',
+    'PETROLEUM': 'KELUARAN PETROLEUM BERTAPIS',
+    'GAS ASLI CECAIR': 'GAS ASLI CECAIR',
+    'ALAT-ALAT ELEKTRONIK': 'ALAT-ALAT ELEKTRONIK',
+    'BARANGAN ELEKTRIK': 'BARANGAN ELEKTRIK DAN ELEKTRONIK',
+    'ELEKTRONIK': 'BARANGAN ELEKTRIK DAN ELEKTRONIK',
+    'MINYAK KELAPA SAWIT': 'MINYAK KELAPA SAWIT',
+    'SAWIT': 'MINYAK KELAPA SAWIT',
+    'KRISTAL PIEZO': 'KRISTAL PIEZO ELEKTRIK & A',
   };
   
-  // Check if we have a short version
-  for (const [long, short] of Object.entries(shortNames)) {
-    if (name.includes(long) || long.includes(name)) {
-      return short;
+  // Check if name matches any group
+  for (const [key, value] of Object.entries(groups)) {
+    if (normalized.includes(key)) {
+      return value;
     }
   }
   
-  // If name is too long (more than 25 chars), truncate
-  if (name.length > 25) {
-    return name.slice(0, 22) + '…';
-  }
-  
-  return name;
+  return normalized;
 }
 
 function CustomContent({ x = 0, y = 0, width = 0, height = 0, name = '', index = 0, size = 0 }: any) {
   if (width < 45 || height < 32) return null;
-  
-  const shortName = shortenName(name);
-  const maxChars = Math.floor(width / 8);
-  const truncated = shortName.length > maxChars ? shortName.slice(0, maxChars) + '…' : shortName;
+  const maxChars = Math.floor(width / 7);
+  const truncated = name.length > maxChars ? name.slice(0, maxChars) + '…' : name;
   const showValue = width > 80 && height > 50;
 
   return (
@@ -63,21 +60,20 @@ function CustomContent({ x = 0, y = 0, width = 0, height = 0, name = '', index =
         x={x} y={y} width={width} height={height} rx={6}
         fill={PALETTE[index % PALETTE.length]}
         stroke="hsl(var(--card))" strokeWidth={2}
-        style={{ transition: 'all 0.2s' }}
       />
       <text
         x={x + width / 2} y={y + (showValue ? height * 0.4 : height / 2)}
         textAnchor="middle" dominantBaseline="central"
-        fontSize={width > 100 ? 11 : width > 70 ? 9 : 8}
-        fontWeight={600} fill="#fff" style={{ textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}
+        fontSize={width > 100 ? 12 : width > 70 ? 10 : 9}
+        fontWeight={700} fill="#fff" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.4)' }}
       >
         {truncated}
       </text>
       {showValue && (
         <text
-          x={x + width / 2} y={y + height * 0.7}
+          x={x + width / 2} y={y + height * 0.65}
           textAnchor="middle" dominantBaseline="central"
-          fontSize={9} fontWeight={500} fill="rgba(255,255,255,0.85)"
+          fontSize={9} fontWeight={500} fill="rgba(255,255,255,0.75)"
         >
           {formatRM(size)}
         </text>
@@ -95,20 +91,19 @@ export default function CommoditySunburst({ data }: Props) {
 
   const treemapData = useMemo(() => {
     const map: Record<string, number> = {};
-    
-    // Group and sum by commodity
     data.forEach(r => {
-      const key = r.komoditiUtama || 'Lain-lain';
+      let key = r.komoditiUtama || 'Others';
+      
+      // Normalize the commodity name to group duplicates
+      key = normalizeCommodityName(key);
+      
+      // Add the value
       map[key] = (map[key] || 0) + r.jumlahDaganganRM;
     });
     
-    // Convert to array, sort by value (highest first)
+    // Convert to array and sort by value
     return Object.entries(map)
-      .map(([name, size]) => ({ 
-        name, 
-        shortName: shortenName(name),
-        size 
-      }))
+      .map(([name, size]) => ({ name, size }))
       .sort((a, b) => b.size - a.size);
   }, [data]);
 
@@ -118,68 +113,53 @@ export default function CommoditySunburst({ data }: Props) {
     backgroundColor: 'hsl(var(--card))',
     border: '1px solid hsl(var(--border))',
     borderRadius: '8px',
-    fontSize: '12px',
+    fontSize: '11px',
     color: 'hsl(var(--foreground))',
-    padding: '8px 12px',
-    boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
   };
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-3">
         <h4 className="text-sm font-bold text-foreground">
           {lang === 'bm' ? 'Peta Pokok Komoditi (SITC)' : 'Commodity Treemap (SITC)'}
         </h4>
-        <span className="text-xs font-semibold text-primary">
+        <span className="text-[10px] text-muted-foreground">
           {lang === 'bm' ? 'Jumlah' : 'Total'}: {formatRM(total)}
         </span>
       </div>
-      
-      <ResponsiveContainer width="100%" height={420}>
+      <ResponsiveContainer width="100%" height={380}>
         <Treemap 
           data={treemapData} 
           dataKey="size" 
           nameKey="name" 
           content={<CustomContent />}
           isAnimationActive={true}
-          aspectRatio={1.2}
         >
           <Tooltip
             contentStyle={tooltipStyle}
             formatter={(value: number, _name: string, props: any) => {
               const pct = total > 0 ? ((value / total) * 100).toFixed(1) : '0';
-              const originalName = props?.payload?.name || '';
-              const shortName = shortenName(originalName);
               return [
                 `${formatRM(value)} (${pct}%)`,
-                shortName,
+                props?.payload?.name || (lang === 'bm' ? 'Komoditi' : 'Commodity'),
               ];
             }}
           />
         </Treemap>
       </ResponsiveContainer>
-      
-      {/* Clean legend with short names and values */}
-      <div className="mt-4 pt-2 border-t border-border">
-        <p className="text-[10px] font-medium text-muted-foreground mb-2">
-          {lang === 'bm' ? '📊 10 Komoditi Utama' : '📊 Top 10 Commodities'}
-        </p>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
-          {treemapData.slice(0, 12).map((item, i) => (
-            <div key={item.name} className="flex items-center gap-2 text-[10px]">
-              <span
-                className="w-2.5 h-2.5 rounded-sm shrink-0"
-                style={{ backgroundColor: PALETTE[i % PALETTE.length] }}
-              />
-              <span className="text-foreground truncate flex-1">
-                {item.shortName}
-              </span>
-              <span className="text-primary font-medium shrink-0">
-                {formatRM(item.size)}
-              </span>
-            </div>
-          ))}
-        </div>
+      {/* Mini legend - show unique categories */}
+      <div className="flex flex-wrap gap-x-4 gap-y-1 mt-3 px-1">
+        {treemapData.slice(0, 8).map((item, i) => (
+          <div key={item.name} className="flex items-center gap-1.5">
+            <span
+              className="w-2.5 h-2.5 rounded-sm shrink-0"
+              style={{ backgroundColor: PALETTE[i % PALETTE.length] }}
+            />
+            <span className="text-[10px] text-muted-foreground truncate max-w-[140px]">
+              {item.name}
+            </span>
+          </div>
+        ))}
       </div>
     </div>
   );
