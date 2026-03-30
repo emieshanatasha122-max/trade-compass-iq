@@ -279,13 +279,13 @@ export default function Globe3D({ data }: Globe3DProps) {
   }, []);
 
   // Globe textures
-const globeImageUrl = basemap === 'satellite'
+  const globeImageUrl = basemap === 'satellite'
   ? (isDark
       ? '//unpkg.com/three-globe/example/img/earth-night.jpg'
       : '//unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
   : (isDark
-      ? 'https://www.nationsonline.org/maps/Political-World-Map-3360.jpg'   // ← MAP dark mode
-      : 'https://www.nationsonline.org/maps/Political-World-Map-3360.jpg');  // ← MAP light mode
+      ? '/assets/Political-World-Map-Dark.jpg' // Fail yang anda upload (versi gelap)
+      : '/assets/Political-World-Map-3360.jpg'); // Fail yang anda upload
 
   const atmosphereColor = isDark ? '#06B6D4' : '#87CEEB';
 
