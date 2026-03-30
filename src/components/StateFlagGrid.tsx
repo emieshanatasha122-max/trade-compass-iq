@@ -92,16 +92,12 @@ export default function StateFlagGrid({ data }: Props) {
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
       {stateData.map((state, i) => {
-        const isHovered = hoveredState === state.name;
-
         return (
           <motion.div
             key={state.name}
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.03 }}
-            onMouseEnter={() => setHoveredState(state.name)}
-            onMouseLeave={() => setHoveredState(null)}
             className="group relative rounded-xl border border-border bg-card p-3 cursor-default transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-1"
           >
             {/* Official Flag */}
@@ -114,31 +110,6 @@ export default function StateFlagGrid({ data }: Props) {
 
             {/* Trade value - large bold */}
             <p className="text-base font-bold text-primary text-center mt-0.5">{formatRM(state.value, lang)}</p>
-
-            {/* Hover overlay with details */}
-            <div className={`absolute inset-0 rounded-xl bg-card/95 backdrop-blur-sm flex flex-col items-center justify-center px-3 transition-opacity duration-200 ${isHovered ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
-              <p className="text-sm font-semibold text-foreground">{state.name}</p>
-              <p className="text-2xl font-bold text-primary mt-1">{state.pct}%</p>
-              <p className="text-[10px] text-muted-foreground">
-                {lang === 'bm' ? 'Sumbangan Dagangan Nasional' : 'Share of National Trade'}
-              </p>
-              <p className="text-sm font-semibold text-foreground mt-1">{formatRM(state.value, lang)}</p>
-
-              <div className="mt-2 w-full border-t border-border/50 pt-2 space-y-1">
-                <p className="text-[10px] text-muted-foreground text-center">
-                  <span className="font-semibold text-foreground">
-                    {lang === 'bm' ? 'Komoditi Teratas' : 'Top Commodity'}:
-                  </span>{' '}
-                  {state.topCommodity.length > 25 ? state.topCommodity.slice(0, 25) + '…' : state.topCommodity}
-                </p>
-                <p className="text-[10px] text-muted-foreground text-center">
-                  <span className="font-semibold text-foreground">
-                    {lang === 'bm' ? 'Jumlah Rekod' : 'Total Records'}:
-                  </span>{' '}
-                  {state.records.toLocaleString()}
-                </p>
-              </div>
-            </div>
           </motion.div>
         );
       })}
