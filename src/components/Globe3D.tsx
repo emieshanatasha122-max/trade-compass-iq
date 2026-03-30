@@ -73,7 +73,6 @@ export default function Globe3D({ data }: Globe3DProps) {
   const [hoveredArc, setHoveredArc] = useState<TradeArc | null>(null);
   const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
   const [tradeView, setTradeView] = useState<'all' | 'export' | 'import'>('all');
-  const [basemap, setBasemap] = useState<'satellite' | 'map'>('satellite');
   const [globeReady, setGlobeReady] = useState(false);
   const [dimensions, setDimensions] = useState({ width: 800, height: 550 });
   const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
@@ -105,7 +104,6 @@ export default function Globe3D({ data }: Globe3DProps) {
   useEffect(() => {
     if (globeReady && globeRef.current) {
       globeRef.current.pointOfView({ lat: MY_LAT, lng: MY_LNG, altitude: 2.2 }, 1000);
-      // Set zoom limits via three.js controls
       const controls = globeRef.current.controls() as any;
       if (controls) {
         controls.minDistance = 120;
@@ -121,7 +119,6 @@ export default function Globe3D({ data }: Globe3DProps) {
     const track = () => {
       if (globeRef.current) {
         const pov = globeRef.current.pointOfView();
-        // Use longitude to approximate compass heading
         setCompassAngle(-pov.lng);
       }
       animId = requestAnimationFrame(track);
@@ -159,7 +156,6 @@ export default function Globe3D({ data }: Globe3DProps) {
       .slice(0, TOP_N_ARCS);
 
     const topCodes = new Set(sorted.map(x => x.code));
-    // Also include selected country
     if (selectedCountry && countryData[selectedCountry]) topCodes.add(selectedCountry);
 
     let maxVal = 0;
@@ -278,12 +274,10 @@ export default function Globe3D({ data }: Globe3DProps) {
     globeRef.current.pointOfView({ ...pov, altitude: Math.min(MAX_ALTITUDE, pov.altitude + 0.4) }, 400);
   }, []);
 
-  // Globe textures
-  const globeImageUrl = basemap === 'satellite'
-  ? (isDark
-      ? '//unpkg.com/three-globe/example/img/earth-night.jpg'           
-      : '//unpkg.com/three-globe/example/img/earth-blue-marble.jpg')    
-  : 'https://www.nationsonline.org/maps/Political-World-Map-3360.jpg';    
+  // Globe textures - ONLY SATELLITE MODE (No map toggle)
+  const globeImageUrl = isDark
+    ? '//unpkg.com/three-globe/example/img/earth-night.jpg'
+    : '//unpkg.com/three-globe/example/img/earth-blue-marble.jpg';
 
   const atmosphereColor = isDark ? '#06B6D4' : '#87CEEB';
 
@@ -318,14 +312,23 @@ export default function Globe3D({ data }: Globe3DProps) {
         </div>
       </div>
 
-      {/* Basemap switcher — top right */}
-      <GlobeControls
-        lang={lang}
-        basemap={basemap}
-        onBasemapChange={setBasemap}
-        onZoomIn={handleZoomIn}
-        onZoomOut={handleZoomOut}
-      />
+      {/* Zoom controls only (no basemap switcher) */}
+      <div className="absolute right-3 top-1/2 -translate-y-1/2 z-20 flex flex-col gap-1">
+        <button
+          onClick={handleZoomIn}
+          className="w-9 h-9 rounded-lg bg-card/90 backdrop-blur-sm border border-border flex items-center justify-center text-foreground hover:bg-accent transition-colors shadow-sm"
+          aria-label="Zoom in"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+        </button>
+        <button
+          onClick={handleZoomOut}
+          className="w-9 h-9 rounded-lg bg-card/90 backdrop-blur-sm border border-border flex items-center justify-center text-foreground hover:bg-accent transition-colors shadow-sm"
+          aria-label="Zoom out"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/></svg>
+        </button>
+      </div>
 
       {/* Compass — bottom left */}
       <CompassRose angle={compassAngle} />
