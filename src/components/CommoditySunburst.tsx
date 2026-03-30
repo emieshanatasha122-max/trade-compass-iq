@@ -1,47 +1,47 @@
 import React, { useMemo } from 'react';
 import type { TradeRecord } from '@/data/tradeDataLoader';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Treemap, ResponsiveContainer, Tooltip } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 
 const PALETTE = [
   'hsl(220, 55%, 40%)', 'hsl(187, 65%, 42%)', 'hsl(155, 50%, 40%)',
   'hsl(42, 70%, 50%)', 'hsl(340, 55%, 50%)', 'hsl(280, 40%, 50%)',
   'hsl(200, 65%, 45%)', 'hsl(30, 60%, 45%)', 'hsl(170, 50%, 40%)',
-  'hsl(100, 40%, 42%)', 'hsl(0, 55%, 48%)', 'hsl(260, 45%, 48%)',
+  'hsl(100, 40%, 42%)',
 ];
 
 function formatRM(value: number): string {
-  if (value >= 1e12) return `RM ${(value / 1e12).toFixed(1)}T`;
   if (value >= 1e9) return `RM ${(value / 1e9).toFixed(1)}B`;
   if (value >= 1e6) return `RM ${(value / 1e6).toFixed(1)}M`;
   return `RM ${value.toLocaleString()}`;
 }
 
-// Shorten long commodity names for better display
-function shortenName(name: string): string {
-  const shortNames: Record<string, string> = {
-    'KELUARAN PETROLEUM BERTAPIS': 'Petroleum',
-    'BARANGAN ELEKTRIK DAN ELEKTRONIK': 'Elektrik & Elektronik',
-    'ALAT-ALAT ELEKTRONIK': 'Alat Elektronik',
-    'GAS ASLI CECAIR-LNG': 'Gas Asli (LNG)',
-    'KRISTAL PIEZO ELEKTRIK & A': 'Kristal Piezo',
-    'PERKAKAS LITAR': 'Perkakas Litar',
-    'MINYAK KELAPA SAWIT': 'Minyak Sawit',
-    'JENTERA & SARUNG TANGAN': 'Jentera',
-    'PETROLEUM MENTAH': 'Petroleum Mentah',
-    'PERABUT KAYU': 'Perabot Kayu',
-    'PAKAIAN': 'Pakaian',
-    'KELUARAN': 'Lain-lain Keluaran',
+// Ringkaskan nama komoditi dengan sokongan dwibahasa
+function shortenName(name: string, lang: 'bm' | 'en'): string {
+  const shortNames: Record<string, { bm: string; en: string }> = {
+    'KELUARAN PETROLEUM BERTAPIS': { bm: 'Petroleum', en: 'Petroleum' },
+    'BARANGAN ELEKTRIK DAN ELEKTRONIK': { bm: 'Elektrik & Elektronik', en: 'Electrical & Electronic' },
+    'ALAT-ALAT ELEKTRONIK': { bm: 'Alat Elektronik', en: 'Electronic Equipment' },
+    'GAS ASLI CECAIR-LNG': { bm: 'Gas Asli', en: 'Natural Gas' },
+    'KRISTAL PIEZO ELEKTRIK & A': { bm: 'Kristal Piezo', en: 'Piezo Crystal' },
+    'PERKAKAS LITAR': { bm: 'Perkakas Litar', en: 'Circuit Components' },
+    'MINYAK KELAPA SAWIT': { bm: 'Minyak Sawit', en: 'Palm Oil' },
+    'JENTERA & SARUNG TANGAN': { bm: 'Jentera', en: 'Machinery' },
+    'PETROLEUM MENTAH': { bm: 'Petroleum Mentah', en: 'Crude Petroleum' },
+    'PERABUT KAYU': { bm: 'Perabot Kayu', en: 'Wood Furniture' },
+    'PAKAIAN': { bm: 'Pakaian', en: 'Apparel' },
+    'KELUARAN': { bm: 'Lain-lain', en: 'Others' },
+    'LAIN-LAIN': { bm: 'Lain-lain', en: 'Others' },
   };
   
-  // Check if we have a short version
+  // Cari nama pendek
   for (const [long, short] of Object.entries(shortNames)) {
     if (name.includes(long) || long.includes(name)) {
-      return short;
+      return short[lang];
     }
   }
   
-  // If name is too long (more than 25 chars), truncate
+  // Jika terlalu panjang, potong
   if (name.length > 25) {
     return name.slice(0, 22) + '…';
   }
@@ -49,138 +49,142 @@ function shortenName(name: string): string {
   return name;
 }
 
-function CustomContent({ x = 0, y = 0, width = 0, height = 0, name = '', index = 0, size = 0 }: any) {
-  if (width < 45 || height < 32) return null;
-  
-  const shortName = shortenName(name);
-  const maxChars = Math.floor(width / 8);
-  const truncated = shortName.length > maxChars ? shortName.slice(0, maxChars) + '…' : shortName;
-  const showValue = width > 80 && height > 50;
-
-  return (
-    <g>
-      <rect
-        x={x} y={y} width={width} height={height} rx={6}
-        fill={PALETTE[index % PALETTE.length]}
-        stroke="hsl(var(--card))" strokeWidth={2}
-        style={{ transition: 'all 0.2s' }}
-      />
-      <text
-        x={x + width / 2} y={y + (showValue ? height * 0.4 : height / 2)}
-        textAnchor="middle" dominantBaseline="central"
-        fontSize={width > 100 ? 11 : width > 70 ? 9 : 8}
-        fontWeight={600} fill="#fff" style={{ textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}
-      >
-        {truncated}
-      </text>
-      {showValue && (
-        <text
-          x={x + width / 2} y={y + height * 0.7}
-          textAnchor="middle" dominantBaseline="central"
-          fontSize={9} fontWeight={500} fill="rgba(255,255,255,0.85)"
-        >
-          {formatRM(size)}
-        </text>
-      )}
-    </g>
-  );
-}
-
 interface Props {
   data: TradeRecord[];
 }
 
 export default function CommoditySunburst({ data }: Props) {
-  const { lang } = useLanguage();
+  const { lang, t } = useLanguage();
 
-  const treemapData = useMemo(() => {
+  const chartData = useMemo(() => {
     const map: Record<string, number> = {};
     
-    // Group and sum by commodity
     data.forEach(r => {
-      const key = r.komoditiUtama || 'Lain-lain';
+      const key = r.komoditiUtama || 'LAIN-LAIN';
       map[key] = (map[key] || 0) + r.jumlahDaganganRM;
     });
     
-    // Convert to array, sort by value (highest first)
+    // Tukar ke array, susun ikut nilai tertinggi, ambil top 10
     return Object.entries(map)
-      .map(([name, size]) => ({ 
-        name, 
-        shortName: shortenName(name),
-        size 
+      .map(([name, value]) => ({ 
+        originalName: name,
+        name: shortenName(name, lang),
+        value 
       }))
-      .sort((a, b) => b.size - a.size);
-  }, [data]);
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 10);
+  }, [data, lang]);
 
-  const total = useMemo(() => treemapData.reduce((a, b) => a + b.size, 0), [treemapData]);
+  const total = useMemo(() => chartData.reduce((a, b) => a + b.value, 0), [chartData]);
 
   const tooltipStyle = {
     backgroundColor: 'hsl(var(--card))',
     border: '1px solid hsl(var(--border))',
     borderRadius: '8px',
     fontSize: '12px',
-    color: 'hsl(var(--foreground))',
     padding: '8px 12px',
-    boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+    color: 'hsl(var(--foreground))',
   };
+
+  // Teks berdasarkan bahasa
+  const texts = {
+    title: lang === 'bm' ? '10 Komoditi Utama' : 'Top 10 Commodities',
+    total: lang === 'bm' ? 'Jumlah' : 'Total',
+    value: lang === 'bm' ? 'Nilai (RM)' : 'Value (RM)',
+    percentage: lang === 'bm' ? 'Peratusan' : 'Percentage',
+    noData: lang === 'bm' ? 'Tiada data komoditi' : 'No commodity data',
+  };
+
+  if (chartData.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <p className="text-sm text-muted-foreground">{texts.noData}</p>
+      </div>
+    );
+  }
 
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
         <h4 className="text-sm font-bold text-foreground">
-          {lang === 'bm' ? 'Peta Pokok Komoditi (SITC)' : 'Commodity Treemap (SITC)'}
+          {texts.title}
         </h4>
         <span className="text-xs font-semibold text-primary">
-          {lang === 'bm' ? 'Jumlah' : 'Total'}: {formatRM(total)}
+          {texts.total}: {formatRM(total)}
         </span>
       </div>
       
       <ResponsiveContainer width="100%" height={420}>
-        <Treemap 
-          data={treemapData} 
-          dataKey="size" 
-          nameKey="name" 
-          content={<CustomContent />}
-          isAnimationActive={true}
-          aspectRatio={1.2}
+        <BarChart
+          data={chartData}
+          layout="vertical"
+          margin={{ top: 5, right: 30, left: 110, bottom: 5 }}
         >
-          <Tooltip
-            contentStyle={tooltipStyle}
-            formatter={(value: number, _name: string, props: any) => {
-              const pct = total > 0 ? ((value / total) * 100).toFixed(1) : '0';
-              const originalName = props?.payload?.name || '';
-              const shortName = shortenName(originalName);
-              return [
-                `${formatRM(value)} (${pct}%)`,
-                shortName,
-              ];
+          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" horizontal={false} />
+          <XAxis 
+            type="number" 
+            tickFormatter={(v) => formatRM(v)} 
+            stroke="hsl(var(--muted-foreground))"
+            tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }}
+            label={{ 
+              value: texts.value, 
+              position: 'bottom', 
+              fontSize: 10,
+              fill: 'hsl(var(--muted-foreground))'
             }}
           />
-        </Treemap>
+          <YAxis 
+            type="category" 
+            dataKey="name" 
+            width={100}
+            tick={{ fontSize: 11, fill: 'hsl(var(--foreground))', fontWeight: 500 }}
+            stroke="hsl(var(--muted-foreground))"
+          />
+          <Tooltip 
+            contentStyle={tooltipStyle}
+            formatter={(value: number) => [formatRM(value), texts.value]}
+            labelFormatter={(label) => `${label}`}
+          />
+          <Bar dataKey="value" radius={[0, 4, 4, 0]}>
+            {chartData.map((entry, index) => (
+              <Cell key={`cell-${index}`} fill={PALETTE[index % PALETTE.length]} />
+            ))}
+          </Bar>
+        </BarChart>
       </ResponsiveContainer>
       
-      {/* Clean legend with short names and values */}
+      {/* Ringkasan peratusan - dwibahasa */}
       <div className="mt-4 pt-2 border-t border-border">
         <p className="text-[10px] font-medium text-muted-foreground mb-2">
-          {lang === 'bm' ? '📊 10 Komoditi Utama' : '📊 Top 10 Commodities'}
+          📊 {texts.percentage}
         </p>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
-          {treemapData.slice(0, 12).map((item, i) => (
-            <div key={item.name} className="flex items-center gap-2 text-[10px]">
-              <span
-                className="w-2.5 h-2.5 rounded-sm shrink-0"
-                style={{ backgroundColor: PALETTE[i % PALETTE.length] }}
-              />
-              <span className="text-foreground truncate flex-1">
-                {item.shortName}
-              </span>
-              <span className="text-primary font-medium shrink-0">
-                {formatRM(item.size)}
-              </span>
-            </div>
-          ))}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2">
+          {chartData.map((item, i) => {
+            const percent = ((item.value / total) * 100).toFixed(1);
+            return (
+              <div key={item.name} className="flex items-center gap-1.5">
+                <span 
+                  className="w-2 h-2 rounded-full shrink-0" 
+                  style={{ backgroundColor: PALETTE[i % PALETTE.length] }}
+                />
+                <span className="text-[10px] text-muted-foreground truncate flex-1">
+                  {item.name}
+                </span>
+                <span className="text-[10px] text-primary font-medium">
+                  {percent}%
+                </span>
+              </div>
+            );
+          })}
         </div>
       </div>
+      
+      {/* Nota kaki */}
+      <p className="text-[9px] text-muted-foreground text-center mt-3">
+        {lang === 'bm' 
+          ? '*Berdasarkan jumlah dagangan (eksport + import)' 
+          : '*Based on total trade (export + import)'}
+      </p>
     </div>
   );
 }
