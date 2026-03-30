@@ -64,7 +64,6 @@ interface Props {
 
 export default function StateFlagGrid({ data }: Props) {
   const { lang } = useLanguage();
-  const [hoveredState, setHoveredState] = useState<string | null>(null);
 
   const stateData = useMemo(() => {
     const map: Record<string, { value: number; records: number; commodities: Record<string, number> }> = {};
@@ -98,7 +97,7 @@ export default function StateFlagGrid({ data }: Props) {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.03 }}
-            className="group relative rounded-xl border border-border bg-card p-3 cursor-default transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-1"
+            className="rounded-xl border border-border bg-card p-3 transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
           >
             {/* Official Flag */}
             <div className="w-full aspect-[3/2] rounded-lg overflow-hidden mb-3 border border-border/50">
