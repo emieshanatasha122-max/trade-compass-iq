@@ -73,45 +73,37 @@ export default function StateFlagGrid({ data }: Props) {
       map[r.negeri].records += 1;
       map[r.negeri].commodities[r.komoditiUtama] = (map[r.negeri].commodities[r.komoditiUtama] || 0) + r.jumlahDaganganRM;
     });
-    const total = Object.values(map).reduce((a, b) => a + b.value, 0);
     return Object.entries(map)
       .sort((a, b) => b[1].value - a[1].value)
-      .map(([name, d]) => {
-        const topCommodity = Object.entries(d.commodities).sort((a, b) => b[1] - a[1])[0];
-        return {
-          name,
-          value: d.value,
-          records: d.records,
-          pct: total > 0 ? ((d.value / total) * 100).toFixed(1) : '0',
-          topCommodity: topCommodity ? topCommodity[0] : '-',
-        };
-      });
+      .map(([name, d]) => ({
+        name,
+        value: d.value,
+        records: d.records,
+      }));
   }, [data]);
 
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-      {stateData.map((state, i) => {
-        return (
-          <motion.div
-            key={state.name}
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.03 }}
-            className="rounded-xl border border-border bg-card p-3 transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
-          >
-            {/* Official Flag */}
-            <div className="w-full aspect-[3/2] rounded-lg overflow-hidden mb-3 border border-border/50">
-              <FlagImage stateName={state.name} />
-            </div>
+      {stateData.map((state, i) => (
+        <motion.div
+          key={state.name}
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: i * 0.03 }}
+          className="rounded-xl border border-border bg-card p-3 transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
+        >
+          {/* Official Flag */}
+          <div className="w-full aspect-[3/2] rounded-lg overflow-hidden mb-3 border border-border/50">
+            <FlagImage stateName={state.name} />
+          </div>
 
-            {/* State name */}
-            <p className="text-xs font-medium text-muted-foreground text-center truncate">{state.name}</p>
+          {/* State name */}
+          <p className="text-xs font-medium text-muted-foreground text-center truncate">{state.name}</p>
 
-            {/* Trade value - large bold */}
-            <p className="text-base font-bold text-primary text-center mt-0.5">{formatRM(state.value, lang)}</p>
-          </motion.div>
-        );
-      })}
+          {/* Trade value - large bold */}
+          <p className="text-base font-bold text-primary text-center mt-0.5">{formatRM(state.value, lang)}</p>
+        </motion.div>
+      ))}
     </div>
   );
 }
