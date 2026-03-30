@@ -64,6 +64,7 @@ interface Props {
 
 export default function StateFlagGrid({ data }: Props) {
   const { lang } = useLanguage();
+  const [hoveredState, setHoveredState] = useState<string | null>(null);
 
   const stateData = useMemo(() => {
     const map: Record<string, { value: number; records: number; commodities: Record<string, number> }> = {};
@@ -73,37 +74,74 @@ export default function StateFlagGrid({ data }: Props) {
       map[r.negeri].records += 1;
       map[r.negeri].commodities[r.komoditiUtama] = (map[r.negeri].commodities[r.komoditiUtama] || 0) + r.jumlahDaganganRM;
     });
+    const total = Object.values(map).reduce((a, b) => a + b.value, 0);
     return Object.entries(map)
       .sort((a, b) => b[1].value - a[1].value)
-      .map(([name, d]) => ({
-        name,
-        value: d.value,
-        records: d.records,
-      }));
+      .map(([name, d]) => {
+        const topCommodity = Object.entries(d.commodities).sort((a, b) => b[1] - a[1])[0];
+        return {
+          name,
+          value: d.value,
+          records: d.records,
+          pct: total > 0 ? ((d.value / total) * 100).toFixed(1) : '0',
+          topCommodity: topCommodity ? topCommodity[0] : '-',
+        };
+      });
   }, [data]);
 
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-      {stateData.map((state, i) => (
-        <motion.div
-          key={state.name}
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: i * 0.03 }}
-          className="rounded-xl border border-border bg-card p-3 transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
-        >
-          {/* Official Flag */}
-          <div className="w-full aspect-[3/2] rounded-lg overflow-hidden mb-3 border border-border/50">
-            <FlagImage stateName={state.name} />
-          </div>
+      {stateData.map((state, i) => {
+        const isHovered = hoveredState === state.name;
 
-          {/* State name */}
-          <p className="text-xs font-medium text-muted-foreground text-center truncate">{state.name}</p>
+        return (
+          <motion.div
+            key={state.name}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.03 }}
+            onMouseEnter={() => setHoveredState(state.name)}
+            onMouseLeave={() => setHoveredState(null)}
+            className="group relative rounded-xl border border-border bg-card p-3 cursor-default transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-1"
+          >
+            {/* Official Flag */}
+            <div className="w-full aspect-[3/2] rounded-lg overflow-hidden mb-3 border border-border/50">
+              <FlagImage stateName={state.name} />
+            </div>
 
-          {/* Trade value - large bold */}
-          <p className="text-base font-bold text-primary text-center mt-0.5">{formatRM(state.value, lang)}</p>
-        </motion.div>
-      ))}
+            {/* State name */}
+            <p className="text-xs font-medium text-muted-foreground text-center truncate">{state.name}</p>
+
+            {/* Trade value - large bold */}
+            <p className="text-base font-bold text-primary text-center mt-0.5">{formatRM(state.value, lang)}</p>
+
+            {/* Hover overlay with details */}
+            <div className={`absolute inset-0 rounded-xl bg-card/95 backdrop-blur-sm flex flex-col items-center justify-center px-3 transition-opacity duration-200 ${isHovered ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+              <p className="text-sm font-semibold text-foreground">{state.name}</p>
+              <p className="text-2xl font-bold text-primary mt-1">{state.pct}%</p>
+              <p className="text-[10px] text-muted-foreground">
+                {lang === 'bm' ? 'Sumbangan Dagangan Nasional' : 'Share of National Trade'}
+              </p>
+              <p className="text-sm font-semibold text-foreground mt-1">{formatRM(state.value, lang)}</p>
+
+              <div className="mt-2 w-full border-t border-border/50 pt-2 space-y-1">
+                <p className="text-[10px] text-muted-foreground text-center">
+                  <span className="font-semibold text-foreground">
+                    {lang === 'bm' ? 'Komoditi Teratas' : 'Top Commodity'}:
+                  </span>{' '}
+                  {state.topCommodity.length > 25 ? state.topCommodity.slice(0, 25) + '…' : state.topCommodity}
+                </p>
+                <p className="text-[10px] text-muted-foreground text-center">
+                  <span className="font-semibold text-foreground">
+                    {lang === 'bm' ? 'Jumlah Rekod' : 'Total Records'}:
+                  </span>{' '}
+                  {state.records.toLocaleString()}
+                </p>
+              </div>
+            </div>
+          </motion.div>
+        );
+      })}
     </div>
   );
 }
