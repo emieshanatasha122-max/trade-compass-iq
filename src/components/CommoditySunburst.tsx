@@ -17,37 +17,6 @@ function formatRM(value: number): string {
   return `RM ${value.toLocaleString()}`;
 }
 
-// Helper function to normalize commodity names
-function normalizeCommodityName(name: string): string {
-  // Convert to uppercase
-  let normalized = name.toUpperCase().trim();
-  
-  // Remove extra spaces and special characters
-  normalized = normalized.replace(/\s+/g, ' ').trim();
-  
-  // Group similar categories together
-  const groups: Record<string, string> = {
-    'KELUARAN PETROLEUM BERTAPIS': 'KELUARAN PETROLEUM BERTAPIS',
-    'PETROLEUM': 'KELUARAN PETROLEUM BERTAPIS',
-    'GAS ASLI CECAIR': 'GAS ASLI CECAIR',
-    'ALAT-ALAT ELEKTRONIK': 'ALAT-ALAT ELEKTRONIK',
-    'BARANGAN ELEKTRIK': 'BARANGAN ELEKTRIK DAN ELEKTRONIK',
-    'ELEKTRONIK': 'BARANGAN ELEKTRIK DAN ELEKTRONIK',
-    'MINYAK KELAPA SAWIT': 'MINYAK KELAPA SAWIT',
-    'SAWIT': 'MINYAK KELAPA SAWIT',
-    'KRISTAL PIEZO': 'KRISTAL PIEZO ELEKTRIK & A',
-  };
-  
-  // Check if name matches any group
-  for (const [key, value] of Object.entries(groups)) {
-    if (normalized.includes(key)) {
-      return value;
-    }
-  }
-  
-  return normalized;
-}
-
 function CustomContent({ x = 0, y = 0, width = 0, height = 0, name = '', index = 0, size = 0 }: any) {
   if (width < 45 || height < 32) return null;
   const maxChars = Math.floor(width / 7);
@@ -92,19 +61,12 @@ export default function CommoditySunburst({ data }: Props) {
   const treemapData = useMemo(() => {
     const map: Record<string, number> = {};
     data.forEach(r => {
-      let key = r.komoditiUtama || 'Others';
-      
-      // Normalize the commodity name to group duplicates
-      key = normalizeCommodityName(key);
-      
-      // Add the value
+      const key = r.komoditiUtama || 'Others';
       map[key] = (map[key] || 0) + r.jumlahDaganganRM;
     });
-    
-    // Convert to array and sort by value
     return Object.entries(map)
-      .map(([name, size]) => ({ name, size }))
-      .sort((a, b) => b.size - a.size);
+      .sort((a, b) => b[1] - a[1])
+      .map(([name, size]) => ({ name, size }));
   }, [data]);
 
   const total = useMemo(() => treemapData.reduce((a, b) => a + b.size, 0), [treemapData]);
@@ -128,13 +90,7 @@ export default function CommoditySunburst({ data }: Props) {
         </span>
       </div>
       <ResponsiveContainer width="100%" height={380}>
-        <Treemap 
-          data={treemapData} 
-          dataKey="size" 
-          nameKey="name" 
-          content={<CustomContent />}
-          isAnimationActive={true}
-        >
+        <Treemap data={treemapData} dataKey="size" nameKey="name" content={<CustomContent />}>
           <Tooltip
             contentStyle={tooltipStyle}
             formatter={(value: number, _name: string, props: any) => {
@@ -147,17 +103,15 @@ export default function CommoditySunburst({ data }: Props) {
           />
         </Treemap>
       </ResponsiveContainer>
-      {/* Mini legend - show unique categories */}
+      {/* Mini legend */}
       <div className="flex flex-wrap gap-x-4 gap-y-1 mt-3 px-1">
-        {treemapData.slice(0, 8).map((item, i) => (
+        {treemapData.slice(0, 6).map((item, i) => (
           <div key={item.name} className="flex items-center gap-1.5">
             <span
               className="w-2.5 h-2.5 rounded-sm shrink-0"
               style={{ backgroundColor: PALETTE[i % PALETTE.length] }}
             />
-            <span className="text-[10px] text-muted-foreground truncate max-w-[140px]">
-              {item.name}
-            </span>
+            <span className="text-[10px] text-muted-foreground truncate max-w-[120px]">{item.name}</span>
           </div>
         ))}
       </div>
