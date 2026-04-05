@@ -7,8 +7,8 @@ interface Translations {
 }
 
 const translations: Translations = {
-  dashboardTitle: { bm: 'Statistik Perdagangan Malaysia', en: 'Malaysia Trade Statistics' },
-  dashboardSubtitle: { bm: 'Dagangan Mengikut Ciri-ciri Perusahaan', en: 'Trade by Enterprise Characteristics' },
+  dashboardTitle: { bm: 'Prestasi Perdagangan Malaysia', en: 'Malaysia Trade Performance' },
+  dashboardSubtitle: { bm: 'Visualisasi interaktif prestasi eksport dan import Malaysia (2014-2024). Analisis mendalam mengikut negeri, saiz syarikat, dan kategori komoditi utama.', en: "Interactive visualization of Malaysia's export and import performance (2014-2024). In-depth analysis by state, company size, and key commodity categories." },
   overview: { bm: 'Gambaran Keseluruhan', en: 'Overview' },
   publications: { bm: 'Penerbitan', en: 'Publications' },
 

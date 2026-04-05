@@ -155,8 +155,12 @@ export default function Globe3D({ data }: Globe3DProps) {
       .sort((a, b) => b.total - a.total)
       .slice(0, TOP_N_ARCS);
 
-    const topCodes = new Set(sorted.map(x => x.code));
-    if (selectedCountry && countryData[selectedCountry]) topCodes.add(selectedCountry);
+    // If a country is selected, only show arcs for that country
+    const topCodes = new Set(selectedCountry ? [] : sorted.map(x => x.code));
+    if (selectedCountry && countryData[selectedCountry]) {
+      topCodes.clear();
+      topCodes.add(selectedCountry);
+    }
 
     let maxVal = 0;
     const arcList: TradeArc[] = [];
@@ -333,8 +337,8 @@ export default function Globe3D({ data }: Globe3DProps) {
       {/* Compass — bottom left */}
       <CompassRose angle={compassAngle} />
 
-      {/* Info card — right side only */}
-      {selectedInfo && (
+      {/* Info card — only when a country is actively selected */}
+      {selectedCountry && selectedInfo && (
         <TradeInfoCard
           countryName={selectedInfo.name}
           totalValue={selectedInfo.totalValue}
@@ -398,7 +402,8 @@ export default function Globe3D({ data }: Globe3DProps) {
           labelsData={points.filter(p => p.value > 0).slice(0, 20)}
           labelLat="lat" labelLng="lng" labelText="name"
           labelSize={0.5} labelDotRadius={0.12}
-          labelColor={() => isDark ? '#E2E8F0' : '#1E293B'}
+          labelColor={() => '#FFFFFF'}
+          labelTypeFace={{ weight: 'bold' } as any}
           labelResolution={2} labelAltitude={0.015}
         />
       </div>
