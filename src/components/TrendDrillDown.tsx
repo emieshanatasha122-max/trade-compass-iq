@@ -3,7 +3,7 @@ import type { TradeRecord } from '@/data/tradeDataLoader';
 import { useLanguage } from '@/contexts/LanguageContext';
 import {
   XAxis, YAxis, Tooltip, ResponsiveContainer,
-  CartesianGrid, LineChart, Line, Legend,
+  CartesianGrid, LineChart, Line, Legend, ReferenceLine,
 } from 'recharts';
 import { ArrowLeft } from 'lucide-react';
 
@@ -110,9 +110,39 @@ export default function TrendDrillDown({ data }: Props) {
           <XAxis dataKey="label" tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }} />
           <YAxis tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} tickFormatter={v => formatRM(v)} />
           <Tooltip contentStyle={tooltipStyle} formatter={(value: number) => [formatRM(value)]} />
+          {!drillYear && chartData.length > 0 && (
+            <>
+              {chartData.map((point) => {
+                if (point.label === '2016' || point.label === '2017') {
+                  const note2016 = lang === 'bm'
+                    ? '2016: Kelembapan dagangan global'
+                    : '2016: Global trade slowdown';
+                  const note2017 = lang === 'bm'
+                    ? '2017: Pemulihan eksport kukuh'
+                    : '2017: Strong export recovery';
+                  return (
+                    <ReferenceLine
+                      key={`ref-${point.label}`}
+                      x={point.label}
+                      stroke="hsl(var(--muted-foreground))"
+                      strokeDasharray="4 4"
+                      strokeWidth={1}
+                      label={{
+                        value: point.label === '2016' ? note2016 : note2017,
+                        position: 'top',
+                        fontSize: 9,
+                        fill: 'hsl(var(--muted-foreground))',
+                      }}
+                    />
+                  );
+                }
+                return null;
+              })}
+            </>
+          )}
           <Legend wrapperStyle={{ fontSize: 11 }} />
-          <Line type="natural" dataKey="export" name={t('export')} stroke="hsl(187, 60%, 58%)" strokeWidth={2.5} dot={{ r: 4 }} activeDot={{ r: 6 }} animationDuration={800} />
-          <Line type="natural" dataKey="import" name={t('import')} stroke="hsl(340, 55%, 65%)" strokeWidth={2.5} dot={{ r: 4 }} activeDot={{ r: 6 }} animationDuration={800} />
+          <Line type="linear" dataKey="export" name={t('export')} stroke="hsl(160, 60%, 45%)" strokeWidth={2.5} dot={{ r: 4 }} activeDot={{ r: 6 }} animationDuration={800} />
+          <Line type="linear" dataKey="import" name={t('import')} stroke="hsl(0, 70%, 55%)" strokeWidth={2.5} dot={{ r: 4 }} activeDot={{ r: 6 }} animationDuration={800} />
         </LineChart>
       </ResponsiveContainer>
     </div>

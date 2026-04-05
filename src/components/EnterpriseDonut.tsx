@@ -4,11 +4,11 @@ import { useLanguage, ENTERPRISE_LABEL_MAP } from '@/contexts/LanguageContext';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 
 const COLORS = [
-  'hsl(210, 55%, 68%)',
-  'hsl(170, 50%, 62%)',
-  'hsl(340, 50%, 70%)',
-  'hsl(45, 60%, 65%)',
-  'hsl(270, 40%, 68%)',
+  'hsl(220, 70%, 55%)',
+  'hsl(160, 65%, 45%)',
+  'hsl(35, 85%, 55%)',
+  'hsl(340, 65%, 55%)',
+  'hsl(270, 55%, 60%)',
 ];
 
 function formatRM(value: number): string {
@@ -54,7 +54,7 @@ export default function EnterpriseDonut({ data }: Props) {
       <h4 className="text-sm font-bold text-foreground mb-3">
         {lang === 'bm' ? 'Saiz Syarikat' : 'Company Size'}
       </h4>
-      <ResponsiveContainer width="100%" height={300}>
+      <ResponsiveContainer width="100%" height={380}>
         <PieChart>
           <Pie
             data={chartData}

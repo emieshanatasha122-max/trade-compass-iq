@@ -131,10 +131,12 @@ export default function SidebarFilters() {
         <FilterGroup
           title={t('enterpriseSize')}
           filterKey="keluasan"
-          options={uniqueKeluasan.map(k => ({
-            value: k,
-            label: ENTERPRISE_LABEL_MAP[k]?.[lang] || k,
-          }))}
+          options={uniqueKeluasan
+            .filter(k => k.toUpperCase() !== 'AGENTS')
+            .map(k => ({
+              value: k,
+              label: ENTERPRISE_LABEL_MAP[k]?.[lang] || k,
+            }))}
           selected={filters.keluasan}
           onToggle={(v) => toggleFilter('keluasan', v)}
           onClear={() => clearFilter('keluasan')}

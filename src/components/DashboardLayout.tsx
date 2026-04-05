@@ -57,10 +57,10 @@ export default function DashboardLayout() {
               {sidebarOpen ? <PanelLeftClose className="w-4 h-4" /> : <PanelLeft className="w-4 h-4" />}
             </button>
             <div>
-              <h1 className="text-sm font-bold tracking-wide gradient-text uppercase">
+              <h1 className="text-base font-extrabold tracking-wide gradient-text uppercase cursor-pointer hover:opacity-80 transition-opacity">
                 {t('dashboardTitle')}
               </h1>
-              <p className="text-[9px] text-muted-foreground -mt-0.5">{t('dashboardSubtitle')}</p>
+              <p className="text-[9px] text-muted-foreground -mt-0.5 max-w-md truncate">{t('dashboardSubtitle')}</p>
             </div>
           </div>
 
