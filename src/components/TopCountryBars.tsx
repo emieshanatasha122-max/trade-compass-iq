@@ -64,7 +64,7 @@ export default function TopCountryBars({ data }: Props) {
             <XAxis type="number" tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} tickFormatter={v => formatRM(v)} />
             <YAxis type="category" dataKey="name" tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} width={100} />
             <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => [formatRM(v), 'Import']} />
-            <Bar dataKey="value" fill="hsl(0, 72%, 50%)" radius={[0, 4, 4, 0]} animationDuration={800} />
+            <Bar dataKey="value" fill="hsl(340, 50%, 70%)" radius={[0, 4, 4, 0]} animationDuration={800} />
           </BarChart>
         </ResponsiveContainer>
       </div>
@@ -80,7 +80,7 @@ export default function TopCountryBars({ data }: Props) {
             <XAxis dataKey="name" tick={{ fontSize: 9, fill: 'hsl(var(--muted-foreground))' }} angle={-45} textAnchor="end" />
             <YAxis tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} tickFormatter={v => formatRM(v)} />
             <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => [formatRM(v), 'Export']} />
-            <Bar dataKey="value" fill="hsl(187, 72%, 42%)" radius={[4, 4, 0, 0]} animationDuration={800} />
+            <Bar dataKey="value" fill="hsl(187, 55%, 62%)" radius={[4, 4, 0, 0]} animationDuration={800} />
           </BarChart>
         </ResponsiveContainer>
       </div>

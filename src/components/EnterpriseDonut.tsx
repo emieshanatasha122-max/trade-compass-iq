@@ -4,11 +4,11 @@ import { useLanguage, ENTERPRISE_LABEL_MAP } from '@/contexts/LanguageContext';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 
 const COLORS = [
-  'hsl(220, 60%, 30%)',
-  'hsl(187, 65%, 42%)',
-  'hsl(155, 50%, 40%)',
-  'hsl(42, 70%, 50%)',
-  'hsl(210, 25%, 65%)',
+  'hsl(210, 55%, 68%)',
+  'hsl(170, 50%, 62%)',
+  'hsl(340, 50%, 70%)',
+  'hsl(45, 60%, 65%)',
+  'hsl(270, 40%, 68%)',
 ];
 
 function formatRM(value: number): string {
