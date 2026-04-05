@@ -1,17 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { NavLink as RouterNavLink, Outlet } from 'react-router-dom';
-import { BarChart3, FileText, Menu, X, Sun, Moon } from 'lucide-react';
+import { Outlet } from 'react-router-dom';
+import { BarChart3, Menu, X, Sun, Moon, PanelLeftClose, PanelLeft } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import ChatBot from '@/components/ChatBot';
-
-const navItems = [
-  { key: 'overview', icon: BarChart3, path: '/' },
-];
-
-const bottomItems = [
-  { key: 'publications', icon: FileText, path: '/publications' },
-];
+import SidebarFilters from '@/components/SidebarFilters';
 
 export default function DashboardLayout() {
   const { lang, setLang, t } = useLanguage();
@@ -26,16 +19,17 @@ export default function DashboardLayout() {
 
   return (
     <div className="flex h-screen overflow-hidden">
-      {/* Sidebar */}
+      {/* Filter Sidebar */}
       <AnimatePresence>
         {sidebarOpen && (
           <motion.aside
             initial={{ width: 0, opacity: 0 }}
-            animate={{ width: 240, opacity: 1 }}
+            animate={{ width: 260, opacity: 1 }}
             exit={{ width: 0, opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="h-full flex flex-col border-r border-sidebar-border overflow-hidden bg-sidebar"
+            className="h-full flex flex-col border-r border-sidebar-border overflow-hidden bg-sidebar shrink-0"
           >
+            {/* Sidebar Header */}
             <div className="p-4 border-b border-sidebar-border">
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-lg bg-sidebar-primary flex items-center justify-center">
@@ -48,36 +42,8 @@ export default function DashboardLayout() {
               </div>
             </div>
 
-            <nav className="flex-1 p-3 space-y-1">
-              {navItems.map(item => (
-                <RouterNavLink
-                  key={item.key}
-                  to={item.path}
-                  end={item.path === '/'}
-                  className={({ isActive }) =>
-                    `sidebar-nav-item ${isActive ? 'active' : ''}`
-                  }
-                >
-                  <item.icon className="w-4 h-4 shrink-0" />
-                  <span className="truncate">{t(item.key)}</span>
-                </RouterNavLink>
-              ))}
-            </nav>
-
-            <div className="p-3 border-t border-sidebar-border space-y-1">
-              {bottomItems.map(item => (
-                <RouterNavLink
-                  key={item.key}
-                  to={item.path}
-                  className={({ isActive }) =>
-                    `sidebar-nav-item ${isActive ? 'active' : ''}`
-                  }
-                >
-                  <item.icon className="w-4 h-4 shrink-0" />
-                  <span className="truncate">{t(item.key)}</span>
-                </RouterNavLink>
-              ))}
-            </div>
+            {/* Filter Content */}
+            <SidebarFilters />
           </motion.aside>
         )}
       </AnimatePresence>
@@ -88,7 +54,7 @@ export default function DashboardLayout() {
         <header className="h-14 border-b border-border flex items-center justify-between px-4 shrink-0 bg-card">
           <div className="flex items-center gap-3">
             <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-1.5 rounded-lg hover:bg-secondary transition-colors text-foreground">
-              {sidebarOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+              {sidebarOpen ? <PanelLeftClose className="w-4 h-4" /> : <PanelLeft className="w-4 h-4" />}
             </button>
             <div>
               <h1 className="text-sm font-bold tracking-wide gradient-text uppercase">

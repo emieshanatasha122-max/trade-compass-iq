@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useFilters } from '@/contexts/FilterContext';
 import { useLanguage } from '@/contexts/LanguageContext';
-import FilterBar from '@/components/FilterBar';
 import KPICards from '@/components/KPICards';
 import Globe3D from '@/components/Globe3D';
 import TrendDrillDown from '@/components/TrendDrillDown';
@@ -10,9 +9,7 @@ import EnterpriseDonut from '@/components/EnterpriseDonut';
 import DualTreeChart from '@/components/DualTreeChart';
 import CommoditySunburst from '@/components/CommoditySunburst';
 import TopCountryBars from '@/components/TopCountryBars';
-import CountryFilter from '@/components/globe/CountryFilter';
 import { TrendingUp, Globe, BarChart3, MapPin, Building2, GitBranch, Package, Flag } from 'lucide-react';
-import { motion } from 'framer-motion';
 
 function SectionHeader({ title, description, icon: Icon }: { title: string; description: string; icon?: React.ElementType }) {
   return (
@@ -29,21 +26,6 @@ function SectionHeader({ title, description, icon: Icon }: { title: string; desc
 export default function Overview() {
   const { filteredData, isLoading } = useFilters();
   const { t, lang } = useLanguage();
-  
-  const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
-  
-  const countryOptions = [
-    { code: 'MY', name: 'Malaysia' },
-    { code: 'SG', name: 'Singapore' },
-    { code: 'ID', name: 'Indonesia' },
-    { code: 'TH', name: 'Thailand' },
-    { code: 'VN', name: 'Vietnam' },
-    { code: 'PH', name: 'Philippines' },
-    { code: 'MM', name: 'Myanmar' },
-    { code: 'KH', name: 'Cambodia' },
-    { code: 'LA', name: 'Laos' },
-    { code: 'BN', name: 'Brunei' },
-  ];
 
   if (isLoading) {
     return (
@@ -57,37 +39,31 @@ export default function Overview() {
   }
 
   return (
-    <div className="space-y-8">
-      <div className="flex justify-end">
-        <CountryFilter
-          countries={countryOptions}
-          selected={selectedCountry}
-          onSelect={setSelectedCountry}
-          lang={lang}
-        />
-      </div>
-      
-      <FilterBar />
-
+    <div className="space-y-6">
+      {/* Section A: KPI Cards */}
       <section>
         <SectionHeader title={t('tradeOverview')} description={t('tradeOverviewDesc')} icon={TrendingUp} />
         <KPICards data={filteredData} />
       </section>
 
-      <section>
-        <SectionHeader title={t('globalTradeMap')} description={t('globalTradeMapDesc')} icon={Globe} />
-        <div className="chart-container p-0 overflow-hidden">
-          <Globe3D data={filteredData} />
-        </div>
-      </section>
+      {/* Row: Section B (Trend) + Section C (Globe) */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <section>
+          <SectionHeader title={t('tradeTrends')} description={t('tradeTrendsDesc')} icon={BarChart3} />
+          <div className="chart-container">
+            <TrendDrillDown data={filteredData} />
+          </div>
+        </section>
 
-      <section>
-        <SectionHeader title={t('tradeTrends')} description={t('tradeTrendsDesc')} icon={BarChart3} />
-        <div className="chart-container">
-          <TrendDrillDown data={filteredData} />
-        </div>
-      </section>
+        <section>
+          <SectionHeader title={t('globalTradeMap')} description={t('globalTradeMapDesc')} icon={Globe} />
+          <div className="chart-container p-0 overflow-hidden">
+            <Globe3D data={filteredData} />
+          </div>
+        </section>
+      </div>
 
+      {/* Section D: Trade by State (Full width bar chart) */}
       <section>
         <SectionHeader title={t('stateActivity')} description={t('stateActivityDesc')} icon={MapPin} />
         <div className="chart-container">
@@ -95,13 +71,7 @@ export default function Overview() {
         </div>
       </section>
 
-      <section>
-        <SectionHeader title={t('enterpriseParticipation')} description={t('enterpriseParticipationDesc')} icon={Building2} />
-        <div className="chart-container">
-          <EnterpriseDonut data={filteredData} />
-        </div>
-      </section>
-
+      {/* Section E: Trade by Economic Area (Full width) */}
       <section>
         <SectionHeader
           title={lang === 'bm' ? 'Dagangan mengikut Kawasan Ekonomi' : 'Trade by Economic Region'}
@@ -113,17 +83,28 @@ export default function Overview() {
         </div>
       </section>
 
-      <section>
-        <SectionHeader
-          title={lang === 'bm' ? 'Peta Pokok Komoditi' : 'Commodity Treemap'}
-          description={lang === 'bm' ? 'Taburan dagangan mengikut kategori SITC.' : 'Trade distribution by SITC category.'}
-          icon={Package}
-        />
-        <div className="chart-container">
-          <CommoditySunburst data={filteredData} />
-        </div>
-      </section>
+      {/* Row: Section F (Company Pie) + Section G (Commodity Treemap) */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <section>
+          <SectionHeader title={t('enterpriseParticipation')} description={t('enterpriseParticipationDesc')} icon={Building2} />
+          <div className="chart-container">
+            <EnterpriseDonut data={filteredData} />
+          </div>
+        </section>
 
+        <section>
+          <SectionHeader
+            title={lang === 'bm' ? 'Peta Pokok Komoditi' : 'Commodity Treemap'}
+            description={lang === 'bm' ? 'Taburan dagangan mengikut kategori SITC.' : 'Trade distribution by SITC category.'}
+            icon={Package}
+          />
+          <div className="chart-container">
+            <CommoditySunburst data={filteredData} />
+          </div>
+        </section>
+      </div>
+
+      {/* Section H: Top 10 Trading Countries */}
       <section>
         <SectionHeader
           title={lang === 'bm' ? '10 Negara Dagangan Teratas' : 'Top 10 Trading Countries'}
@@ -134,10 +115,6 @@ export default function Overview() {
           <TopCountryBars data={filteredData} />
         </div>
       </section>
-
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }} className="text-center py-6">
-        <p className="text-sm font-semibold gradient-text">{t('storyEnd')}</p>
-      </motion.div>
     </div>
   );
 }

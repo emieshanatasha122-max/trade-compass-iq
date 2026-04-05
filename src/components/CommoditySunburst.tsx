@@ -4,10 +4,10 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { Treemap, ResponsiveContainer, Tooltip } from 'recharts';
 
 const PALETTE = [
-  'hsl(220, 55%, 40%)', 'hsl(187, 65%, 42%)', 'hsl(155, 50%, 40%)',
-  'hsl(42, 70%, 50%)', 'hsl(340, 55%, 50%)', 'hsl(280, 40%, 50%)',
-  'hsl(200, 65%, 45%)', 'hsl(30, 60%, 45%)', 'hsl(170, 50%, 40%)',
-  'hsl(100, 40%, 42%)', 'hsl(0, 55%, 48%)', 'hsl(260, 45%, 48%)',
+  'hsl(210, 55%, 68%)', 'hsl(170, 50%, 62%)', 'hsl(340, 50%, 70%)',
+  'hsl(45, 60%, 65%)', 'hsl(270, 40%, 68%)', 'hsl(140, 45%, 62%)',
+  'hsl(200, 55%, 65%)', 'hsl(20, 55%, 65%)', 'hsl(300, 40%, 68%)',
+  'hsl(80, 40%, 60%)', 'hsl(0, 45%, 68%)', 'hsl(240, 40%, 68%)',
 ];
 
 function formatRM(value: number): string {

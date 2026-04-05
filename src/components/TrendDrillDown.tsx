@@ -111,8 +111,8 @@ export default function TrendDrillDown({ data }: Props) {
           <YAxis tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} tickFormatter={v => formatRM(v)} />
           <Tooltip contentStyle={tooltipStyle} formatter={(value: number) => [formatRM(value)]} />
           <Legend wrapperStyle={{ fontSize: 11 }} />
-          <Line type="monotone" dataKey="export" name={t('export')} stroke="hsl(187, 72%, 42%)" strokeWidth={2.5} dot={{ r: 4 }} activeDot={{ r: 6 }} animationDuration={800} />
-          <Line type="monotone" dataKey="import" name={t('import')} stroke="hsl(42, 70%, 50%)" strokeWidth={2.5} dot={{ r: 4 }} activeDot={{ r: 6 }} animationDuration={800} />
+          <Line type="natural" dataKey="export" name={t('export')} stroke="hsl(187, 60%, 58%)" strokeWidth={2.5} dot={{ r: 4 }} activeDot={{ r: 6 }} animationDuration={800} />
+          <Line type="natural" dataKey="import" name={t('import')} stroke="hsl(340, 55%, 65%)" strokeWidth={2.5} dot={{ r: 4 }} activeDot={{ r: 6 }} animationDuration={800} />
         </LineChart>
       </ResponsiveContainer>
     </div>
