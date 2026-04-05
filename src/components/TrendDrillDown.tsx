@@ -143,21 +143,6 @@ export default function TrendDrillDown({ data }: Props) {
           <Legend wrapperStyle={{ fontSize: 11 }} />
           <Line type="linear" dataKey="export" name={t('export')} stroke="hsl(160, 60%, 45%)" strokeWidth={2.5} dot={{ r: 4 }} activeDot={{ r: 6 }} animationDuration={800} />
           <Line type="linear" dataKey="import" name={t('import')} stroke="hsl(0, 70%, 55%)" strokeWidth={2.5} dot={{ r: 4 }} activeDot={{ r: 6 }} animationDuration={800} />
-          {/* Annotations for 2016 and 2017 */}
-          {!drillYear && (
-            <>
-              {chartData.map((point, idx) => {
-                if (point.label === '2016') {
-                  return (
-                    <rect key="ann-2016" x={0} y={0} width={0} height={0}>
-                      {/* Rendered via customized dot below */}
-                    </rect>
-                  );
-                }
-                return null;
-              })}
-            </>
-          )}
         </LineChart>
       </ResponsiveContainer>
     </div>
