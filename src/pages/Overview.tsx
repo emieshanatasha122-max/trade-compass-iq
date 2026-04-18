@@ -46,22 +46,21 @@ export default function Overview() {
         <KPICards data={filteredData} />
       </section>
 
-      {/* Row: Section B (Trend) + Section C (Globe) */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <section>
-          <SectionHeader title={t('tradeTrends')} description={t('tradeTrendsDesc')} icon={BarChart3} />
-          <div className="chart-container">
-            <TrendDrillDown data={filteredData} />
-          </div>
-        </section>
+      {/* Section B: Trend Analysis (Full Width) */}
+      <section>
+        <SectionHeader title={t('tradeTrends')} description={t('tradeTrendsDesc')} icon={BarChart3} />
+        <div className="chart-container">
+          <TrendDrillDown data={filteredData} />
+        </div>
+      </section>
 
-        <section>
-          <SectionHeader title={t('globalTradeMap')} description={t('globalTradeMapDesc')} icon={Globe} />
-          <div className="chart-container p-0 overflow-hidden">
-            <Globe3D data={filteredData} />
-          </div>
-        </section>
-      </div>
+      {/* Section C: Global Trade Map (Full Width) */}
+      <section>
+        <SectionHeader title={t('globalTradeMap')} description={t('globalTradeMapDesc')} icon={Globe} />
+        <div className="chart-container p-0 overflow-hidden">
+          <Globe3D data={filteredData} />
+        </div>
+      </section>
 
       {/* Section D: Trade by State (Full width bar chart) */}
       <section>
