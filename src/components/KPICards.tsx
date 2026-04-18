@@ -129,12 +129,19 @@ export default function KPICards({ data }: Props) {
     };
   }, [data]);
 
-  const renderTopList = (items: [string, number][]) => (
+  const toSentenceCase = (s: string) => {
+    const lower = s.toLowerCase();
+    return lower.charAt(0).toUpperCase() + lower.slice(1);
+  };
+
+  const renderTopList = (items: [string, number][], sentenceCase = false) => (
     <div className="space-y-0.5">
       {items.map(([name], i) => (
         <div key={name} className="flex items-baseline gap-1.5">
           <span className="text-xs font-bold text-muted-foreground/70">{i + 1}.</span>
-          <span className="text-sm font-semibold text-foreground truncate">{name}</span>
+          <span className="text-sm font-semibold text-foreground truncate">
+            {sentenceCase ? toSentenceCase(name) : name}
+          </span>
         </div>
       ))}
     </div>
@@ -165,6 +172,9 @@ export default function KPICards({ data }: Props) {
       value: formatCompact(stats.tradeBalance),
       accent: ACCENTS.purple,
     },
+  ];
+
+  const highlightCards = [
     {
       icon: MapPin,
       title: t('top3States'),
@@ -174,23 +184,40 @@ export default function KPICards({ data }: Props) {
     {
       icon: Package,
       title: t('top3Commodities'),
-      value: renderTopList(stats.top3Commodities),
+      value: renderTopList(stats.top3Commodities, true),
       accent: ACCENTS.teal,
     },
   ];
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-      {cards.map((c, i) => (
-        <KPICard
-          key={c.title}
-          icon={c.icon}
-          title={c.title}
-          value={c.value}
-          accent={c.accent}
-          delay={i * 0.06}
-        />
-      ))}
+    <div className="space-y-4">
+      {/* Top row: 4 primary KPI cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {cards.map((c, i) => (
+          <KPICard
+            key={c.title}
+            icon={c.icon}
+            title={c.title}
+            value={c.value}
+            accent={c.accent}
+            delay={i * 0.06}
+          />
+        ))}
+      </div>
+
+      {/* Second row: 2 highlight cards (50/50) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {highlightCards.map((c, i) => (
+          <KPICard
+            key={c.title}
+            icon={c.icon}
+            title={c.title}
+            value={c.value}
+            accent={c.accent}
+            delay={(cards.length + i) * 0.06}
+          />
+        ))}
+      </div>
     </div>
   );
 }
