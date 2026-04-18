@@ -39,7 +39,7 @@ const NEGERI_MAP: Record<string, string> = {
 
 // Excluded negeri/enterprise values
 const EXCLUDED_NEGERI = new Set(['Supra', 'Agent']);
-const EXCLUDED_ENTERPRISE = new Set(['AGENTS']);
+const EXCLUDED_ENTERPRISE = new Set(['AGENTS', 'AGENT']);
 
 export const ALPHA2_TO_ALPHA3: Record<string, string> = {
   SG: 'SGP', CN: 'CHN', US: 'USA', JP: 'JPN', TH: 'THA',

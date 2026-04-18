@@ -132,7 +132,7 @@ export default function SidebarFilters() {
           title={t('enterpriseSize')}
           filterKey="keluasan"
           options={uniqueKeluasan
-            .filter(k => k.toUpperCase() !== 'AGENTS')
+            .filter(k => k.toUpperCase() !== 'AGENTS' && k.toUpperCase() !== 'AGENT')
             .map(k => ({
               value: k,
               label: ENTERPRISE_LABEL_MAP[k]?.[lang] || k,
