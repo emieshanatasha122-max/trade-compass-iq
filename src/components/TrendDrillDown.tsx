@@ -3,9 +3,9 @@ import type { TradeRecord } from '@/data/tradeDataLoader';
 import { useLanguage } from '@/contexts/LanguageContext';
 import {
   XAxis, YAxis, Tooltip, ResponsiveContainer,
-  CartesianGrid, LineChart, Line, Legend, ReferenceLine,
+  CartesianGrid, LineChart, Line, Legend,
 } from 'recharts';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, BarChart3 } from 'lucide-react';
 
 function formatRM(value: number): string {
   if (value >= 1e12) return `RM ${(value / 1e12).toFixed(1)}T`;
