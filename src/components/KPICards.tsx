@@ -53,16 +53,12 @@ function KPICard({ icon: Icon, title, value, accent, delay = 0 }: KPICardProps) 
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay, duration: 0.4, ease: 'easeOut' }}
       whileHover={{ y: -2 }}
-      className="relative overflow-hidden rounded-[22px] bg-card p-5 min-h-[120px] flex items-center gap-4"
-      style={{
-        boxShadow:
-          '0 10px 25px -12px hsl(220 25% 70% / 0.25), 0 4px 10px -4px hsl(220 25% 70% / 0.15), inset 1px 1px 2px hsl(0 0% 100% / 0.9), inset -1px -1px 3px hsl(220 20% 85% / 0.25)',
-      }}
+      className="kpi-neumorphic-card relative overflow-hidden rounded-[22px] bg-card p-5 min-h-[120px] flex items-center gap-4 dark:border dark:border-border"
     >
-      {/* Decorative accent blob (right side) */}
+      {/* Decorative accent blobs — light mode only */}
       <div
         aria-hidden
-        className="absolute -right-10 -top-10 w-44 h-44 rounded-full opacity-80 pointer-events-none"
+        className="hidden dark:hidden [html:not(.dark)_&]:block absolute -right-10 -top-10 w-44 h-44 rounded-full opacity-80 pointer-events-none"
         style={{
           background: `radial-gradient(circle at 30% 30%, ${accent.to}, ${accent.from} 60%, transparent 75%)`,
           filter: 'blur(2px)',
@@ -70,7 +66,7 @@ function KPICard({ icon: Icon, title, value, accent, delay = 0 }: KPICardProps) 
       />
       <div
         aria-hidden
-        className="absolute -right-6 bottom-[-40px] w-32 h-32 rounded-full opacity-60 pointer-events-none"
+        className="hidden dark:hidden [html:not(.dark)_&]:block absolute -right-6 bottom-[-40px] w-32 h-32 rounded-full opacity-60 pointer-events-none"
         style={{
           background: `radial-gradient(circle, ${accent.blob}, transparent 70%)`,
           filter: 'blur(4px)',
@@ -79,10 +75,10 @@ function KPICard({ icon: Icon, title, value, accent, delay = 0 }: KPICardProps) 
 
       {/* Icon */}
       <div
-        className="relative z-10 w-14 h-14 rounded-2xl flex items-center justify-center shrink-0"
+        className="kpi-icon-wrap relative z-10 w-14 h-14 rounded-2xl flex items-center justify-center shrink-0"
         style={{
-          background: `linear-gradient(145deg, hsl(0 0% 100%), ${accent.iconBg})`,
-          boxShadow: `inset 2px 2px 4px hsl(0 0% 100% / 0.9), inset -2px -2px 4px ${accent.blob}, 0 4px 10px -4px ${accent.blob}`,
+          ['--accent-icon-bg' as any]: accent.iconBg,
+          ['--accent-blob' as any]: accent.blob,
         }}
       >
         <Icon className="w-7 h-7" style={{ color: accent.iconColor }} strokeWidth={2.2} />
