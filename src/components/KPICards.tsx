@@ -1,19 +1,104 @@
 import React, { useMemo } from 'react';
 import type { TradeRecord } from '@/data/tradeDataLoader';
-import { useLanguage, ENTERPRISE_LABEL_MAP } from '@/contexts/LanguageContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { TrendingUp, ArrowUpRight, ArrowDownRight, Scale, MapPin, Package } from 'lucide-react';
 import { motion } from 'framer-motion';
-import InfoTooltip from './InfoTooltip';
 
-function formatRM(value: number): string {
-  if (Math.abs(value) >= 1e12) return `RM ${(value / 1e12).toFixed(1)}T`;
-  if (Math.abs(value) >= 1e9) return `RM ${(value / 1e9).toFixed(1)}B`;
-  if (Math.abs(value) >= 1e6) return `RM ${(value / 1e6).toFixed(1)}M`;
-  return `RM ${value.toLocaleString()}`;
+function formatCompact(value: number): string {
+  const abs = Math.abs(value);
+  const sign = value < 0 ? '-' : '';
+  if (abs >= 1e12) return `${sign}${(abs / 1e12).toFixed(1)}T`;
+  if (abs >= 1e9) return `${sign}${(abs / 1e9).toFixed(1)}B`;
+  if (abs >= 1e6) return `${sign}${(abs / 1e6).toFixed(1)}M`;
+  if (abs >= 1e3) return `${sign}${(abs / 1e3).toFixed(1)}K`;
+  return `${sign}${abs.toLocaleString()}`;
 }
 
 interface Props {
   data: TradeRecord[];
+}
+
+type Accent = {
+  // soft pastel for gradient/accent
+  from: string;
+  to: string;
+  // icon tint (slightly stronger)
+  iconBg: string;
+  iconColor: string;
+  // shape blob color
+  blob: string;
+};
+
+const ACCENTS: Record<string, Accent> = {
+  blue:   { from: 'hsl(210, 100%, 96%)', to: 'hsl(210, 90%, 88%)',  iconBg: 'hsl(210, 90%, 94%)', iconColor: 'hsl(215, 75%, 55%)', blob: 'hsl(210, 90%, 85%)' },
+  green:  { from: 'hsl(150, 70%, 95%)',  to: 'hsl(150, 60%, 85%)',  iconBg: 'hsl(150, 65%, 92%)', iconColor: 'hsl(155, 55%, 42%)', blob: 'hsl(150, 60%, 82%)' },
+  orange: { from: 'hsl(28, 100%, 95%)',  to: 'hsl(28, 90%, 85%)',   iconBg: 'hsl(28, 90%, 93%)',  iconColor: 'hsl(22, 80%, 55%)',  blob: 'hsl(28, 90%, 82%)' },
+  purple: { from: 'hsl(265, 80%, 96%)',  to: 'hsl(265, 70%, 88%)',  iconBg: 'hsl(265, 75%, 94%)', iconColor: 'hsl(265, 60%, 58%)', blob: 'hsl(265, 70%, 86%)' },
+  pink:   { from: 'hsl(335, 90%, 96%)',  to: 'hsl(335, 80%, 88%)',  iconBg: 'hsl(335, 80%, 94%)', iconColor: 'hsl(335, 65%, 58%)', blob: 'hsl(335, 80%, 86%)' },
+  teal:   { from: 'hsl(180, 70%, 94%)',  to: 'hsl(180, 60%, 84%)',  iconBg: 'hsl(180, 65%, 92%)', iconColor: 'hsl(182, 60%, 40%)', blob: 'hsl(180, 60%, 82%)' },
+};
+
+interface KPICardProps {
+  icon: React.ElementType;
+  title: string;
+  value: React.ReactNode;
+  accent: Accent;
+  delay?: number;
+}
+
+function KPICard({ icon: Icon, title, value, accent, delay = 0 }: KPICardProps) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay, duration: 0.4, ease: 'easeOut' }}
+      whileHover={{ y: -2 }}
+      className="relative overflow-hidden rounded-[22px] bg-card p-5 min-h-[120px] flex items-center gap-4"
+      style={{
+        boxShadow:
+          '0 10px 25px -12px hsl(220 25% 70% / 0.25), 0 4px 10px -4px hsl(220 25% 70% / 0.15), inset 1px 1px 2px hsl(0 0% 100% / 0.9), inset -1px -1px 3px hsl(220 20% 85% / 0.25)',
+      }}
+    >
+      {/* Decorative accent blob (right side) */}
+      <div
+        aria-hidden
+        className="absolute -right-10 -top-10 w-44 h-44 rounded-full opacity-80 pointer-events-none"
+        style={{
+          background: `radial-gradient(circle at 30% 30%, ${accent.to}, ${accent.from} 60%, transparent 75%)`,
+          filter: 'blur(2px)',
+        }}
+      />
+      <div
+        aria-hidden
+        className="absolute -right-6 bottom-[-40px] w-32 h-32 rounded-full opacity-60 pointer-events-none"
+        style={{
+          background: `radial-gradient(circle, ${accent.blob}, transparent 70%)`,
+          filter: 'blur(4px)',
+        }}
+      />
+
+      {/* Icon */}
+      <div
+        className="relative z-10 w-14 h-14 rounded-2xl flex items-center justify-center shrink-0"
+        style={{
+          background: `linear-gradient(145deg, hsl(0 0% 100%), ${accent.iconBg})`,
+          boxShadow: `inset 2px 2px 4px hsl(0 0% 100% / 0.9), inset -2px -2px 4px ${accent.blob}, 0 4px 10px -4px ${accent.blob}`,
+        }}
+      >
+        <Icon className="w-7 h-7" style={{ color: accent.iconColor }} strokeWidth={2.2} />
+      </div>
+
+      {/* Title + Value */}
+      <div className="relative z-10 flex flex-col justify-center min-w-0 flex-1">
+        <p className="text-[11px] font-medium tracking-wide uppercase text-muted-foreground mb-1.5 truncate">
+          {title}
+        </p>
+        <div className="text-2xl font-bold text-foreground leading-tight truncate">
+          {value}
+        </div>
+      </div>
+    </motion.div>
+  );
 }
 
 export default function KPICards({ data }: Props) {
@@ -44,123 +129,68 @@ export default function KPICards({ data }: Props) {
     };
   }, [data]);
 
-  const kpis = [
+  const renderTopList = (items: [string, number][]) => (
+    <div className="space-y-0.5">
+      {items.map(([name], i) => (
+        <div key={name} className="flex items-baseline gap-1.5">
+          <span className="text-xs font-bold text-muted-foreground/70">{i + 1}.</span>
+          <span className="text-sm font-semibold text-foreground truncate">{name}</span>
+        </div>
+      ))}
+    </div>
+  );
+
+  const cards = [
     {
       icon: TrendingUp,
-      label: t('totalTradeValue'),
-      value: formatRM(stats.totalTrade),
-      tooltip: t('tooltipTotalTrade'),
-      gradient: 'from-[hsl(187,72%,42%)] to-[hsl(200,65%,50%)]',
+      title: t('totalTradeValue'),
+      value: formatCompact(stats.totalTrade),
+      accent: ACCENTS.blue,
     },
     {
       icon: ArrowUpRight,
-      label: t('totalExportValue'),
-      value: formatRM(stats.totalExport),
-      tooltip: t('tooltipExport'),
-      gradient: 'from-[hsl(155,50%,40%)] to-[hsl(170,50%,45%)]',
+      title: t('totalExportValue'),
+      value: formatCompact(stats.totalExport),
+      accent: ACCENTS.green,
     },
     {
       icon: ArrowDownRight,
-      label: t('totalImportValue'),
-      value: formatRM(stats.totalImport),
-      tooltip: t('tooltipImport'),
-      gradient: 'from-[hsl(42,70%,50%)] to-[hsl(30,60%,50%)]',
+      title: t('totalImportValue'),
+      value: formatCompact(stats.totalImport),
+      accent: ACCENTS.orange,
     },
     {
       icon: Scale,
-      label: t('tradeBalance'),
-      value: formatRM(stats.tradeBalance),
-      tooltip: t('tooltipTradeBalance'),
-      gradient: stats.tradeBalance >= 0
-        ? 'from-[hsl(155,50%,40%)] to-[hsl(187,72%,42%)]'
-        : 'from-[hsl(0,65%,55%)] to-[hsl(30,60%,50%)]',
-      valueColor: stats.tradeBalance >= 0 ? 'text-[hsl(155,50%,40%)]' : 'text-destructive',
+      title: t('tradeBalance'),
+      value: formatCompact(stats.tradeBalance),
+      accent: ACCENTS.purple,
+    },
+    {
+      icon: MapPin,
+      title: t('top3States'),
+      value: renderTopList(stats.top3States),
+      accent: ACCENTS.pink,
+    },
+    {
+      icon: Package,
+      title: t('top3Commodities'),
+      value: renderTopList(stats.top3Commodities),
+      accent: ACCENTS.teal,
     },
   ];
 
   return (
-    <div className="space-y-3">
-      {/* Row 1: 4 main KPIs */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        {kpis.map((kpi, i) => (
-          <motion.div
-            key={kpi.label}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.05 }}
-            className="rounded-xl border border-border bg-card/80 backdrop-blur-sm shadow-sm p-4 relative overflow-hidden"
-          >
-            <div className={`absolute inset-0 bg-gradient-to-br ${kpi.gradient} opacity-[0.07]`} />
-            <div className="relative z-10">
-              <div className="flex items-center justify-between mb-2">
-                <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <kpi.icon className="w-5 h-5 text-primary" />
-                </div>
-                <InfoTooltip text={kpi.tooltip} />
-              </div>
-              <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider mb-1">{kpi.label}</p>
-              <p className={`text-lg font-bold truncate ${kpi.valueColor || 'text-foreground'}`}>{kpi.value}</p>
-            </div>
-          </motion.div>
-        ))}
-      </div>
-
-      {/* Row 2: Top 3 States + Top 3 Commodities */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-        {/* Top 3 States */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="rounded-xl border border-border bg-card/80 backdrop-blur-sm shadow-sm p-4 relative overflow-hidden"
-        >
-          <div className="absolute inset-0 bg-gradient-to-br from-[hsl(220,50%,55%)] to-[hsl(280,40%,55%)] opacity-[0.07]" />
-          <div className="relative z-10">
-            <div className="flex items-center gap-2 mb-3">
-              <MapPin className="w-4 h-4 text-primary" />
-              <p className="text-xs font-semibold text-foreground">{t('top3States')}</p>
-            </div>
-            <div className="space-y-2">
-              {stats.top3States.map(([name, value], i) => (
-                <div key={name} className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-bold text-primary w-4">{i + 1}</span>
-                    <span className="text-xs text-foreground font-medium">{name}</span>
-                  </div>
-                  <span className="text-xs font-semibold text-muted-foreground">{formatRM(value)}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </motion.div>
-
-        {/* Top 3 Commodities */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.25 }}
-          className="rounded-xl border border-border bg-card/80 backdrop-blur-sm shadow-sm p-4 relative overflow-hidden"
-        >
-          <div className="absolute inset-0 bg-gradient-to-br from-[hsl(42,70%,50%)] to-[hsl(340,55%,50%)] opacity-[0.07]" />
-          <div className="relative z-10">
-            <div className="flex items-center gap-2 mb-3">
-              <Package className="w-4 h-4 text-primary" />
-              <p className="text-xs font-semibold text-foreground">{t('top3Commodities')}</p>
-            </div>
-            <div className="space-y-2">
-              {stats.top3Commodities.map(([name, value], i) => (
-                <div key={name} className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2 min-w-0">
-                    <span className="text-[10px] font-bold text-primary w-4 shrink-0">{i + 1}</span>
-                    <span className="text-xs text-foreground font-medium truncate">{name}</span>
-                  </div>
-                  <span className="text-xs font-semibold text-muted-foreground whitespace-nowrap">{formatRM(value)}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </motion.div>
-      </div>
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      {cards.map((c, i) => (
+        <KPICard
+          key={c.title}
+          icon={c.icon}
+          title={c.title}
+          value={c.value}
+          accent={c.accent}
+          delay={i * 0.06}
+        />
+      ))}
     </div>
   );
 }
