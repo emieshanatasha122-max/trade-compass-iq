@@ -180,6 +180,33 @@
   .section-description {
     @apply text-xs text-muted-foreground mt-1 mb-4 max-w-2xl;
   }
+
+  /* KPI Neumorphic Card — soft 3D in light, clean minimal in dark */
+  .kpi-neumorphic-card {
+    box-shadow:
+      0 10px 25px -12px hsl(220 25% 70% / 0.25),
+      0 4px 10px -4px hsl(220 25% 70% / 0.15),
+      inset 1px 1px 2px hsl(0 0% 100% / 0.9),
+      inset -1px -1px 3px hsl(220 20% 85% / 0.25);
+  }
+  .dark .kpi-neumorphic-card {
+    box-shadow: 0 1px 2px hsl(0 0% 0% / 0.3);
+  }
+  .dark .kpi-blob {
+    display: none;
+  }
+
+  .kpi-icon-wrap {
+    background: linear-gradient(145deg, hsl(0 0% 100%), var(--accent-icon-bg));
+    box-shadow:
+      inset 2px 2px 4px hsl(0 0% 100% / 0.9),
+      inset -2px -2px 4px var(--accent-blob),
+      0 4px 10px -4px var(--accent-blob);
+  }
+  .dark .kpi-icon-wrap {
+    background: hsl(var(--secondary));
+    box-shadow: none;
+  }
 }
 
 @layer utilities {
