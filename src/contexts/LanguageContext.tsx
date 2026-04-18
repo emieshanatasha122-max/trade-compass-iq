@@ -19,7 +19,7 @@ const translations: Translations = {
   totalImportValue: { bm: 'Jumlah Import', en: 'Total Import' },
   tradeBalance: { bm: 'Imbangan Perdagangan', en: 'Trade Balance' },
   tooltipTradeBalance: { bm: 'Perbezaan antara nilai eksport dan import. Positif bermaksud lebihan dagangan.', en: 'Difference between export and import values. Positive means trade surplus.' },
-  top3States: { bm: '3 Negeri Teratas', en: 'Top 3 States' },
+  top3States: { bm: '3 Negeri Perdagangan Teratas', en: 'Top 3 Trading States' },
   top3Commodities: { bm: '3 Komoditi Teratas', en: 'Top 3 Commodities' },
   topTradingState: { bm: 'Negeri Dagangan Teratas', en: 'Top Trading State' },
   topSITCCategory: { bm: 'Komoditi SITC Teratas', en: 'Top SITC Category' },
