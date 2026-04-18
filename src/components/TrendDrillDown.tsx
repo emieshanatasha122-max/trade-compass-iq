@@ -3,9 +3,9 @@ import type { TradeRecord } from '@/data/tradeDataLoader';
 import { useLanguage } from '@/contexts/LanguageContext';
 import {
   XAxis, YAxis, Tooltip, ResponsiveContainer,
-  CartesianGrid, LineChart, Line, Legend, ReferenceLine,
+  CartesianGrid, LineChart, Line, Legend,
 } from 'recharts';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, BarChart3 } from 'lucide-react';
 
 function formatRM(value: number): string {
   if (value >= 1e12) return `RM ${(value / 1e12).toFixed(1)}T`;
@@ -76,29 +76,31 @@ export default function TrendDrillDown({ data }: Props) {
     color: 'hsl(var(--foreground))',
   };
 
+  const insightText = drillYear
+    ? (lang === 'bm'
+        ? `Pecahan bulanan untuk tahun ${drillYear} menunjukkan corak musiman dagangan. Bandingkan kemuncak eksport dan import untuk mengenal pasti bulan paling aktif.`
+        : `The monthly breakdown for ${drillYear} reveals seasonal trade patterns. Compare export and import peaks to identify the most active months.`)
+    : (lang === 'bm'
+        ? 'Eksport menunjukkan trend peningkatan yang konsisten dan mencapai kemuncak pada tahun 2022 sebelum menurun sedikit pada tahun berikutnya. Import pula kekal lebih rendah sepanjang tempoh ini, mengekalkan imbangan dagangan yang positif.'
+        : 'Exports show a consistent upward trend, reaching a peak in 2022 before slightly declining in the following year. Imports remain lower throughout the period, maintaining a positive trade balance.');
+
   return (
     <div>
-      <div className="flex items-center gap-2 mb-4">
-        {drillYear ? (
-          <>
-            <button
-              onClick={() => setDrillYear(null)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-secondary text-foreground hover:bg-secondary/80 transition-colors"
-            >
-              <ArrowLeft className="w-3.5 h-3.5" />
-              {lang === 'bm' ? 'Kembali ke Tahunan' : 'Back to Yearly'}
-            </button>
-            <span className="text-sm font-bold text-primary">{drillYear}</span>
-            <span className="text-xs text-muted-foreground">
-              {lang === 'bm' ? '— Pecahan Bulanan' : '— Monthly Breakdown'}
-            </span>
-          </>
-        ) : (
-          <p className="text-xs text-muted-foreground">
-            {lang === 'bm' ? 'Klik pada titik tahun untuk melihat pecahan bulanan' : 'Click a year point to drill into monthly view'}
-          </p>
-        )}
-      </div>
+      {drillYear && (
+        <div className="flex items-center gap-2 mb-4">
+          <button
+            onClick={() => setDrillYear(null)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-secondary text-foreground hover:bg-secondary/80 transition-colors"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" />
+            {lang === 'bm' ? 'Kembali ke Tahunan' : 'Back to Yearly'}
+          </button>
+          <span className="text-sm font-bold text-primary">{drillYear}</span>
+          <span className="text-xs text-muted-foreground">
+            {lang === 'bm' ? '— Pecahan Bulanan' : '— Monthly Breakdown'}
+          </span>
+        </div>
+      )}
       <ResponsiveContainer width="100%" height={320}>
         <LineChart
           data={chartData}
@@ -106,45 +108,28 @@ export default function TrendDrillDown({ data }: Props) {
           onClick={drillYear ? undefined : handleYearClick}
           style={drillYear ? undefined : { cursor: 'pointer' }}
         >
-          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-          <XAxis dataKey="label" tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }} />
-          <YAxis tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} tickFormatter={v => formatRM(v)} />
+          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" strokeOpacity={0.4} vertical={false} />
+          <XAxis dataKey="label" tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }} axisLine={{ stroke: 'hsl(var(--border))' }} tickLine={false} />
+          <YAxis tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} tickFormatter={v => formatRM(v)} axisLine={false} tickLine={false} />
           <Tooltip contentStyle={tooltipStyle} formatter={(value: number) => [formatRM(value)]} />
-          {!drillYear && chartData.length > 0 && (
-            <>
-              {chartData.map((point) => {
-                if (point.label === '2016' || point.label === '2017') {
-                  const note2016 = lang === 'bm'
-                    ? '2016: Kelembapan dagangan global'
-                    : '2016: Global trade slowdown';
-                  const note2017 = lang === 'bm'
-                    ? '2017: Pemulihan eksport kukuh'
-                    : '2017: Strong export recovery';
-                  return (
-                    <ReferenceLine
-                      key={`ref-${point.label}`}
-                      x={point.label}
-                      stroke="hsl(var(--muted-foreground))"
-                      strokeDasharray="4 4"
-                      strokeWidth={1}
-                      label={{
-                        value: point.label === '2016' ? note2016 : note2017,
-                        position: 'top',
-                        fontSize: 9,
-                        fill: 'hsl(var(--muted-foreground))',
-                      }}
-                    />
-                  );
-                }
-                return null;
-              })}
-            </>
-          )}
-          <Legend wrapperStyle={{ fontSize: 11 }} />
-          <Line type="linear" dataKey="export" name={t('export')} stroke="hsl(160, 60%, 45%)" strokeWidth={2.5} dot={{ r: 4 }} activeDot={{ r: 6 }} animationDuration={800} />
-          <Line type="linear" dataKey="import" name={t('import')} stroke="hsl(0, 70%, 55%)" strokeWidth={2.5} dot={{ r: 4 }} activeDot={{ r: 6 }} animationDuration={800} />
+          <Legend wrapperStyle={{ fontSize: 11, paddingTop: 8 }} iconType="circle" />
+          <Line type="linear" dataKey="export" name={t('export')} stroke="hsl(160, 60%, 45%)" strokeWidth={2} dot={{ r: 3 }} activeDot={{ r: 5 }} animationDuration={800} />
+          <Line type="linear" dataKey="import" name={t('import')} stroke="hsl(0, 70%, 55%)" strokeWidth={2} dot={{ r: 3 }} activeDot={{ r: 5 }} animationDuration={800} />
         </LineChart>
       </ResponsiveContainer>
+
+      {!drillYear && (
+        <p className="text-[11px] text-muted-foreground text-center mt-1">
+          {lang === 'bm' ? 'Klik pada titik tahun untuk melihat pecahan bulanan' : 'Click a year point to drill into the monthly breakdown'}
+        </p>
+      )}
+
+      <div className="mt-4 flex items-start gap-3 rounded-lg border border-border/60 bg-muted/30 px-4 py-3">
+        <BarChart3 className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+        <p className="text-xs leading-relaxed text-muted-foreground">
+          {insightText}
+        </p>
+      </div>
     </div>
   );
 }
