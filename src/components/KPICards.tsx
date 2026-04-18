@@ -55,10 +55,10 @@ function KPICard({ icon: Icon, title, value, accent, delay = 0 }: KPICardProps) 
       whileHover={{ y: -2 }}
       className="kpi-neumorphic-card relative overflow-hidden rounded-[22px] bg-card p-5 min-h-[120px] flex items-center gap-4 dark:border dark:border-border"
     >
-      {/* Decorative accent blobs — light mode only */}
+      {/* Decorative accent blobs — hidden in dark mode via CSS */}
       <div
         aria-hidden
-        className="hidden dark:hidden [html:not(.dark)_&]:block absolute -right-10 -top-10 w-44 h-44 rounded-full opacity-80 pointer-events-none"
+        className="kpi-blob absolute -right-10 -top-10 w-44 h-44 rounded-full opacity-80 pointer-events-none"
         style={{
           background: `radial-gradient(circle at 30% 30%, ${accent.to}, ${accent.from} 60%, transparent 75%)`,
           filter: 'blur(2px)',
@@ -66,7 +66,7 @@ function KPICard({ icon: Icon, title, value, accent, delay = 0 }: KPICardProps) 
       />
       <div
         aria-hidden
-        className="hidden dark:hidden [html:not(.dark)_&]:block absolute -right-6 bottom-[-40px] w-32 h-32 rounded-full opacity-60 pointer-events-none"
+        className="kpi-blob absolute -right-6 bottom-[-40px] w-32 h-32 rounded-full opacity-60 pointer-events-none"
         style={{
           background: `radial-gradient(circle, ${accent.blob}, transparent 70%)`,
           filter: 'blur(4px)',
