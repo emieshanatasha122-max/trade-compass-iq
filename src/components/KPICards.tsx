@@ -19,22 +19,23 @@ interface Props {
 }
 
 type Accent = {
-  // Solid pastel for the right-side accent shape
-  solid: string;
-  solidDeep: string;
-  // Icon tint
+  // soft pastel for gradient/accent
+  from: string;
+  to: string;
+  // icon tint (slightly stronger)
   iconBg: string;
   iconColor: string;
-  iconShadow: string;
+  // shape blob color
+  blob: string;
 };
 
 const ACCENTS: Record<string, Accent> = {
-  blue:   { solid: 'hsl(210, 90%, 82%)', solidDeep: 'hsl(215, 85%, 70%)', iconBg: 'hsl(210, 90%, 94%)', iconColor: 'hsl(215, 75%, 50%)', iconShadow: 'hsl(215, 80%, 75%)' },
-  green:  { solid: 'hsl(150, 65%, 80%)', solidDeep: 'hsl(155, 60%, 65%)', iconBg: 'hsl(150, 65%, 92%)', iconColor: 'hsl(155, 55%, 38%)', iconShadow: 'hsl(150, 60%, 72%)' },
-  orange: { solid: 'hsl(28, 90%, 80%)',  solidDeep: 'hsl(22, 85%, 68%)',  iconBg: 'hsl(28, 90%, 93%)',  iconColor: 'hsl(22, 80%, 52%)',  iconShadow: 'hsl(28, 85%, 75%)' },
-  purple: { solid: 'hsl(265, 75%, 84%)', solidDeep: 'hsl(265, 65%, 70%)', iconBg: 'hsl(265, 75%, 94%)', iconColor: 'hsl(265, 60%, 55%)', iconShadow: 'hsl(265, 70%, 78%)' },
-  pink:   { solid: 'hsl(335, 85%, 84%)', solidDeep: 'hsl(335, 70%, 70%)', iconBg: 'hsl(335, 80%, 94%)', iconColor: 'hsl(335, 65%, 55%)', iconShadow: 'hsl(335, 75%, 78%)' },
-  teal:   { solid: 'hsl(180, 60%, 78%)', solidDeep: 'hsl(182, 55%, 60%)', iconBg: 'hsl(180, 65%, 92%)', iconColor: 'hsl(182, 60%, 38%)', iconShadow: 'hsl(180, 55%, 70%)' },
+  blue:   { from: 'hsl(210, 100%, 96%)', to: 'hsl(210, 90%, 88%)',  iconBg: 'hsl(210, 90%, 94%)', iconColor: 'hsl(215, 75%, 55%)', blob: 'hsl(210, 90%, 85%)' },
+  green:  { from: 'hsl(150, 70%, 95%)',  to: 'hsl(150, 60%, 85%)',  iconBg: 'hsl(150, 65%, 92%)', iconColor: 'hsl(155, 55%, 42%)', blob: 'hsl(150, 60%, 82%)' },
+  orange: { from: 'hsl(28, 100%, 95%)',  to: 'hsl(28, 90%, 85%)',   iconBg: 'hsl(28, 90%, 93%)',  iconColor: 'hsl(22, 80%, 55%)',  blob: 'hsl(28, 90%, 82%)' },
+  purple: { from: 'hsl(265, 80%, 96%)',  to: 'hsl(265, 70%, 88%)',  iconBg: 'hsl(265, 75%, 94%)', iconColor: 'hsl(265, 60%, 58%)', blob: 'hsl(265, 70%, 86%)' },
+  pink:   { from: 'hsl(335, 90%, 96%)',  to: 'hsl(335, 80%, 88%)',  iconBg: 'hsl(335, 80%, 94%)', iconColor: 'hsl(335, 65%, 58%)', blob: 'hsl(335, 80%, 86%)' },
+  teal:   { from: 'hsl(180, 70%, 94%)',  to: 'hsl(180, 60%, 84%)',  iconBg: 'hsl(180, 65%, 92%)', iconColor: 'hsl(182, 60%, 40%)', blob: 'hsl(180, 60%, 82%)' },
 };
 
 interface KPICardProps {
@@ -52,29 +53,36 @@ function KPICard({ icon: Icon, title, value, accent, delay = 0 }: KPICardProps) 
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay, duration: 0.4, ease: 'easeOut' }}
       whileHover={{ y: -2 }}
-      className="relative overflow-hidden rounded-[22px] bg-card p-5 pr-24 min-h-[120px] flex items-center gap-4"
+      className="relative overflow-hidden rounded-[22px] bg-card p-5 min-h-[120px] flex items-center gap-4"
       style={{
         boxShadow:
-          '0 12px 28px -14px hsl(220 25% 60% / 0.28), 0 4px 10px -4px hsl(220 25% 70% / 0.18), inset 1px 1px 2px hsl(0 0% 100% / 0.95)',
+          '0 10px 25px -12px hsl(220 25% 70% / 0.25), 0 4px 10px -4px hsl(220 25% 70% / 0.15), inset 1px 1px 2px hsl(0 0% 100% / 0.9), inset -1px -1px 3px hsl(220 20% 85% / 0.25)',
       }}
     >
-      {/* SOLID curved accent shape on the right side (clearly layered) */}
+      {/* Decorative accent blob (right side) */}
       <div
         aria-hidden
-        className="absolute right-0 top-0 bottom-0 w-[90px] pointer-events-none"
+        className="absolute -right-10 -top-10 w-44 h-44 rounded-full opacity-80 pointer-events-none"
         style={{
-          background: `linear-gradient(135deg, ${accent.solid} 0%, ${accent.solidDeep} 100%)`,
-          clipPath: 'ellipse(85% 120% at 100% 50%)',
-          boxShadow: `inset 2px 0 6px hsl(0 0% 100% / 0.35), -4px 0 12px -6px ${accent.solidDeep}`,
+          background: `radial-gradient(circle at 30% 30%, ${accent.to}, ${accent.from} 60%, transparent 75%)`,
+          filter: 'blur(2px)',
+        }}
+      />
+      <div
+        aria-hidden
+        className="absolute -right-6 bottom-[-40px] w-32 h-32 rounded-full opacity-60 pointer-events-none"
+        style={{
+          background: `radial-gradient(circle, ${accent.blob}, transparent 70%)`,
+          filter: 'blur(4px)',
         }}
       />
 
-      {/* Icon (embossed, matches accent) */}
+      {/* Icon */}
       <div
         className="relative z-10 w-14 h-14 rounded-2xl flex items-center justify-center shrink-0"
         style={{
           background: `linear-gradient(145deg, hsl(0 0% 100%), ${accent.iconBg})`,
-          boxShadow: `inset 2px 2px 4px hsl(0 0% 100% / 0.95), inset -2px -2px 4px ${accent.iconShadow}, 0 4px 10px -4px ${accent.iconShadow}`,
+          boxShadow: `inset 2px 2px 4px hsl(0 0% 100% / 0.9), inset -2px -2px 4px ${accent.blob}, 0 4px 10px -4px ${accent.blob}`,
         }}
       >
         <Icon className="w-7 h-7" style={{ color: accent.iconColor }} strokeWidth={2.2} />
@@ -133,18 +141,55 @@ export default function KPICards({ data }: Props) {
   );
 
   const cards = [
-    { icon: TrendingUp,     title: t('totalTradeValue'),  value: formatCompact(stats.totalTrade),   accent: ACCENTS.blue },
-    { icon: ArrowUpRight,   title: t('totalExportValue'), value: formatCompact(stats.totalExport),  accent: ACCENTS.green },
-    { icon: ArrowDownRight, title: t('totalImportValue'), value: formatCompact(stats.totalImport),  accent: ACCENTS.orange },
-    { icon: Scale,          title: t('tradeBalance'),     value: formatCompact(stats.tradeBalance), accent: ACCENTS.purple },
-    { icon: MapPin,         title: t('top3States'),       value: renderTopList(stats.top3States),       accent: ACCENTS.pink },
-    { icon: Package,        title: t('top3Commodities'),  value: renderTopList(stats.top3Commodities),  accent: ACCENTS.teal },
+    {
+      icon: TrendingUp,
+      title: t('totalTradeValue'),
+      value: formatCompact(stats.totalTrade),
+      accent: ACCENTS.blue,
+    },
+    {
+      icon: ArrowUpRight,
+      title: t('totalExportValue'),
+      value: formatCompact(stats.totalExport),
+      accent: ACCENTS.green,
+    },
+    {
+      icon: ArrowDownRight,
+      title: t('totalImportValue'),
+      value: formatCompact(stats.totalImport),
+      accent: ACCENTS.orange,
+    },
+    {
+      icon: Scale,
+      title: t('tradeBalance'),
+      value: formatCompact(stats.tradeBalance),
+      accent: ACCENTS.purple,
+    },
+    {
+      icon: MapPin,
+      title: t('top3States'),
+      value: renderTopList(stats.top3States),
+      accent: ACCENTS.pink,
+    },
+    {
+      icon: Package,
+      title: t('top3Commodities'),
+      value: renderTopList(stats.top3Commodities),
+      accent: ACCENTS.teal,
+    },
   ];
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
       {cards.map((c, i) => (
-        <KPICard key={c.title} icon={c.icon} title={c.title} value={c.value} accent={c.accent} delay={i * 0.06} />
+        <KPICard
+          key={c.title}
+          icon={c.icon}
+          title={c.title}
+          value={c.value}
+          accent={c.accent}
+          delay={i * 0.06}
+        />
       ))}
     </div>
   );
