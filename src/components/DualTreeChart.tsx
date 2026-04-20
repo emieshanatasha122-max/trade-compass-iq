@@ -241,15 +241,16 @@ export default function DualTreeChart({ data }: Props) {
         (regionMap[region][r.negeri] || 0) + r.jumlahDaganganRM;
     });
 
-    const regions: RegionNode[] = ALLOWED_REGIONS
-      .filter(name => regionMap[name])
-      .map(name => ({
+    const regions: RegionNode[] = ALLOWED_REGIONS.map(name => {
+      const stateMap = regionMap[name] || {};
+      return {
         name,
-        total: Object.values(regionMap[name]).reduce((a, b) => a + b, 0),
-        states: Object.entries(regionMap[name])
+        total: Object.values(stateMap).reduce((a, b) => a + b, 0),
+        states: Object.entries(stateMap)
           .sort((a, b) => b[1] - a[1])
           .map(([n, v]) => ({ name: n, value: v })),
-      }));
+      };
+    });
 
     const grandTotal = regions.reduce((a, b) => a + b.total, 0);
     return { regions, grandTotal };
