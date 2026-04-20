@@ -37,7 +37,7 @@ export default function TradeInfoCard({
       {/* Content */}
       <div className="p-3 space-y-2">
         <div>
-          <p className="text-[10px] text-muted-foreground">{lang === 'bm' ? 'Jumlah Dagangan' : 'Total Trade'}</p>
+          <p className="text-[10px] text-muted-foreground">{lang === 'bm' ? 'Jumlah Perdagangan' : 'Total Trade'}</p>
           <p className="text-sm font-bold text-foreground">{formatRM(totalValue)}</p>
         </div>
         <div className="flex gap-3">

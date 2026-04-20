@@ -420,7 +420,7 @@ export default function Globe3D({ data }: Globe3DProps) {
               : `${hoveredArc.countryName} → Malaysia`}
           </p>
           <div className="space-y-1 text-muted-foreground">
-            <p>{lang === 'bm' ? 'Jumlah Dagangan' : 'Total Trade'}: <span className="font-semibold text-foreground">{formatRM(hoveredArc.totalValue)}</span></p>
+            <p>{lang === 'bm' ? 'Jumlah Perdagangan' : 'Total Trade'}: <span className="font-semibold text-foreground">{formatRM(hoveredArc.totalValue)}</span></p>
             <p>{lang === 'bm' ? 'Eksport' : 'Export'}: <span className="text-[#10B981] font-semibold">{formatRM(hoveredArc.exportValue)}</span></p>
             <p>{lang === 'bm' ? 'Import' : 'Import'}: <span className="text-[#EF4444] font-semibold">{formatRM(hoveredArc.importValue)}</span></p>
             <p>{lang === 'bm' ? 'Barangan Utama' : 'Top Commodity'}: <span className="text-foreground">{hoveredArc.topCommodity}</span></p>

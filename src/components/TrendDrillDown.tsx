@@ -78,10 +78,10 @@ export default function TrendDrillDown({ data }: Props) {
 
   const insightText = drillYear
     ? (lang === 'bm'
-        ? `Pecahan bulanan untuk tahun ${drillYear} menunjukkan corak musiman dagangan. Bandingkan kemuncak eksport dan import untuk mengenal pasti bulan paling aktif.`
+        ? `Perincian bulanan untuk tahun ${drillYear} menunjukkan corak musiman Perdagangan. Bandingkan kemuncak eksport dan import untuk mengenal pasti bulan paling aktif.`
         : `The monthly breakdown for ${drillYear} reveals seasonal trade patterns. Compare export and import peaks to identify the most active months.`)
     : (lang === 'bm'
-        ? 'Eksport menunjukkan trend peningkatan yang konsisten dan mencapai kemuncak pada tahun 2022 sebelum menurun sedikit pada tahun berikutnya. Import pula kekal lebih rendah sepanjang tempoh ini, mengekalkan imbangan dagangan yang positif.'
+        ? 'Eksport menunjukkan trend peningkatan yang konsisten dan mencapai kemuncak pada tahun 2022 sebelum menurun sedikit pada tahun berikutnya. Import pula kekal lebih rendah sepanjang tempoh ini, mengekalkan imbangan Perdagangan yang positif.'
         : 'Exports show a consistent upward trend, reaching a peak in 2022 before slightly declining in the following year. Imports remain lower throughout the period, maintaining a positive trade balance.');
 
   return (
@@ -97,7 +97,7 @@ export default function TrendDrillDown({ data }: Props) {
           </button>
           <span className="text-sm font-bold text-primary">{drillYear}</span>
           <span className="text-xs text-muted-foreground">
-            {lang === 'bm' ? '— Pecahan Bulanan' : '— Monthly Breakdown'}
+            {lang === 'bm' ? '— Perincian Bulanan' : '— Monthly Breakdown'}
           </span>
         </div>
       )}
@@ -120,7 +120,7 @@ export default function TrendDrillDown({ data }: Props) {
 
       {!drillYear && (
         <p className="text-[11px] text-muted-foreground text-center mt-1">
-          {lang === 'bm' ? 'Klik pada titik tahun untuk melihat pecahan bulanan' : 'Click a year point to drill into the monthly breakdown'}
+          {lang === 'bm' ? 'Klik pada titik tahun untuk melihat perincian bulanan' : 'Click a year point to drill into the monthly breakdown'}
         </p>
       )}
 

@@ -9,7 +9,7 @@ import SidebarFilters from '@/components/SidebarFilters';
 export default function DashboardLayout() {
   const { lang, setLang, t } = useLanguage();
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [theme, setTheme] = useState<'dark' | 'light'>('light');
+  const [theme, setTheme] = useState<'dark' | 'light'>('dark');
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', theme === 'dark');
