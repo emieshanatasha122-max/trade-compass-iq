@@ -73,8 +73,8 @@ export default function Overview() {
       {/* Section E: Trade by Economic Area (Full width) */}
       <section>
         <SectionHeader
-          title={lang === 'bm' ? 'Dagangan mengikut Kawasan Ekonomi' : 'Trade by Economic Region'}
-          description={lang === 'bm' ? 'Hierarki dagangan mengikut kawasan ekonomi dan negeri.' : 'Trade hierarchy by economic region and state.'}
+          title={lang === 'bm' ? 'Perdagangan mengikut Kawasan Ekonomi' : 'Trade by Economic Region'}
+          description={lang === 'bm' ? 'Hierarki Perdagangan mengikut kawasan ekonomi dan negeri.' : 'Trade hierarchy by economic region and state.'}
           icon={GitBranch}
         />
         <div className="chart-container">
@@ -94,7 +94,7 @@ export default function Overview() {
         <section>
           <SectionHeader
             title={lang === 'bm' ? 'Peta Pokok Komoditi' : 'Commodity Treemap'}
-            description={lang === 'bm' ? 'Taburan dagangan mengikut kategori SITC.' : 'Trade distribution by SITC category.'}
+            description={lang === 'bm' ? 'Taburan Perdagangan mengikut kategori SITC.' : 'Trade distribution by SITC category.'}
             icon={Package}
           />
           <div className="chart-container">
@@ -106,7 +106,7 @@ export default function Overview() {
       {/* Section H: Top 10 Trading Countries */}
       <section>
         <SectionHeader
-          title={lang === 'bm' ? '10 Negara Dagangan Teratas' : 'Top 10 Trading Countries'}
+          title={lang === 'bm' ? '10 Negara Perdagangan Teratas' : 'Top 10 Trading Countries'}
           description={lang === 'bm' ? 'Import (kiri) dan Eksport (kanan) mengikut negara.' : 'Import (left) and Export (right) by country.'}
           icon={Flag}
         />

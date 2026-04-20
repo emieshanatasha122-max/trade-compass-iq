@@ -120,7 +120,7 @@ export default function StateFlagGrid({ data }: Props) {
               <p className="text-sm font-semibold text-foreground">{state.name}</p>
               <p className="text-2xl font-bold text-primary mt-1">{state.pct}%</p>
               <p className="text-[10px] text-muted-foreground">
-                {lang === 'bm' ? 'Sumbangan Dagangan Nasional' : 'Share of National Trade'}
+                {lang === 'bm' ? 'Sumbangan Perdagangan Nasional' : 'Share of National Trade'}
               </p>
               <p className="text-sm font-semibold text-foreground mt-1">{formatRM(state.value, lang)}</p>
 

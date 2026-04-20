@@ -10,7 +10,7 @@ export default function Publications() {
     {
       category: t('mediaStatement'),
       title: 'Statistik Eksport Import mengikut Negeri — Jan 2026',
-      description: 'Laporan rasmi mengenai statistik dagangan eksport dan import mengikut negeri di Malaysia.',
+      description: 'Laporan rasmi mengenai statistik Perdagangan eksport dan import mengikut negeri di Malaysia.',
       date: '01 Apr 2026',
       icon: FileText,
       url: 'https://www.dosm.gov.my',
