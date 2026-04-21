@@ -91,37 +91,39 @@ export default function CommoditySunburst({ data }: Props) {
     <div>
       <div className="flex items-center justify-between mb-3">
         <h4 className="text-sm font-bold text-foreground">
-          {lang === 'bm' ? 'Peta Pokok Komoditi (SITC)' : 'Commodity Treemap (SITC)'}
+          {lang === 'bm' ? 'Komoditi Perdagangan' : 'Trade Commodities'}
         </h4>
         <span className="text-[10px] text-muted-foreground">
           {lang === 'bm' ? 'Jumlah' : 'Total'}: {formatRM(total)}
         </span>
       </div>
-      <ResponsiveContainer width="100%" height={380}>
+      <ResponsiveContainer width="100%" height={420}>
         <Treemap data={treemapData} dataKey="size" nameKey="name" content={<CustomContent />}>
           <Tooltip
             contentStyle={tooltipStyle}
             formatter={(value: number, _name: string, props: any) => {
               const pct = total > 0 ? ((value / total) * 100).toFixed(1) : '0';
-              return [
-                `${formatRM(value)} (${pct}%)`,
-                props?.payload?.name || (lang === 'bm' ? 'Komoditi' : 'Commodity'),
-              ];
+              const rawName = props?.payload?.name || '';
+              const display = rawName ? rawName.charAt(0).toUpperCase() + rawName.slice(1).toLowerCase() : (lang === 'bm' ? 'Komoditi' : 'Commodity');
+              return [`${formatRM(value)} (${pct}%)`, display];
             }}
           />
         </Treemap>
       </ResponsiveContainer>
       {/* Mini legend */}
       <div className="flex flex-wrap gap-x-4 gap-y-1 mt-3 px-1">
-        {treemapData.slice(0, 6).map((item, i) => (
-          <div key={item.name} className="flex items-center gap-1.5">
-            <span
-              className="w-2.5 h-2.5 rounded-sm shrink-0"
-              style={{ backgroundColor: PALETTE[i % PALETTE.length] }}
-            />
-            <span className="text-[10px] text-muted-foreground truncate max-w-[120px]">{item.name}</span>
-          </div>
-        ))}
+        {treemapData.slice(0, 6).map((item, i) => {
+          const display = item.name.charAt(0).toUpperCase() + item.name.slice(1).toLowerCase();
+          return (
+            <div key={item.name} className="flex items-center gap-1.5" title={display}>
+              <span
+                className="w-2.5 h-2.5 rounded-sm shrink-0"
+                style={{ backgroundColor: PALETTE[i % PALETTE.length] }}
+              />
+              <span className="text-[10px] text-muted-foreground truncate max-w-[160px]">{display}</span>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
