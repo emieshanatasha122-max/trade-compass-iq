@@ -29,6 +29,8 @@ export default function EnterpriseDonut({ data }: Props) {
     const map: Record<string, number> = {};
     data.forEach(r => {
       const key = r.keluasanSyarikat || 'Unknown';
+      // Exclude Agent category completely
+      if (key.toUpperCase().includes('AGENT')) return;
       map[key] = (map[key] || 0) + r.jumlahDaganganRM;
     });
     const total = Object.values(map).reduce((a, b) => a + b, 0);
