@@ -82,26 +82,29 @@ export default function Overview() {
         </div>
       </section>
 
-      {/* Row: Section F (Company Pie) + Section G (Commodity Treemap) */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <section>
-          <SectionHeader title={t('enterpriseParticipation')} description={t('enterpriseParticipationDesc')} icon={Building2} />
-          <div className="chart-container">
-            <EnterpriseDonut data={filteredData} />
-          </div>
-        </section>
+      {/* Section F: Trade Commodities (Full Width, on top) */}
+      <section>
+        <SectionHeader
+          title={lang === 'bm' ? 'Komoditi Perdagangan' : 'Trade Commodities'}
+          description={lang === 'bm' ? 'Taburan Perdagangan mengikut kategori komoditi.' : 'Trade distribution by commodity category.'}
+          icon={Package}
+        />
+        <div className="chart-container">
+          <CommoditySunburst data={filteredData} />
+        </div>
+      </section>
 
-        <section>
-          <SectionHeader
-            title={lang === 'bm' ? 'Peta Pokok Komoditi' : 'Commodity Treemap'}
-            description={lang === 'bm' ? 'Taburan Perdagangan mengikut kategori SITC.' : 'Trade distribution by SITC category.'}
-            icon={Package}
-          />
-          <div className="chart-container">
-            <CommoditySunburst data={filteredData} />
-          </div>
-        </section>
-      </div>
+      {/* Section G: Business Participation (Full Width, below) */}
+      <section>
+        <SectionHeader
+          title={lang === 'bm' ? 'Penyertaan Syarikat Perniagaan' : 'Business Participation'}
+          description={lang === 'bm' ? 'Bahagian ini menunjukkan bagaimana syarikat pelbagai saiz mengambil bahagian dalam Perdagangan.' : 'This section shows how companies of different sizes participate in trade.'}
+          icon={Building2}
+        />
+        <div className="chart-container">
+          <EnterpriseDonut data={filteredData} />
+        </div>
+      </section>
 
       {/* Section H: Top 10 Trading Countries */}
       <section>
