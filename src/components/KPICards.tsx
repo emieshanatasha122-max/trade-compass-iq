@@ -118,8 +118,8 @@ export default function KPICards({ data }: Props) {
     <div className="space-y-0.5">
       {items.map(([name], i) => (
         <div key={name} className="flex items-baseline gap-1.5">
-          <span className="text-xs font-bold text-muted-foreground/70">{i + 1}.</span>
-          <span className="text-sm font-semibold text-foreground truncate">
+          <span className="text-xs font-bold" style={{ color: 'rgba(180, 200, 255, 0.55)' }}>{i + 1}.</span>
+          <span className="text-sm font-semibold truncate" style={{ color: '#FFFFFF' }}>
             {sentenceCase ? toSentenceCase(name) : name}
           </span>
         </div>
