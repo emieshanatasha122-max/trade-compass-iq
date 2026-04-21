@@ -1,34 +1,15 @@
 import React, { useMemo, useState } from 'react';
 import type { TradeRecord } from '@/data/tradeDataLoader';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { motion, AnimatePresence } from 'framer-motion';
-import { X } from 'lucide-react';
+import { motion } from 'framer-motion';
+
+const ALLOWED_REGIONS = ['AFTA', 'NAFTA', 'EU'];
 
 const REGION_COLORS: Record<string, string> = {
-  'AFTA': 'rgb(230, 87, 130)',
-  'EU': 'rgb(126, 211, 245)',
-  'NAFTA': 'rgb(164, 158, 245)',
-  'CHINA': 'hsla(122, 100%, 48%, 1.00)',
-  'WEST ASIA': 'hsla(122, 100%, 48%, 1.00)',
-  'EAST ASIA': 'hsla(122, 100%, 48%, 1.00)',
-  'SOUTH ASIA': 'hsla(122, 100%, 48%, 1.00)',
-  'OCEANIA': 'hsla(122, 100%, 48%, 1.00)',
-  'AFRICA': 'hsla(122, 100%, 48%, 1.00)',
-  'LATIN AMERICA': 'hsla(122, 100%, 48%, 1.00)',
+  AFTA: 'hsl(207, 70%, 50%)',
+  NAFTA: 'hsl(270, 50%, 55%)',
+  EU: 'hsl(24, 85%, 55%)',
 };
-
-function getRegionColor(region: string, index: number): string {
-  for (const [key, color] of Object.entries(REGION_COLORS)) {
-    if (region.toUpperCase().includes(key)) return color;
-  }
-  const fallback = [
-    'hsl(207, 70%, 50%)', 'hsl(24, 85%, 55%)', 'hsl(145, 55%, 42%)',
-    'hsl(0, 65%, 55%)', 'hsl(270, 50%, 55%)', 'hsl(42, 75%, 50%)',
-    'hsl(340, 60%, 52%)', 'hsl(187, 65%, 42%)', 'hsl(100, 45%, 45%)',
-    'hsl(30, 70%, 48%)',
-  ];
-  return fallback[index % fallback.length];
-}
 
 function formatRM(value: number): string {
   if (value >= 1e12) return `RM ${(value / 1e12).toFixed(1)}T`;
@@ -42,88 +23,204 @@ interface RegionNode {
   name: string;
   total: number;
   states: { name: string; value: number }[];
-  color: string;
+}
+
+interface BranchData {
+  regions: RegionNode[];
+  grandTotal: number;
 }
 
 interface Props {
   data: TradeRecord[];
 }
 
-function HorizontalTree({ regions, grandTotal, type, lang, onRegionClick }: {
-  regions: RegionNode[];
-  grandTotal: number;
-  type: string;
+function matchRegion(raw: string): string | null {
+  const upper = (raw || '').toUpperCase();
+  for (const key of ALLOWED_REGIONS) {
+    if (upper.includes(key)) return key;
+  }
+  return null;
+}
+
+function Branch({
+  label,
+  branch,
+  branchColor,
+  lang,
+}: {
+  label: string;
+  branch: BranchData;
+  branchColor: string;
   lang: string;
-  onRegionClick: (r: RegionNode) => void;
 }) {
+  const initialRegion = branch.regions[0]?.name ?? null;
+  const [selected, setSelected] = useState<string | null>(initialRegion);
+
+  const activeRegion =
+    branch.regions.find(r => r.name === selected) || branch.regions[0] || null;
+
   return (
-    <div className="flex items-stretch gap-0 min-h-[320px]">
-      {/* Root node */}
-      <div className="flex flex-col justify-center pr-2 shrink-0">
-        <div className="rounded-lg border border-border bg-card/90 backdrop-blur-sm px-3 py-2 text-center shadow-sm">
-          <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
-            {lang === 'bm' ? 'Jumlah' : 'Total'} {type}
+    <div className="grid grid-cols-[auto_24px_minmax(0,1fr)_24px_minmax(0,220px)] items-stretch gap-0">
+      {/* Branch label */}
+      <div className="flex items-center">
+        <div
+          className="rounded-lg border border-border bg-card/90 px-3 py-2 shadow-sm"
+          style={{ borderLeft: `3px solid ${branchColor}` }}
+        >
+          <p className="text-xs font-bold text-foreground">{label}</p>
+          <p className="text-[10px] text-muted-foreground mt-0.5">
+            {formatRM(branch.grandTotal)}
           </p>
-          <p className="text-sm font-bold text-foreground">{formatRM(grandTotal)}</p>
         </div>
       </div>
 
-      {/* Connector lines */}
-      <div className="flex flex-col justify-center w-6 shrink-0">
-        <svg width="24" height="100%" viewBox="0 0 24 320" preserveAspectRatio="none" className="h-full">
-          {regions.map((_, i) => {
-            const y = (i + 0.5) * (320 / regions.length);
+      {/* Connector: branch -> regions */}
+      <div className="relative">
+        <svg
+          width="24"
+          height="100%"
+          viewBox="0 0 24 100"
+          preserveAspectRatio="none"
+          className="h-full w-full"
+        >
+          {branch.regions.map((_, i) => {
+            const total = branch.regions.length;
+            const y = ((i + 0.5) / total) * 100;
             return (
               <path
                 key={i}
-                d={`M0,160 C12,160 12,${y} 24,${y}`}
+                d={`M0,50 C12,50 12,${y} 24,${y}`}
                 fill="none"
                 stroke="hsl(var(--border))"
-                strokeWidth="1.5"
-                opacity="0.6"
+                strokeWidth="1.2"
+                opacity="0.7"
               />
             );
           })}
         </svg>
       </div>
 
-      {/* Region nodes */}
-      <div className="flex flex-col justify-between gap-1.5 flex-1 min-w-0">
-        {regions.map((region, i) => {
-          const pct = grandTotal > 0 ? (region.total / grandTotal) * 100 : 0;
+      {/* Region boxes */}
+      <div className="flex flex-col justify-between gap-2 py-1 min-w-0">
+        {branch.regions.length === 0 && (
+          <p className="text-[11px] text-muted-foreground italic">
+            {lang === 'bm' ? 'Tiada data' : 'No data'}
+          </p>
+        )}
+        {branch.regions.map(region => {
+          const pct =
+            branch.grandTotal > 0 ? (region.total / branch.grandTotal) * 100 : 0;
+          const isActive = activeRegion?.name === region.name;
           return (
             <motion.button
               key={region.name}
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: i * 0.03 }}
-              onClick={() => onRegionClick(region)}
-              className="flex items-center gap-2 rounded-lg border border-border bg-card/80 backdrop-blur-sm px-2.5 py-1.5 hover:bg-accent/50 transition-colors text-left group min-w-0"
+              onClick={() => setSelected(region.name)}
+              whileHover={{ x: 2 }}
+              className={`flex items-center gap-2 rounded-lg border px-2.5 py-1.5 text-left transition-colors ${
+                isActive
+                  ? 'border-primary/60 bg-accent/40'
+                  : 'border-border bg-card/70 hover:bg-accent/30'
+              }`}
             >
-              {/* Color bar */}
-              <div
-                className="w-1.5 rounded-full shrink-0 self-stretch"
-                style={{ backgroundColor: region.color }}
+              <span
+                className="w-1.5 self-stretch rounded-full shrink-0"
+                style={{ backgroundColor: REGION_COLORS[region.name] }}
               />
               <div className="min-w-0 flex-1">
-                <p className="text-[11px] font-semibold text-foreground truncate">
+                <p className="text-[11px] font-semibold text-foreground">
                   {region.name}
                 </p>
-                <div className="flex items-center gap-2 mt-0.5">
-                  <p className="text-[10px] text-muted-foreground font-medium">{formatRM(region.total)}</p>
-                  <span className="text-[9px] text-muted-foreground">({pct.toFixed(1)}%)</span>
+                <div className="flex items-center gap-1.5 mt-0.5">
+                  <span className="text-[10px] text-muted-foreground font-medium">
+                    {formatRM(region.total)}
+                  </span>
+                  <span className="text-[9px] text-muted-foreground">
+                    ({pct.toFixed(1)}%)
+                  </span>
                 </div>
-              </div>
-              {/* Mini magnitude bar */}
-              <div className="w-16 h-1.5 rounded-full bg-secondary/50 shrink-0">
-                <div
-                  className="h-full rounded-full transition-all duration-500"
-                  style={{ width: `${Math.min(100, pct)}%`, backgroundColor: region.color }}
-                />
               </div>
             </motion.button>
           );
         })}
+      </div>
+
+      {/* Connector: active region -> right panel */}
+      <div className="relative">
+        <svg
+          width="24"
+          height="100%"
+          viewBox="0 0 24 100"
+          preserveAspectRatio="none"
+          className="h-full w-full"
+        >
+          {activeRegion && branch.regions.length > 0 && (() => {
+            const idx = branch.regions.findIndex(r => r.name === activeRegion.name);
+            const total = branch.regions.length;
+            const y = ((idx + 0.5) / total) * 100;
+            return (
+              <path
+                d={`M0,${y} C12,${y} 12,50 24,50`}
+                fill="none"
+                stroke="hsl(var(--primary))"
+                strokeWidth="1.4"
+                opacity="0.7"
+              />
+            );
+          })()}
+        </svg>
+      </div>
+
+      {/* Top 3 States panel */}
+      <div className="flex items-center">
+        <div className="w-full rounded-lg border border-border bg-card/80 p-2.5 shadow-sm">
+          <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium mb-1.5">
+            {lang === 'bm' ? '3 Negeri Teratas' : 'Top 3 States'}
+            {activeRegion && (
+              <span
+                className="ml-1.5 font-bold"
+                style={{ color: REGION_COLORS[activeRegion.name] }}
+              >
+                · {activeRegion.name}
+              </span>
+            )}
+          </p>
+          <ul className="space-y-1">
+            {(activeRegion?.states.slice(0, 3) ?? []).map((s, i) => {
+              const max = activeRegion!.states[0]?.value || 1;
+              const w = (s.value / max) * 100;
+              return (
+                <li key={s.name}>
+                  <div className="flex items-center justify-between text-[11px]">
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <span className="text-muted-foreground font-mono w-3 shrink-0">
+                        {i + 1}.
+                      </span>
+                      <span className="text-foreground truncate">{s.name}</span>
+                    </div>
+                    <span className="text-muted-foreground font-medium shrink-0">
+                      {formatRM(s.value)}
+                    </span>
+                  </div>
+                  <div className="mt-0.5 h-0.5 rounded-full bg-secondary/60">
+                    <div
+                      className="h-full rounded-full"
+                      style={{
+                        width: `${w}%`,
+                        backgroundColor: REGION_COLORS[activeRegion!.name],
+                        opacity: 0.7,
+                      }}
+                    />
+                  </div>
+                </li>
+              );
+            })}
+            {(!activeRegion || activeRegion.states.length === 0) && (
+              <li className="text-[11px] text-muted-foreground italic">
+                {lang === 'bm' ? 'Tiada negeri' : 'No states'}
+              </li>
+            )}
+          </ul>
+        </div>
       </div>
     </div>
   );
@@ -131,120 +228,97 @@ function HorizontalTree({ regions, grandTotal, type, lang, onRegionClick }: {
 
 export default function DualTreeChart({ data }: Props) {
   const { lang } = useLanguage();
-  const [popup, setPopup] = useState<{ region: string; states: { name: string; value: number }[]; type: string } | null>(null);
 
-  const buildTree = (type: 'Eksport' | 'Import'): { regions: RegionNode[]; grandTotal: number } => {
+  const buildBranch = (type: 'Eksport' | 'Import'): BranchData => {
     const filtered = data.filter(r => r.jenisDagangan === type);
     const regionMap: Record<string, Record<string, number>> = {};
 
     filtered.forEach(r => {
-      const region = r.kawasanEkonomi || 'Others';
+      const region = matchRegion(r.kawasanEkonomi);
+      if (!region) return;
       if (!regionMap[region]) regionMap[region] = {};
-      regionMap[region][r.negeri] = (regionMap[region][r.negeri] || 0) + r.jumlahDaganganRM;
+      regionMap[region][r.negeri] =
+        (regionMap[region][r.negeri] || 0) + r.jumlahDaganganRM;
     });
 
-    const regions = Object.entries(regionMap)
-      .map(([region, states], i) => ({
-        name: region,
-        total: Object.values(states).reduce((a, b) => a + b, 0),
-        states: Object.entries(states).sort((a, b) => b[1] - a[1]).map(([name, value]) => ({ name, value })),
-        color: getRegionColor(region, i),
-      }))
-      .sort((a, b) => b.total - a.total)
-      .slice(0, 8);
+    const regions: RegionNode[] = ALLOWED_REGIONS.map(name => {
+      const stateMap = regionMap[name] || {};
+      return {
+        name,
+        total: Object.values(stateMap).reduce((a, b) => a + b, 0),
+        states: Object.entries(stateMap)
+          .sort((a, b) => b[1] - a[1])
+          .map(([n, v]) => ({ name: n, value: v })),
+      };
+    });
 
     const grandTotal = regions.reduce((a, b) => a + b.total, 0);
     return { regions, grandTotal };
   };
 
-  const exportTree = useMemo(() => buildTree('Eksport'), [data]);
-  const importTree = useMemo(() => buildTree('Import'), [data]);
+  const exportBranch = useMemo(() => buildBranch('Eksport'), [data]);
+  const importBranch = useMemo(() => buildBranch('Import'), [data]);
+  const grandTotal = exportBranch.grandTotal + importBranch.grandTotal;
 
-  const handleRegionClick = (type: string) => (region: RegionNode) => {
-    setPopup({
-      region: region.name,
-      states: region.states.slice(0, 5),
-      type,
-    });
-  };
+  const exportLabel = lang === 'bm' ? 'Eksport' : 'Export';
+  const importLabel = lang === 'bm' ? 'Import' : 'Import';
+  const rootLabel = lang === 'bm' ? 'Kawasan Ekonomi' : 'Economic Region';
 
   return (
-    <div className="relative">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Import Tree */}
-        <div>
-          <h4 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
-            <span className="w-3 h-3 rounded-full bg-[hsl(0,65%,55%)]" />
-            {lang === 'bm' ? 'Import mengikut Kawasan Ekonomi' : 'Import by Economic Region'}
-          </h4>
-          <HorizontalTree
-            regions={importTree.regions}
-            grandTotal={importTree.grandTotal}
-            type="Import"
-            lang={lang}
-            onRegionClick={handleRegionClick('Import')}
-          />
-        </div>
-
-        {/* Export Tree */}
-        <div>
-          <h4 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
-            <span className="w-3 h-3 rounded-full bg-[hsl(145,55%,42%)]" />
-            {lang === 'bm' ? 'Eksport mengikut Kawasan Ekonomi' : 'Export by Economic Region'}
-          </h4>
-          <HorizontalTree
-            regions={exportTree.regions}
-            grandTotal={exportTree.grandTotal}
-            type={lang === 'bm' ? 'Eksport' : 'Export'}
-            lang={lang}
-            onRegionClick={handleRegionClick('Export')}
-          />
+    <div className="grid grid-cols-[auto_28px_minmax(0,1fr)] items-stretch gap-0 min-h-[420px]">
+      {/* ROOT */}
+      <div className="flex items-center">
+        <div className="rounded-xl border border-border bg-card/90 px-4 py-3 shadow-md text-center">
+          <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">
+            {rootLabel}
+          </p>
+          <p className="text-sm font-bold text-foreground mt-0.5">
+            {formatRM(grandTotal)}
+          </p>
         </div>
       </div>
 
-      {/* Popup for Top States */}
-      <AnimatePresence>
-        {popup && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.9 }}
-            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-30 bg-card border border-border rounded-xl shadow-2xl p-4 w-72"
-          >
-            <div className="flex items-center justify-between mb-3">
-              <h5 className="text-sm font-bold text-foreground">{popup.region}</h5>
-              <button onClick={() => setPopup(null)} className="text-muted-foreground hover:text-foreground">
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-            <p className="text-[10px] text-muted-foreground mb-2 uppercase tracking-wider">
-              Top {lang === 'bm' ? 'Negeri' : 'States'} ({popup.type})
-            </p>
-            <div className="space-y-2">
-              {popup.states.map((s, i) => {
-                const maxVal = popup.states[0]?.value || 1;
-                return (
-                  <div key={s.name}>
-                    <div className="flex items-center justify-between mb-0.5">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-bold text-primary">{i + 1}</span>
-                        <span className="text-xs text-foreground">{s.name}</span>
-                      </div>
-                      <span className="text-xs font-semibold text-muted-foreground">{formatRM(s.value)}</span>
-                    </div>
-                    <div className="h-1 rounded-full bg-secondary/50">
-                      <div
-                        className="h-full rounded-full bg-primary/60 transition-all duration-500"
-                        style={{ width: `${(s.value / maxVal) * 100}%` }}
-                      />
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Connector: root -> 2 branches */}
+      <div className="relative">
+        <svg
+          width="28"
+          height="100%"
+          viewBox="0 0 28 100"
+          preserveAspectRatio="none"
+          className="h-full w-full"
+        >
+          <path
+            d="M0,50 C14,50 14,25 28,25"
+            fill="none"
+            stroke="hsl(var(--border))"
+            strokeWidth="1.4"
+            opacity="0.7"
+          />
+          <path
+            d="M0,50 C14,50 14,75 28,75"
+            fill="none"
+            stroke="hsl(var(--border))"
+            strokeWidth="1.4"
+            opacity="0.7"
+          />
+        </svg>
+      </div>
+
+      {/* Two branches stacked */}
+      <div className="flex flex-col gap-6 min-w-0">
+        <Branch
+          label={exportLabel}
+          branch={exportBranch}
+          branchColor="hsl(145, 55%, 42%)"
+          lang={lang}
+        />
+        <Branch
+          label={importLabel}
+          branch={importBranch}
+          branchColor="hsl(0, 65%, 55%)"
+          lang={lang}
+        />
+      </div>
     </div>
   );
 }

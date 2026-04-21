@@ -436,7 +436,7 @@ export default function WorldMap({ destinations, allCountries }: WorldMapProps) 
             <div className="mt-2.5 space-y-1.5">
               <div className="flex items-center justify-between">
                 <span className="text-[11px]" style={{ color: isDark ? '#CBD5E1' : '#475569' }}>
-                  {lang === 'bm' ? 'Jumlah Dagangan' : 'Total Trade'}
+                  {lang === 'bm' ? 'Jumlah Perdagangan' : 'Total Trade'}
                 </span>
                 <span className="text-sm font-bold" style={{ color: isDark ? '#FFFFFF' : '#0F172A' }}>{formatRM(normalizedDest[hoveredCountry].value)}</span>
               </div>

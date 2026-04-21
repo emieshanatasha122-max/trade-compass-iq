@@ -147,25 +147,25 @@ export default function KPICards({ data }: Props) {
     {
       icon: TrendingUp,
       title: t('totalTradeValue'),
-      value: formatCompact(stats.totalTrade),
+      value: `RM ${formatCompact(stats.totalTrade)}`,
       accent: ACCENTS.blue,
     },
     {
       icon: ArrowUpRight,
       title: t('totalExportValue'),
-      value: formatCompact(stats.totalExport),
+      value: `RM ${formatCompact(stats.totalExport)}`,
       accent: ACCENTS.green,
     },
     {
       icon: ArrowDownRight,
       title: t('totalImportValue'),
-      value: formatCompact(stats.totalImport),
+      value: `RM ${formatCompact(stats.totalImport)}`,
       accent: ACCENTS.orange,
     },
     {
       icon: Scale,
       title: t('tradeBalance'),
-      value: formatCompact(stats.tradeBalance),
+      value: `RM ${formatCompact(stats.tradeBalance)}`,
       accent: ACCENTS.purple,
     },
   ];
