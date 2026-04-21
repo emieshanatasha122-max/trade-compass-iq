@@ -181,30 +181,31 @@
     @apply text-xs text-muted-foreground mt-1 mb-4 max-w-2xl;
   }
 
-  /* KPI Neon Glass Card — dark navy with soft neon glow (used in both light & dark) */
-  .kpi-neon-card {
-    background: linear-gradient(135deg, #0A0F2C 0%, #0D1B3D 100%);
-    border: 1.5px solid rgba(var(--neon-glow), 0.45);
-    backdrop-filter: blur(6px);
+  /* KPI Neumorphic Card — soft 3D in light, clean minimal in dark */
+  .kpi-neumorphic-card {
     box-shadow:
-      0 0 10px rgba(var(--neon-glow), 0.35),
-      0 0 25px rgba(var(--neon-glow), 0.18),
-      0 0 60px rgba(var(--neon-glow), 0.10),
-      inset 0 1px 0 rgba(255, 255, 255, 0.04);
-    transition: box-shadow 0.3s ease, border-color 0.3s ease, transform 0.3s ease;
+      0 10px 25px -12px hsl(220 25% 70% / 0.25),
+      0 4px 10px -4px hsl(220 25% 70% / 0.15),
+      inset 1px 1px 2px hsl(0 0% 100% / 0.9),
+      inset -1px -1px 3px hsl(220 20% 85% / 0.25);
   }
-  .kpi-neon-card:hover {
-    border-color: rgba(var(--neon-glow), 0.75);
+  .dark .kpi-neumorphic-card {
+    box-shadow: 0 1px 2px hsl(0 0% 0% / 0.3);
+  }
+  .dark .kpi-blob {
+    display: none;
+  }
+
+  .kpi-icon-wrap {
+    background: linear-gradient(145deg, hsl(0 0% 100%), var(--accent-icon-bg));
     box-shadow:
-      0 0 14px rgba(var(--neon-glow), 0.55),
-      0 0 35px rgba(var(--neon-glow), 0.30),
-      0 0 80px rgba(var(--neon-glow), 0.18),
-      inset 0 1px 0 rgba(255, 255, 255, 0.06);
+      inset 2px 2px 4px hsl(0 0% 100% / 0.9),
+      inset -2px -2px 4px var(--accent-blob),
+      0 4px 10px -4px var(--accent-blob);
   }
-  .kpi-neon-icon {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    box-shadow: inset 0 0 12px rgba(var(--neon-glow), 0.18);
+  .dark .kpi-icon-wrap {
+    background: hsl(var(--secondary));
+    box-shadow: none;
   }
 }
 
