@@ -408,8 +408,8 @@ export default function Globe3D({ data }: Globe3DProps) {
         />
       </div>
 
-      {/* Arc tooltip */}
-      {hoveredArc && (
+      {/* Arc tooltip — DISABLED per design (no top-left popup on arc hover) */}
+      {false && hoveredArc && (
         <div
           className="fixed z-50 pointer-events-none bg-card/95 backdrop-blur-md border border-border rounded-lg shadow-xl p-3 text-xs max-w-xs"
           style={{ left: tooltipPos.x + 12, top: tooltipPos.y - 10 }}
