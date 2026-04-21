@@ -40,9 +40,82 @@ export default function Overview() {
 
   return (
     <div className="space-y-6">
-      {/* Section A: KPI Cards */}
-      <section>
-        <SectionHeader title={t('tradeOverview')} description={t('tradeOverviewDesc')} icon={TrendingUp} />
+
+{/* Floating Navigation */}
+<div className="sticky top-2 z-50 flex justify-center">
+  <div className="flex gap-2 rounded-full border border-border/50 bg-background/80 p-1 backdrop-blur">
+    
+    {/* Overview Button */}
+    <button
+      onClick={() => document.getElementById('overview')?.scrollIntoView({ behavior: 'smooth' })}
+      className="rounded-full px-4 py-1.5 text-sm font-medium hover:bg-muted"
+    >
+      Overview
+    </button>
+
+    {/* Dashboard Button */}
+    <button
+      onClick={() => document.getElementById('dashboard')?.scrollIntoView({ behavior: 'smooth' })}
+      className="rounded-full px-4 py-1.5 text-sm font-medium hover:bg-muted"
+    >
+      Dashboard
+    </button>
+
+  </div>
+</div>
+
+      {/* Hero Section */}
+      <section
+        id="overview"
+        className="relative overflow-hidden rounded-3xl border border-border/50 bg-card px-8 py-10 md:px-10 md:py-12"
+      >
+        <div className="grid items-center gap-8 md:grid-cols-2">
+          <div className="space-y-4">
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-primary">
+              {lang === 'bm' ? 'Overview' : 'Overview'}
+            </p>
+
+            <h1 className="text-4xl font-bold leading-tight text-foreground md:text-5xl">
+              {lang === 'bm'
+                ? 'Prestasi Perdagangan Malaysia kekal kukuh dan kompetitif pada tahun 2026.'
+                : 'Malaysia Trade Performance remains strong and competitive in 2026.'}
+            </h1>
+
+            <p className="max-w-2xl text-base leading-7 text-muted-foreground">
+              {lang === 'bm'
+                ? 'Sektor elektronik terus menjadi pemacu utama eksport, manakala import menyokong pertumbuhan industri domestik dan keperluan rantaian bekalan.'
+                : 'The electronics sector continues to drive exports, while imports support domestic industrial growth and supply chain needs.'}
+            </p>
+
+            <p className="text-sm text-muted-foreground">
+              {lang === 'bm'
+                ? 'Data sehingga Februari 2026'
+                : 'Data as of February 2026'}
+            </p>
+          </div>
+
+          <div className="flex items-center justify-center">
+            <div className="relative h-[260px] w-full overflow-hidden rounded-3xl border border-border/50 bg-muted/20 md:h-[320px]">
+              {/* Light Mode - Cargo */}
+              <img
+                src="/images/cargo-light.png"
+                alt="Trade logistics visual"
+                className="block h-full w-full object-cover dark:hidden"
+              />
+
+              {/* Dark Mode - Globe */}
+              <img
+                src="/images/globe-dark.png"
+                alt="Global trade earth visual"
+                className="hidden h-full w-full object-cover dark:block"
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* KPI Cards */}
+      <section id="dashboard">
         <KPICards data={filteredData} />
       </section>
 
