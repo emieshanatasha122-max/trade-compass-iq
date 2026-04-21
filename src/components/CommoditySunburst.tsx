@@ -18,11 +18,7 @@ function formatRM(value: number): string {
   return `RM ${value.toLocaleString()}`;
 }
 
-function toSentenceCase(str: string): string {
-  if (!str) return str;
-  const lower = str.toLowerCase();
-  return lower.charAt(0).toUpperCase() + lower.slice(1);
-}
+// Commodity name formatting is handled by translateCommodity()
 
 function CustomContent({ x = 0, y = 0, width = 0, height = 0, name = '', index = 0, size = 0 }: any) {
   if (width < 45 || height < 32) return null;
