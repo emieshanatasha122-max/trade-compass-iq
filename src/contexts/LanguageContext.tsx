@@ -46,7 +46,7 @@ const translations: Translations = {
   commodityStructureDesc: { bm: 'Bahagian ini menunjukkan kategori komoditi teratas mengikut nilai Perdagangan.', en: 'This section shows the top commodity categories by trade value.' },
   topCommodities: { bm: 'Komoditi Teratas', en: 'Top Commodities' },
 
-  enterpriseParticipation: { bm: 'Penyertaan Perusahaan', en: 'Enterprise Participation' },
+  enterpriseParticipation: { bm: 'Penyertaan Syarikat Perniagaan', en: 'Business Participation' },
   enterpriseParticipationDesc: { bm: 'Bahagian ini menunjukkan bagaimana syarikat pelbagai saiz mengambil bahagian dalam Perdagangan.', en: 'This section shows how companies of different sizes participate in trade.' },
   enterpriseStructure: { bm: 'Taburan Keluasan Syarikat', en: 'Enterprise Size Distribution' },
   economicRegion: { bm: 'Taburan Kawasan Ekonomi', en: 'Economic Region Distribution' },
