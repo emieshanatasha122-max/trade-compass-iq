@@ -19,23 +19,19 @@ interface Props {
 }
 
 type Accent = {
-  // soft pastel for gradient/accent
-  from: string;
-  to: string;
-  // icon tint (slightly stronger)
-  iconBg: string;
+  // neon glow rgb triplet (used in box-shadow & border)
+  glow: string;
+  // icon tint
   iconColor: string;
-  // shape blob color
-  blob: string;
 };
 
 const ACCENTS: Record<string, Accent> = {
-  blue:   { from: 'hsl(210, 100%, 96%)', to: 'hsl(210, 90%, 88%)',  iconBg: 'hsl(210, 90%, 94%)', iconColor: 'hsl(215, 75%, 55%)', blob: 'hsl(210, 90%, 85%)' },
-  green:  { from: 'hsl(150, 70%, 95%)',  to: 'hsl(150, 60%, 85%)',  iconBg: 'hsl(150, 65%, 92%)', iconColor: 'hsl(155, 55%, 42%)', blob: 'hsl(150, 60%, 82%)' },
-  orange: { from: 'hsl(28, 100%, 95%)',  to: 'hsl(28, 90%, 85%)',   iconBg: 'hsl(28, 90%, 93%)',  iconColor: 'hsl(22, 80%, 55%)',  blob: 'hsl(28, 90%, 82%)' },
-  purple: { from: 'hsl(265, 80%, 96%)',  to: 'hsl(265, 70%, 88%)',  iconBg: 'hsl(265, 75%, 94%)', iconColor: 'hsl(265, 60%, 58%)', blob: 'hsl(265, 70%, 86%)' },
-  pink:   { from: 'hsl(335, 90%, 96%)',  to: 'hsl(335, 80%, 88%)',  iconBg: 'hsl(335, 80%, 94%)', iconColor: 'hsl(335, 65%, 58%)', blob: 'hsl(335, 80%, 86%)' },
-  teal:   { from: 'hsl(180, 70%, 94%)',  to: 'hsl(180, 60%, 84%)',  iconBg: 'hsl(180, 65%, 92%)', iconColor: 'hsl(182, 60%, 40%)', blob: 'hsl(180, 60%, 82%)' },
+  blue:   { glow: '80, 140, 255',  iconColor: 'rgb(120, 180, 255)' },
+  green:  { glow: '80, 230, 160',  iconColor: 'rgb(110, 240, 180)' },
+  orange: { glow: '255, 130, 90',  iconColor: 'rgb(255, 160, 110)' },
+  purple: { glow: '170, 120, 255', iconColor: 'rgb(190, 150, 255)' },
+  pink:   { glow: '255, 110, 180', iconColor: 'rgb(255, 140, 200)' },
+  teal:   { glow: '90, 220, 220',  iconColor: 'rgb(120, 235, 235)' },
 };
 
 interface KPICardProps {
@@ -52,44 +48,32 @@ function KPICard({ icon: Icon, title, value, accent, delay = 0 }: KPICardProps) 
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay, duration: 0.4, ease: 'easeOut' }}
-      whileHover={{ y: -2 }}
-      className="kpi-neumorphic-card relative overflow-hidden rounded-[22px] bg-card p-5 min-h-[120px] flex items-center gap-4 dark:border dark:border-border"
+      whileHover={{ y: -2, scale: 1.02 }}
+      className="kpi-neon-card group relative overflow-hidden rounded-[22px] p-5 min-h-[120px] flex items-center gap-4"
+      style={{
+        ['--neon-glow' as any]: accent.glow,
+      }}
     >
-      {/* Decorative accent blobs — hidden in dark mode via CSS */}
+      {/* Subtle inner radial highlight */}
       <div
         aria-hidden
-        className="kpi-blob absolute -right-10 -top-10 w-44 h-44 rounded-full opacity-80 pointer-events-none"
+        className="absolute inset-0 pointer-events-none opacity-60"
         style={{
-          background: `radial-gradient(circle at 30% 30%, ${accent.to}, ${accent.from} 60%, transparent 75%)`,
-          filter: 'blur(2px)',
-        }}
-      />
-      <div
-        aria-hidden
-        className="kpi-blob absolute -right-6 bottom-[-40px] w-32 h-32 rounded-full opacity-60 pointer-events-none"
-        style={{
-          background: `radial-gradient(circle, ${accent.blob}, transparent 70%)`,
-          filter: 'blur(4px)',
+          background: `radial-gradient(circle at 0% 0%, rgba(${accent.glow}, 0.12), transparent 60%)`,
         }}
       />
 
       {/* Icon */}
-      <div
-        className="kpi-icon-wrap relative z-10 w-14 h-14 rounded-2xl flex items-center justify-center shrink-0"
-        style={{
-          ['--accent-icon-bg' as any]: accent.iconBg,
-          ['--accent-blob' as any]: accent.blob,
-        }}
-      >
+      <div className="kpi-neon-icon relative z-10 w-14 h-14 rounded-2xl flex items-center justify-center shrink-0">
         <Icon className="w-7 h-7" style={{ color: accent.iconColor }} strokeWidth={2.2} />
       </div>
 
       {/* Title + Value */}
       <div className="relative z-10 flex flex-col justify-center min-w-0 flex-1">
-        <p className="text-[11px] font-medium tracking-wide uppercase text-muted-foreground mb-1.5 truncate">
+        <p className="text-[11px] font-semibold tracking-[0.18em] uppercase mb-1.5 truncate" style={{ color: 'rgba(180, 200, 255, 0.7)' }}>
           {title}
         </p>
-        <div className="text-2xl font-bold text-foreground leading-tight truncate">
+        <div className="text-2xl font-bold leading-tight truncate" style={{ color: '#FFFFFF' }}>
           {value}
         </div>
       </div>
