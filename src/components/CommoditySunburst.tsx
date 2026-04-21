@@ -80,27 +80,31 @@ export default function CommoditySunburst({ data }: Props) {
   const total = useMemo(() => treemapData.reduce((a, b) => a + b.size, 0), [treemapData]);
 
   const tooltipStyle = {
-    backgroundColor: 'hsl(var(--card))',
+    backgroundColor: 'hsl(var(--popover))',
     border: '1px solid hsl(var(--border))',
     borderRadius: '8px',
     fontSize: '11px',
-    color: 'hsl(var(--foreground))',
+    color: 'hsl(var(--popover-foreground))',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
+  };
+
+  const tooltipItemStyle = {
+    color: 'hsl(var(--popover-foreground))',
+  };
+  const tooltipLabelStyle = {
+    color: 'hsl(var(--popover-foreground))',
+    fontWeight: 600,
   };
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-3">
-        <h4 className="text-sm font-bold text-foreground">
-          {lang === 'bm' ? 'Komoditi Perdagangan' : 'Trade Commodities'}
-        </h4>
-        <span className="text-[10px] text-muted-foreground">
-          {lang === 'bm' ? 'Jumlah' : 'Total'}: {formatRM(total)}
-        </span>
-      </div>
-      <ResponsiveContainer width="100%" height={420}>
-        <Treemap data={treemapData} dataKey="size" nameKey="name" content={<CustomContent />}>
+    <div className="w-full h-full flex flex-col">
+      <ResponsiveContainer width="100%" height={480}>
+        <Treemap data={treemapData} dataKey="size" nameKey="name" content={<CustomContent />} aspectRatio={4 / 3}>
           <Tooltip
             contentStyle={tooltipStyle}
+            itemStyle={tooltipItemStyle}
+            labelStyle={tooltipLabelStyle}
+            wrapperStyle={{ outline: 'none', zIndex: 50 }}
             formatter={(value: number, _name: string, props: any) => {
               const pct = total > 0 ? ((value / total) * 100).toFixed(1) : '0';
               const rawName = props?.payload?.name || '';
@@ -110,21 +114,6 @@ export default function CommoditySunburst({ data }: Props) {
           />
         </Treemap>
       </ResponsiveContainer>
-      {/* Mini legend */}
-      <div className="flex flex-wrap gap-x-4 gap-y-1 mt-3 px-1">
-        {treemapData.slice(0, 6).map((item, i) => {
-          const display = item.name.charAt(0).toUpperCase() + item.name.slice(1).toLowerCase();
-          return (
-            <div key={item.name} className="flex items-center gap-1.5" title={display}>
-              <span
-                className="w-2.5 h-2.5 rounded-sm shrink-0"
-                style={{ backgroundColor: PALETTE[i % PALETTE.length] }}
-              />
-              <span className="text-[10px] text-muted-foreground truncate max-w-[160px]">{display}</span>
-            </div>
-          );
-        })}
-      </div>
     </div>
   );
 }

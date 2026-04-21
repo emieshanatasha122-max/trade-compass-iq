@@ -35,11 +35,23 @@ interface Props {
 }
 
 function matchRegion(raw: string): string | null {
-  const upper = (raw || '').toUpperCase();
-  for (const key of ALLOWED_REGIONS) {
-    if (upper.includes(key)) return key;
-  }
+  const upper = (raw || '').toUpperCase().trim();
+  // Exact match check first to avoid NAFTA being captured by AFTA substring
+  if (upper === 'NAFTA') return 'NAFTA';
+  if (upper === 'AFTA') return 'AFTA';
+  if (upper === 'EU' || upper === 'EUROPEAN UNION') return 'EU';
+  // Fallback: word-boundary check for compound names
+  if (/\bNAFTA\b/.test(upper)) return 'NAFTA';
+  if (/\bAFTA\b/.test(upper)) return 'AFTA';
+  if (/\bEU\b/.test(upper)) return 'EU';
   return null;
+}
+
+function displayRegion(name: string): string {
+  if (name === 'AFTA') return 'A.F.T.A';
+  if (name === 'NAFTA') return 'N.A.F.T.A';
+  if (name === 'EU') return 'E.U';
+  return name;
 }
 
 function Branch({
@@ -128,7 +140,7 @@ function Branch({
               />
               <div className="min-w-0 flex-1">
                 <p className="text-[11px] font-semibold text-foreground">
-                  {region.name}
+                  {displayRegion(region.name)}
                 </p>
                 <div className="flex items-center gap-1.5 mt-0.5">
                   <span className="text-[10px] text-muted-foreground font-medium">
@@ -180,7 +192,7 @@ function Branch({
                 className="ml-1.5 font-bold"
                 style={{ color: REGION_COLORS[activeRegion.name] }}
               >
-                · {activeRegion.name}
+                · {displayRegion(activeRegion.name)}
               </span>
             )}
           </p>
