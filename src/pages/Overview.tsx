@@ -67,27 +67,27 @@ export default function Overview() {
       {/* Hero Section */}
       <section
         id="overview"
-        className="relative overflow-hidden rounded-3xl border border-border/50 bg-card px-8 py-10 md:px-10 md:py-12"
+        className="relative overflow-hidden rounded-[32px] border border-slate-200/60 bg-gradient-to-br from-white via-slate-50 to-slate-100 px-8 py-10 shadow-[0_10px_40px_rgba(15,23,42,0.06)] md:px-12 md:py-12 dark:border-white/10 dark:bg-[radial-gradient(circle_at_top_left,rgba(37,99,235,0.18),transparent_28%),linear-gradient(135deg,#061225_0%,#08162d_45%,#0a1833_100%)] dark:shadow-[0_20px_80px_rgba(0,0,0,0.35)]"
       >
-        <div className="grid items-center gap-8 md:grid-cols-2">
-          <div className="space-y-4">
-            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-primary">
+        <div className="grid items-center gap-10 md:grid-cols-[1.02fr_0.98fr]">
+          <div className="space-y-5">
+            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-cyan-500 dark:text-cyan-400">
               {lang === 'bm' ? 'Overview' : 'Overview'}
             </p>
 
-            <h1 className="text-4xl font-bold leading-tight text-foreground md:text-5xl">
+            <h1 className="max-w-[720px] text-5xl font-bold leading-[1.05] tracking-[-0.03em] text-slate-900 md:text-6xl dark:text-white">
               {lang === 'bm'
                 ? 'Prestasi Perdagangan Malaysia kekal kukuh dan kompetitif pada tahun 2026.'
                 : 'Malaysia Trade Performance remains strong and competitive in 2026.'}
             </h1>
 
-            <p className="max-w-2xl text-base leading-7 text-muted-foreground">
+            <p className="max-w-[640px] text-lg leading-8 text-slate-500 dark:text-slate-300/90">
               {lang === 'bm'
                 ? 'Sektor elektronik terus menjadi pemacu utama eksport, manakala import menyokong pertumbuhan industri domestik dan keperluan rantaian bekalan.'
                 : 'The electronics sector continues to drive exports, while imports support domestic industrial growth and supply chain needs.'}
             </p>
 
-            <p className="text-sm text-muted-foreground">
+            <p className="pt-2 text-sm font-medium text-slate-500 dark:text-slate-400">
               {lang === 'bm'
                 ? 'Data sehingga Februari 2026'
                 : 'Data as of February 2026'}
@@ -95,20 +95,26 @@ export default function Overview() {
           </div>
 
           <div className="flex items-center justify-center">
-            <div className="relative h-[260px] w-full overflow-hidden rounded-3xl border border-border/50 bg-muted/20 md:h-[320px]">
+            <div className="relative h-[300px] w-full overflow-hidden rounded-[32px] border border-white/40 bg-white/40 shadow-[0_20px_50px_rgba(15,23,42,0.08)] backdrop-blur-sm md:h-[360px] dark:border-white/10 dark:bg-white/5 dark:shadow-[0_20px_60px_rgba(0,0,0,0.28)]">
               {/* Light Mode - Cargo */}
               <img
                 src="/images/cargo-light.png"
                 alt="Trade logistics visual"
-                className="block h-full w-full object-cover dark:hidden"
+                className="block h-full w-full scale-[1.02] object-cover object-center dark:hidden"
               />
 
               {/* Dark Mode - Globe */}
               <img
                 src="/images/globe-dark.png"
                 alt="Global trade earth visual"
-                className="hidden h-full w-full object-cover dark:block"
+                className="hidden h-full w-full scale-[1.04] object-cover object-center dark:block"
               />
+
+               {/* 🔥 Overlay 1 (gradient light effect) */}
+                 <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.22)_0%,rgba(255,255,255,0.04)_30%,rgba(255,255,255,0)_60%)] dark:bg-[linear-gradient(135deg,rgba(255,255,255,0.08)_0%,rgba(255,255,255,0.02)_30%,rgba(255,255,255,0)_60%)]" />
+
+               {/* 🔥 Overlay 2 (glass highlight) */}
+               <div className="pointer-events-none absolute inset-0 shadow-[inset_0_1px_0_rgba(255,255,255,0.55)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.14)]" />
             </div>
           </div>
         </div>
