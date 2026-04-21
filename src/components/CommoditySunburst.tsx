@@ -17,14 +17,22 @@ function formatRM(value: number): string {
   return `RM ${value.toLocaleString()}`;
 }
 
+function toSentenceCase(str: string): string {
+  if (!str) return str;
+  const lower = str.toLowerCase();
+  return lower.charAt(0).toUpperCase() + lower.slice(1);
+}
+
 function CustomContent({ x = 0, y = 0, width = 0, height = 0, name = '', index = 0, size = 0 }: any) {
   if (width < 45 || height < 32) return null;
+  const display = toSentenceCase(name);
   const maxChars = Math.floor(width / 7);
-  const truncated = name.length > maxChars ? name.slice(0, maxChars) + '…' : name;
+  const truncated = display.length > maxChars ? display.slice(0, Math.max(0, maxChars - 1)) + '…' : display;
   const showValue = width > 80 && height > 50;
 
   return (
     <g>
+      <title>{display}</title>
       <rect
         x={x} y={y} width={width} height={height} rx={6}
         fill={PALETTE[index % PALETTE.length]}
