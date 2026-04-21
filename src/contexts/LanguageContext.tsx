@@ -12,7 +12,7 @@ const translations: Translations = {
   overview: { bm: 'Gambaran Keseluruhan', en: 'Overview' },
   publications: { bm: 'Penerbitan', en: 'Publications' },
 
-  tradeOverview: { bm: 'Gambaran Perdagangan', en: 'Trade Overview' },
+  tradeOverview: { bm: 'Prestasi Keseluruhan', en: 'Overall Performance' },
   tradeOverviewDesc: { bm: 'Gambaran ringkas prestasi Perdagangan keseluruhan Malaysia.', en: 'A quick snapshot of Malaysia\'s overall trade performance.' },
   totalTradeValue: { bm: 'Jumlah Perdagangan', en: 'Total Trade' },
   totalExportValue: { bm: 'Jumlah Eksport', en: 'Total Export' },

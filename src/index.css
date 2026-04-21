@@ -181,7 +181,7 @@
     @apply text-xs text-muted-foreground mt-1 mb-4 max-w-2xl;
   }
 
-  /* KPI Neumorphic Card — soft 3D in light, clean minimal in dark */
+  /* KPI Neumorphic Card — soft 3D in light, neon glow in dark */
   .kpi-neumorphic-card {
     box-shadow:
       0 10px 25px -12px hsl(220 25% 70% / 0.25),
@@ -190,7 +190,22 @@
       inset -1px -1px 3px hsl(220 20% 85% / 0.25);
   }
   .dark .kpi-neumorphic-card {
-    box-shadow: 0 1px 2px hsl(0 0% 0% / 0.3);
+    background: linear-gradient(135deg, #0A0F2C, #0D1B3D),
+                radial-gradient(circle at 30% 20%, rgba(0,120,255,0.08), transparent 40%);
+    border: 1.5px solid rgba(100, 170, 255, 0.7) !important;
+    border-radius: 22px;
+    box-shadow:
+      0 0 8px rgba(0,120,255,0.6),
+      0 0 20px rgba(0,120,255,0.4),
+      0 0 40px rgba(0,120,255,0.2);
+    transition: none;
+  }
+  .dark .kpi-neumorphic-card:hover {
+    box-shadow:
+      0 0 8px rgba(0,120,255,0.6),
+      0 0 20px rgba(0,120,255,0.4),
+      0 0 40px rgba(0,120,255,0.2);
+    transform: none;
   }
   .dark .kpi-blob {
     display: none;
@@ -204,8 +219,19 @@
       0 4px 10px -4px var(--accent-blob);
   }
   .dark .kpi-icon-wrap {
-    background: hsl(var(--secondary));
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
     box-shadow: none;
+  }
+  .dark .kpi-icon-wrap svg {
+    color: #64AAFF !important;
+    filter: drop-shadow(0 0 6px rgba(0, 120, 255, 0.6));
+  }
+  .dark .kpi-neumorphic-card .kpi-label {
+    color: rgba(180, 200, 255, 0.7) !important;
+  }
+  .dark .kpi-neumorphic-card .kpi-value {
+    color: #FFFFFF !important;
   }
 }
 
