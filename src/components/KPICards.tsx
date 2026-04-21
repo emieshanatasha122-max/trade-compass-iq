@@ -52,8 +52,7 @@ function KPICard({ icon: Icon, title, value, accent, delay = 0 }: KPICardProps) 
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay, duration: 0.4, ease: 'easeOut' }}
-      whileHover={{ y: -2 }}
-      className="kpi-neumorphic-card relative overflow-hidden rounded-[22px] bg-card p-5 min-h-[120px] flex items-center gap-4 dark:border dark:border-border"
+      className="kpi-neumorphic-card relative overflow-hidden rounded-[22px] bg-card p-5 dark:p-6 min-h-[120px] flex items-center gap-4"
     >
       {/* Decorative accent blobs — hidden in dark mode via CSS */}
       <div
@@ -86,10 +85,10 @@ function KPICard({ icon: Icon, title, value, accent, delay = 0 }: KPICardProps) 
 
       {/* Title + Value */}
       <div className="relative z-10 flex flex-col justify-center min-w-0 flex-1">
-        <p className="text-[11px] font-medium tracking-wide uppercase text-muted-foreground mb-1.5 truncate">
+        <p className="kpi-label text-[11px] font-medium tracking-wide uppercase text-muted-foreground mb-1.5 truncate">
           {title}
         </p>
-        <div className="text-2xl font-bold text-foreground leading-tight truncate">
+        <div className="kpi-value text-2xl font-bold text-foreground leading-tight truncate">
           {value}
         </div>
       </div>
