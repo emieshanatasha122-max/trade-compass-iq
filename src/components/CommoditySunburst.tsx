@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import type { TradeRecord } from '@/data/tradeDataLoader';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { translateCommodity } from '@/data/commodityTranslations';
 import { Treemap, ResponsiveContainer, Tooltip } from 'recharts';
 
 const PALETTE = [
@@ -17,15 +18,11 @@ function formatRM(value: number): string {
   return `RM ${value.toLocaleString()}`;
 }
 
-function toSentenceCase(str: string): string {
-  if (!str) return str;
-  const lower = str.toLowerCase();
-  return lower.charAt(0).toUpperCase() + lower.slice(1);
-}
+// Commodity name formatting is handled by translateCommodity()
 
 function CustomContent({ x = 0, y = 0, width = 0, height = 0, name = '', index = 0, size = 0 }: any) {
   if (width < 45 || height < 32) return null;
-  const display = toSentenceCase(name);
+  const display = name || '';
   const maxChars = Math.floor(width / 7);
   const truncated = display.length > maxChars ? display.slice(0, Math.max(0, maxChars - 1)) + '…' : display;
   const showValue = width > 80 && height > 50;
@@ -74,8 +71,8 @@ export default function CommoditySunburst({ data }: Props) {
     });
     return Object.entries(map)
       .sort((a, b) => b[1] - a[1])
-      .map(([name, size]) => ({ name, size }));
-  }, [data]);
+      .map(([name, size]) => ({ name: translateCommodity(name, lang), size }));
+  }, [data, lang]);
 
   const total = useMemo(() => treemapData.reduce((a, b) => a + b.size, 0), [treemapData]);
 
@@ -107,8 +104,7 @@ export default function CommoditySunburst({ data }: Props) {
             wrapperStyle={{ outline: 'none', zIndex: 50 }}
             formatter={(value: number, _name: string, props: any) => {
               const pct = total > 0 ? ((value / total) * 100).toFixed(1) : '0';
-              const rawName = props?.payload?.name || '';
-              const display = rawName ? rawName.charAt(0).toUpperCase() + rawName.slice(1).toLowerCase() : (lang === 'bm' ? 'Komoditi' : 'Commodity');
+              const display = props?.payload?.name || (lang === 'bm' ? 'Komoditi' : 'Commodity');
               return [`${formatRM(value)} (${pct}%)`, display];
             }}
           />

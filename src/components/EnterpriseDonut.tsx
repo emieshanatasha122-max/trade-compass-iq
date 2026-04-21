@@ -44,18 +44,16 @@ export default function EnterpriseDonut({ data }: Props) {
   }, [data, lang]);
 
   const tooltipStyle = {
-    backgroundColor: 'hsl(var(--card))',
+    backgroundColor: 'hsl(var(--popover))',
     border: '1px solid hsl(var(--border))',
     borderRadius: '8px',
     fontSize: '11px',
-    color: 'hsl(var(--foreground))',
+    color: 'hsl(var(--popover-foreground))',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
   };
 
   return (
     <div>
-      <h4 className="text-sm font-bold text-foreground mb-3">
-        {lang === 'bm' ? 'Saiz Syarikat' : 'Company Size'}
-      </h4>
       <ResponsiveContainer width="100%" height={380}>
         <PieChart>
           <Pie
@@ -75,11 +73,14 @@ export default function EnterpriseDonut({ data }: Props) {
           </Pie>
           <Tooltip
             contentStyle={tooltipStyle}
+            itemStyle={{ color: 'hsl(var(--popover-foreground))' }}
+            labelStyle={{ color: 'hsl(var(--popover-foreground))', fontWeight: 600 }}
+            wrapperStyle={{ outline: 'none', zIndex: 50 }}
             formatter={(value: number) => [formatRM(value), lang === 'bm' ? 'Nilai' : 'Value']}
           />
           <Legend
             wrapperStyle={{ fontSize: '11px' }}
-            formatter={(value: string) => <span className="text-foreground">{value}</span>}
+            formatter={(value: string) => <span style={{ color: 'hsl(var(--foreground))' }}>{value}</span>}
           />
         </PieChart>
       </ResponsiveContainer>
