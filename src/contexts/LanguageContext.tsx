@@ -64,7 +64,7 @@ const translations: Translations = {
   tradeType: { bm: 'Jenis Perdagangan', en: 'Trade Type' },
   state: { bm: 'Negeri', en: 'State' },
   commodity: { bm: 'Komoditi', en: 'Commodity' },
-  enterpriseSize: { bm: 'Keluasan Syarikat', en: 'Enterprise Size' },
+  enterpriseSize: { bm: 'Saiz Syarikat (Company Size)', en: 'Company Size (Saiz Syarikat)' },
   all: { bm: 'Semua', en: 'All' },
   export: { bm: 'Eksport', en: 'Export' },
   import: { bm: 'Import', en: 'Import' },

@@ -132,10 +132,13 @@ export default function SidebarFilters() {
           title={t('enterpriseSize')}
           filterKey="keluasan"
           options={uniqueKeluasan
-            .filter(k => k.toUpperCase() !== 'AGENTS' && k.toUpperCase() !== 'AGENT')
+            .filter(k => {
+              const u = (k || '').toUpperCase();
+              return u !== 'AGENTS' && u !== 'AGENT';
+            })
             .map(k => ({
               value: k,
-              label: ENTERPRISE_LABEL_MAP[k]?.[lang] || k,
+              label: ENTERPRISE_LABEL_MAP[k.toUpperCase()]?.[lang] || ENTERPRISE_LABEL_MAP[k]?.[lang] || k,
             }))}
           selected={filters.keluasan}
           onToggle={(v) => toggleFilter('keluasan', v)}
