@@ -131,15 +131,19 @@ export default function SidebarFilters() {
         <FilterGroup
           title={t('enterpriseSize')}
           filterKey="keluasan"
-          options={uniqueKeluasan
-            .filter(k => {
+          options={(() => {
+            // Canonical 4 company-size categories (always shown, even if CSV drops one)
+            const canonical = ['LARGE', 'SME_MEDIUM', 'SME_SMALL', 'SME_MICRO'];
+            const fromData = uniqueKeluasan.filter(k => {
               const u = (k || '').toUpperCase();
               return u !== 'AGENTS' && u !== 'AGENT';
-            })
-            .map(k => ({
+            });
+            const merged = Array.from(new Set([...canonical, ...fromData]));
+            return merged.map(k => ({
               value: k,
               label: ENTERPRISE_LABEL_MAP[k.toUpperCase()]?.[lang] || ENTERPRISE_LABEL_MAP[k]?.[lang] || k,
-            }))}
+            }));
+          })()}
           selected={filters.keluasan}
           onToggle={(v) => toggleFilter('keluasan', v)}
           onClear={() => clearFilter('keluasan')}
