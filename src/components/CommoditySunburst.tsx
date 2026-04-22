@@ -27,22 +27,26 @@ function CustomContent({
   index = 0,
   size = 0,
 }: any) {
-  if (width < 8 || height < 8) return null;
+  if (width < 3 || height < 3) return null;
 
+  const display = name || '';
   const maxChars = Math.max(3, Math.floor(width / 7));
-  const truncated = name.length > maxChars ? name.slice(0, maxChars) + '…' : name;
+  const truncated =
+    display.length > maxChars
+      ? display.slice(0, Math.max(0, maxChars - 1)) + '…'
+      : display;
+
   const showLabel = width > 45 && height > 32;
   const showValue = width > 80 && height > 50;
 
   return (
     <g>
-      <title>{name}</title>
       <rect
         x={x}
         y={y}
         width={width}
         height={height}
-        rx={4}
+        rx={3}
         fill={PALETTE[index % PALETTE.length]}
         stroke="hsl(var(--card))"
         strokeWidth={1}
@@ -117,8 +121,8 @@ export default function CommoditySunburst({ data }: Props) {
 
   return (
     <div className="w-full h-full flex flex-col">
-      <ResponsiveContainer width="100%" height={480}>
-        <Treemap data={treemapData} dataKey="size" nameKey="name" content={<CustomContent />} aspectRatio={4 / 3}>
+      <ResponsiveContainer width="100%" height={460}>
+        <Treemap data={treemapData} dataKey="size" nameKey="name" content={<CustomContent />} aspectRatio={1}>
           <Tooltip
             contentStyle={tooltipStyle}
             itemStyle={tooltipItemStyle}
@@ -134,4 +138,4 @@ export default function CommoditySunburst({ data }: Props) {
       </ResponsiveContainer>
     </div>
   );
-} heel
+} 
