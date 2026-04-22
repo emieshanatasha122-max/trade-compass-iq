@@ -48,7 +48,7 @@ const translations: Translations = {
 
   enterpriseParticipation: { bm: 'Penyertaan Perusahaan', en: 'Enterprise Participation' },
   enterpriseParticipationDesc: { bm: 'Bahagian ini menunjukkan bagaimana syarikat pelbagai saiz mengambil bahagian dalam Perdagangan.', en: 'This section shows how companies of different sizes participate in trade.' },
-  enterpriseStructure: { bm: 'Taburan Keluasan Syarikat', en: 'Enterprise Size Distribution' },
+  enterpriseStructure: { bm: 'Size Syarikat', en: 'Company Size' },
   economicRegion: { bm: 'Taburan Kawasan Ekonomi', en: 'Economic Region Distribution' },
   economicRegionDesc: { bm: 'Taburan Perdagangan mengikut kawasan ekonomi.', en: 'Trade distribution by economic region.' },
 
@@ -64,7 +64,7 @@ const translations: Translations = {
   tradeType: { bm: 'Jenis Perdagangan', en: 'Trade Type' },
   state: { bm: 'Negeri', en: 'State' },
   commodity: { bm: 'Komoditi', en: 'Commodity' },
-  enterpriseSize: { bm: 'Saiz Syarikat', en: 'Company Size' },
+  enterpriseSize: { bm: 'Size Syarikat', en: 'Company Size' },
   all: { bm: 'Semua', en: 'All' },
   export: { bm: 'Eksport', en: 'Export' },
   import: { bm: 'Import', en: 'Import' },
