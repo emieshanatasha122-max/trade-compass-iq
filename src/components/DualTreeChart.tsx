@@ -5,6 +5,12 @@ import { motion } from 'framer-motion';
 
 const ALLOWED_REGIONS = ['AFTA', 'NAFTA', 'EU'];
 
+const REGION_DISPLAY: Record<string, string> = {
+  AFTA: 'A.F.T.A',
+  NAFTA: 'N.A.F.T.A',
+  EU: 'E.U.',
+};
+
 const REGION_COLORS: Record<string, string> = {
   AFTA: 'hsl(207, 70%, 50%)',
   NAFTA: 'hsl(270, 50%, 55%)',
@@ -128,7 +134,7 @@ function Branch({
               />
               <div className="min-w-0 flex-1">
                 <p className="text-[11px] font-semibold text-foreground">
-                  {region.name}
+                  {REGION_DISPLAY[region.name] || region.name}
                 </p>
                 <div className="flex items-center gap-1.5 mt-0.5">
                   <span className="text-[10px] text-muted-foreground font-medium">
@@ -180,7 +186,7 @@ function Branch({
                 className="ml-1.5 font-bold"
                 style={{ color: REGION_COLORS[activeRegion.name] }}
               >
-                · {activeRegion.name}
+                · {REGION_DISPLAY[activeRegion.name] || activeRegion.name}
               </span>
             )}
           </p>

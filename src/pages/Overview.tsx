@@ -82,26 +82,29 @@ export default function Overview() {
         </div>
       </section>
 
-      {/* Row: Section F (Company Pie) + Section G (Commodity Treemap) */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <section>
-          <SectionHeader title={t('enterpriseParticipation')} description={t('enterpriseParticipationDesc')} icon={Building2} />
-          <div className="chart-container">
-            <EnterpriseDonut data={filteredData} />
-          </div>
-        </section>
+      {/* Section F: Commodity Treemap (Full Width) */}
+      <section>
+        <SectionHeader
+          title={lang === 'bm' ? 'Komoditi Perdagangan (Commodity Trade)' : 'Commodity Trade (Komoditi Perdagangan)'}
+          description={lang === 'bm' ? 'Taburan Perdagangan mengikut kategori komoditi.' : 'Trade distribution by commodity category.'}
+          icon={Package}
+        />
+        <div className="chart-container">
+          <CommoditySunburst data={filteredData} />
+        </div>
+      </section>
 
-        <section>
-          <SectionHeader
-            title={lang === 'bm' ? 'Peta Pokok Komoditi' : 'Commodity Treemap'}
-            description={lang === 'bm' ? 'Taburan Perdagangan mengikut kategori SITC.' : 'Trade distribution by SITC category.'}
-            icon={Package}
-          />
-          <div className="chart-container">
-            <CommoditySunburst data={filteredData} />
-          </div>
-        </section>
-      </div>
+      {/* Section G: Business Participation (Full Width) */}
+      <section>
+        <SectionHeader
+          title={lang === 'bm' ? 'Penyertaan Syarikat Perniagaan (Business Participation)' : 'Business Participation (Penyertaan Syarikat Perniagaan)'}
+          description={t('enterpriseParticipationDesc')}
+          icon={Building2}
+        />
+        <div className="chart-container">
+          <EnterpriseDonut data={filteredData} />
+        </div>
+      </section>
 
       {/* Section H: Top 10 Trading Countries */}
       <section>
