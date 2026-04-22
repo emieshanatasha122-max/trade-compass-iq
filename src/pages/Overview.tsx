@@ -74,7 +74,7 @@ export default function Overview() {
         />
 
         {/* Overlay light */}
-        <div className="absolute inset-0 block dark:hidden bg-gradient-to-r from-white/96 via-white/88 to-white/20" />
+        <div className="absolute inset-0 block dark:hidden bg-gradient-to-r from-white/80 via-white/55 to-white/10" />
 
         {/* Overlay dark */}
         <div className="absolute inset-0 hidden dark:block bg-[linear-gradient(90deg,rgba(4,10,28,0.92)_0%,rgba(8,18,44,0.78)_45%,rgba(8,18,44,0.38)_100%)]" />
