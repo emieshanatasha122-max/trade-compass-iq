@@ -85,7 +85,7 @@ export default function Overview() {
       {/* Section F: Commodity Treemap (Full Width) */}
       <section>
         <SectionHeader
-          title={lang === 'bm' ? 'Komoditi Perdagangan (Commodity Trade)' : 'Commodity Trade (Komoditi Perdagangan)'}
+          title={lang === 'bm' ? 'Komoditi Perdagangan' : 'Commodity Trade'}
           description={lang === 'bm' ? 'Taburan Perdagangan mengikut kategori komoditi.' : 'Trade distribution by commodity category.'}
           icon={Package}
         />
@@ -97,7 +97,7 @@ export default function Overview() {
       {/* Section G: Business Participation (Full Width) */}
       <section>
         <SectionHeader
-          title={lang === 'bm' ? 'Penyertaan Syarikat Perniagaan (Business Participation)' : 'Business Participation (Penyertaan Syarikat Perniagaan)'}
+          title={lang === 'bm' ? 'Penyertaan Syarikat Perniagaan' : 'Business Participation'}
           description={t('enterpriseParticipationDesc')}
           icon={Building2}
         />
