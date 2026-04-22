@@ -17,32 +17,57 @@ function formatRM(value: number): string {
   return `RM ${value.toLocaleString()}`;
 }
 
-function CustomContent({ x = 0, y = 0, width = 0, height = 0, name = '', index = 0, size = 0 }: any) {
-  if (width < 45 || height < 32) return null;
-  const maxChars = Math.floor(width / 7);
+function CustomContent({
+  x = 0,
+  y = 0,
+  width = 0,
+  height = 0,
+  name = '',
+  index = 0,
+  size = 0,
+}: any) {
+  if (width < 8 || height < 8) return null;
+
+  const maxChars = Math.max(3, Math.floor(width / 7));
   const truncated = name.length > maxChars ? name.slice(0, maxChars) + '…' : name;
+  const showLabel = width > 45 && height > 32;
   const showValue = width > 80 && height > 50;
 
   return (
     <g>
       <rect
-        x={x} y={y} width={width} height={height} rx={6}
+        x={x}
+        y={y}
+        width={width}
+        height={height}
+        rx={4}
         fill={PALETTE[index % PALETTE.length]}
-        stroke="hsl(var(--card))" strokeWidth={2}
+        stroke="hsl(var(--card))"
+        strokeWidth={1}
       />
-      <text
-        x={x + width / 2} y={y + (showValue ? height * 0.4 : height / 2)}
-        textAnchor="middle" dominantBaseline="central"
-        fontSize={width > 100 ? 12 : width > 70 ? 10 : 9}
-        fontWeight={700} fill="#fff" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.4)' }}
-      >
-        {truncated}
-      </text>
+      {showLabel && (
+        <text
+          x={x + width / 2}
+          y={y + (showValue ? height * 0.4 : height / 2)}
+          textAnchor="middle"
+          dominantBaseline="central"
+          fontSize={width > 100 ? 12 : width > 70 ? 10 : 9}
+          fontWeight={700}
+          fill="#fff"
+          style={{ textShadow: '0 1px 3px rgba(0,0,0,0.4)' }}
+        >
+          {truncated}
+        </text>
+      )}
       {showValue && (
         <text
-          x={x + width / 2} y={y + height * 0.65}
-          textAnchor="middle" dominantBaseline="central"
-          fontSize={9} fontWeight={500} fill="rgba(255,255,255,0.75)"
+          x={x + width / 2}
+          y={y + height * 0.65}
+          textAnchor="middle"
+          dominantBaseline="central"
+          fontSize={9}
+          fontWeight={500}
+          fill="rgba(255,255,255,0.75)"
         >
           {formatRM(size)}
         </text>
