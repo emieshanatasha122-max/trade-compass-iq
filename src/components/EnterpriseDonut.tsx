@@ -52,7 +52,7 @@ export default function EnterpriseDonut({ data }: Props) {
   return (
     <div>
       <h4 className="text-sm font-bold text-foreground mb-3">
-        {lang === 'bm' ? 'Saiz Syarikat' : 'Company Size'}
+        {lang === 'bm' ? 'Size Syarikat' : 'Company Size'}
       </h4>
       <ResponsiveContainer width="100%" height={380}>
         <PieChart>
