@@ -5,7 +5,6 @@ import KPICards from '@/components/KPICards';
 import Globe3D from '@/components/Globe3D';
 import TrendDrillDown from '@/components/TrendDrillDown';
 import StateFlagGrid from '@/components/StateFlagGrid';
-import EnterpriseDonut from '@/components/EnterpriseDonut';
 import DualTreeChart from '@/components/DualTreeChart';
 import CommoditySunburst from '@/components/CommoditySunburst';
 import TopCountryBars from '@/components/TopCountryBars';
@@ -214,17 +213,6 @@ export default function Overview() {
         />
         <div className="chart-container">
           <CommoditySunburst data={filteredData} />
-        </div>
-      </section>
-
-      <section>
-        <SectionHeader
-          title={lang === 'bm' ? 'Penyertaan Syarikat Perniagaan' : 'Business Participation'}
-          description={t('enterpriseParticipationDesc')}
-          icon={Building2}
-        />
-        <div className="chart-container">
-          <EnterpriseDonut data={filteredData} />
         </div>
       </section>
 
