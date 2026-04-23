@@ -5,14 +5,13 @@ import KPICards from '@/components/KPICards';
 import Globe3D from '@/components/Globe3D';
 import TrendDrillDown from '@/components/TrendDrillDown';
 import StateFlagGrid from '@/components/StateFlagGrid';
-import DualTreeChart from '@/components/DualTreeChart';
+import DualTreeChart from '@/components/EconomicRegionCards';
 import CommoditySunburst from '@/components/CommoditySunburst';
 import TopCountryBars from '@/components/TopCountryBars';
 import {
   Globe,
   BarChart3,
   MapPin,
-  Building2,
   GitBranch,
   Package,
   Flag,
@@ -73,7 +72,7 @@ export default function Overview() {
         />
 
         {/* Overlay light */}
-        <div className="absolute inset-0 block dark:hidden bg-gradient-to-r from-white/80 via-white/55 to-white/10" />
+        <div className="absolute inset-0 block bg-gradient-to-r from-white/80 via-white/55 to-white/10 dark:hidden" />
 
         {/* Overlay dark */}
         <div className="absolute inset-0 hidden dark:block bg-[linear-gradient(90deg,rgba(4,10,28,0.92)_0%,rgba(8,18,44,0.78)_45%,rgba(8,18,44,0.38)_100%)]" />
@@ -86,7 +85,6 @@ export default function Overview() {
         </div>
 
         <div className="relative z-10 px-6 py-6 md:px-8 md:py-8">
-          {/* Hero content */}
           <div className="grid items-center gap-6 md:grid-cols-2">
             <div className="space-y-4">
               <div className="inline-flex items-center rounded-full border border-border bg-background/60 px-3 py-1 text-xs text-muted-foreground backdrop-blur-sm">
@@ -145,14 +143,13 @@ export default function Overview() {
             <div className="hidden md:block" />
           </div>
 
-          {/* KPI + info cards inside overview */}
           <div className="mt-8 space-y-4">
             <KPICards data={filteredData} />
           </div>
         </div>
       </section>
 
-      {/* DASHBOARD STARTS HERE */}
+      {/* SECTION A */}
       <section id="dashboard-sections">
         <SectionHeader
           title={t('tradeTrends')}
@@ -164,6 +161,7 @@ export default function Overview() {
         </div>
       </section>
 
+      {/* SECTION B */}
       <section>
         <SectionHeader
           title={t('globalTradeMap')}
@@ -175,6 +173,7 @@ export default function Overview() {
         </div>
       </section>
 
+      {/* SECTION C */}
       <section>
         <SectionHeader
           title={t('stateActivity')}
@@ -186,21 +185,7 @@ export default function Overview() {
         </div>
       </section>
 
-      <section>
-        <SectionHeader
-          title={lang === 'bm' ? 'Perdagangan mengikut Kawasan Ekonomi' : 'Trade by Economic Region'}
-          description={
-            lang === 'bm'
-              ? 'Hierarki perdagangan mengikut kawasan ekonomi dan negeri.'
-              : 'Trade hierarchy by economic region and state.'
-          }
-          icon={GitBranch}
-        />
-        <div className="chart-container">
-          <DualTreeChart data={filteredData} />
-        </div>
-      </section>
-
+      {/* SECTION D */}
       <section>
         <SectionHeader
           title={lang === 'bm' ? 'Komoditi Perdagangan' : 'Commodity Trade'}
@@ -216,18 +201,38 @@ export default function Overview() {
         </div>
       </section>
 
+      {/* SECTION E & F */}
       <section>
-        <SectionHeader
-          title={lang === 'bm' ? '10 Negara Perdagangan Teratas' : 'Top 10 Trading Countries'}
-          description={
-            lang === 'bm'
-              ? 'Import (kiri) dan eksport (kanan) mengikut negara.'
-              : 'Import (left) and export (right) by country.'
-          }
-          icon={Flag}
-        />
-        <div className="chart-container">
-          <TopCountryBars data={filteredData} />
+        <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+          <div>
+            <SectionHeader
+              title={lang === 'bm' ? 'Perdagangan mengikut Kawasan Ekonomi' : 'Trade by Economic Region'}
+              description={
+                lang === 'bm'
+                  ? 'Hierarki perdagangan mengikut kawasan ekonomi dan negeri.'
+                  : 'Trade hierarchy by economic region and state.'
+              }
+              icon={GitBranch}
+            />
+            <div className="chart-container h-full">
+              <DualTreeChart data={filteredData} />
+            </div>
+          </div>
+
+          <div>
+            <SectionHeader
+              title={lang === 'bm' ? '10 Negara Perdagangan Teratas' : 'Top 10 Trading Countries'}
+              description={
+                lang === 'bm'
+                  ? 'Import dan eksport mengikut negara.'
+                  : 'Import and export by country.'
+              }
+              icon={Flag}
+            />
+            <div className="chart-container h-full">
+              <TopCountryBars data={filteredData} />
+            </div>
+          </div>
         </div>
       </section>
     </div>
