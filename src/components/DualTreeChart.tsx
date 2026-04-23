@@ -1,20 +1,42 @@
 import React, { useMemo, useState } from 'react';
 import type { TradeRecord } from '@/data/tradeDataLoader';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 
-const ALLOWED_REGIONS = ['AFTA', 'NAFTA', 'EU'];
+const REGIONS = ['AFTA', 'NAFTA', 'EU'] as const;
+type RegionKey = (typeof REGIONS)[number];
+type Mode = 'export' | 'import';
 
-const REGION_DISPLAY: Record<string, string> = {
+const REGION_DISPLAY: Record<RegionKey, string> = {
   AFTA: 'A.F.T.A',
   NAFTA: 'N.A.F.T.A',
   EU: 'E.U.',
 };
 
-const REGION_COLORS: Record<string, string> = {
-  AFTA: 'hsl(207, 70%, 50%)',
-  NAFTA: 'hsl(270, 50%, 55%)',
-  EU: 'hsl(24, 85%, 55%)',
+const REGION_THEME: Record<
+  RegionKey,
+  {
+    color: string;
+    border: string;
+    subtleBg: string;
+  }
+> = {
+  AFTA: {
+    color: 'hsl(188, 85%, 52%)',
+    border: 'border-cyan-400/30',
+    subtleBg: 'bg-cyan-500/6 dark:bg-cyan-400/8',
+  },
+  NAFTA: {
+    color: 'hsl(268, 78%, 64%)',
+    border: 'border-violet-400/30',
+    subtleBg: 'bg-violet-500/6 dark:bg-violet-400/8',
+  },
+  EU: {
+    color: 'hsl(28, 92%, 58%)',
+    border: 'border-orange-400/30',
+    subtleBg: 'bg-orange-500/6 dark:bg-orange-400/8',
+  },
 };
 
 function formatRM(value: number): string {
@@ -25,305 +47,351 @@ function formatRM(value: number): string {
   return `RM ${value.toLocaleString()}`;
 }
 
-interface RegionNode {
-  name: string;
-  total: number;
-  states: { name: string; value: number }[];
+function normalizeText(raw: string): string {
+  return (raw || '').trim().toUpperCase();
 }
 
-interface BranchData {
-  regions: RegionNode[];
-  grandTotal: number;
+function matchRegion(raw: string): RegionKey | null {
+  const upper = normalizeText(raw);
+
+  if (
+    upper.includes('AFTA') ||
+    upper.includes('ASEAN FREE TRADE AREA') ||
+    upper === 'ASEAN'
+  ) {
+    return 'AFTA';
+  }
+
+  if (
+    upper.includes('NAFTA') ||
+    upper.includes('USMCA') ||
+    upper.includes('NORTH AMERICAN FREE TRADE')
+  ) {
+    return 'NAFTA';
+  }
+
+  if (
+    upper === 'EU' ||
+    upper.includes('E.U') ||
+    upper.includes('EUROPEAN UNION')
+  ) {
+    return 'EU';
+  }
+
+  return null;
+}
+
+interface RegionState {
+  name: string;
+  value: number;
+}
+
+interface RegionCardData {
+  region: RegionKey;
+  exportValue: number;
+  importValue: number;
+  totalValue: number;
+  statesExport: RegionState[];
+  statesImport: RegionState[];
+  statesTotal: RegionState[];
 }
 
 interface Props {
   data: TradeRecord[];
 }
 
-function matchRegion(raw: string): string | null {
-  const upper = (raw || '').toUpperCase();
-  for (const key of ALLOWED_REGIONS) {
-    if (upper.includes(key)) return key;
-  }
-  return null;
-}
-
-function Branch({
-  label,
-  branch,
-  branchColor,
+function RegionCard({
+  item,
+  mode,
   lang,
+  grandTotal,
+  expanded,
+  onToggle,
 }: {
-  label: string;
-  branch: BranchData;
-  branchColor: string;
+  item: RegionCardData;
+  mode: Mode;
   lang: string;
+  grandTotal: number;
+  expanded: boolean;
+  onToggle: () => void;
 }) {
-  const initialRegion = branch.regions[0]?.name ?? null;
-  const [selected, setSelected] = useState<string | null>(initialRegion);
-
-  const activeRegion =
-    branch.regions.find(r => r.name === selected) || branch.regions[0] || null;
+  const theme = REGION_THEME[item.region];
+  const value = mode === 'export' ? item.exportValue : item.importValue;
+  const states = mode === 'export' ? item.statesExport : item.statesImport;
+  const pct = grandTotal > 0 ? (value / grandTotal) * 100 : 0;
+  const topStates = states.slice(0, 3);
 
   return (
-    <div className="grid grid-cols-[auto_24px_minmax(0,1fr)_24px_minmax(0,220px)] items-stretch gap-0">
-      {/* Branch label */}
-      <div className="flex items-center">
-        <div
-          className="rounded-lg border border-border bg-card/90 px-3 py-2 shadow-sm"
-          style={{ borderLeft: `3px solid ${branchColor}` }}
-        >
-          <p className="text-xs font-bold text-foreground">{label}</p>
-          <p className="text-[10px] text-muted-foreground mt-0.5">
-            {formatRM(branch.grandTotal)}
-          </p>
-        </div>
-      </div>
-
-      {/* Connector: branch -> regions */}
-      <div className="relative">
-        <svg
-          width="24"
-          height="100%"
-          viewBox="0 0 24 100"
-          preserveAspectRatio="none"
-          className="h-full w-full"
-        >
-          {branch.regions.map((_, i) => {
-            const total = branch.regions.length;
-            const y = ((i + 0.5) / total) * 100;
-            return (
-              <path
-                key={i}
-                d={`M0,50 C12,50 12,${y} 24,${y}`}
-                fill="none"
-                stroke="hsl(var(--border))"
-                strokeWidth="1.2"
-                opacity="0.7"
-              />
-            );
-          })}
-        </svg>
-      </div>
-
-      {/* Region boxes */}
-      <div className="flex flex-col justify-between gap-2 py-1 min-w-0">
-        {branch.regions.length === 0 && (
-          <p className="text-[11px] text-muted-foreground italic">
-            {lang === 'bm' ? 'Tiada data' : 'No data'}
-          </p>
-        )}
-        {branch.regions.map(region => {
-          const pct =
-            branch.grandTotal > 0 ? (region.total / branch.grandTotal) * 100 : 0;
-          const isActive = activeRegion?.name === region.name;
-          return (
-            <motion.button
-              key={region.name}
-              onClick={() => setSelected(region.name)}
-              whileHover={{ x: 2 }}
-              className={`flex items-center gap-2 rounded-lg border px-2.5 py-1.5 text-left transition-colors ${
-                isActive
-                  ? 'border-primary/60 bg-accent/40'
-                  : 'border-border bg-card/70 hover:bg-accent/30'
-              }`}
-            >
-              <span
-                className="w-1.5 self-stretch rounded-full shrink-0"
-                style={{ backgroundColor: REGION_COLORS[region.name] }}
-              />
-              <div className="min-w-0 flex-1">
-                <p className="text-[11px] font-semibold text-foreground">
-                  {REGION_DISPLAY[region.name] || region.name}
-                </p>
-                <div className="flex items-center gap-1.5 mt-0.5">
-                  <span className="text-[10px] text-muted-foreground font-medium">
-                    {formatRM(region.total)}
-                  </span>
-                  <span className="text-[9px] text-muted-foreground">
-                    ({pct.toFixed(1)}%)
-                  </span>
-                </div>
-              </div>
-            </motion.button>
-          );
-        })}
-      </div>
-
-      {/* Connector: active region -> right panel */}
-      <div className="relative">
-        <svg
-          width="24"
-          height="100%"
-          viewBox="0 0 24 100"
-          preserveAspectRatio="none"
-          className="h-full w-full"
-        >
-          {activeRegion && branch.regions.length > 0 && (() => {
-            const idx = branch.regions.findIndex(r => r.name === activeRegion.name);
-            const total = branch.regions.length;
-            const y = ((idx + 0.5) / total) * 100;
-            return (
-              <path
-                d={`M0,${y} C12,${y} 12,50 24,50`}
-                fill="none"
-                stroke="hsl(var(--primary))"
-                strokeWidth="1.4"
-                opacity="0.7"
-              />
-            );
-          })()}
-        </svg>
-      </div>
-
-      {/* Top 3 States panel */}
-      <div className="flex items-center">
-        <div className="w-full rounded-lg border border-border bg-card/80 p-2.5 shadow-sm">
-          <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium mb-1.5">
-            {lang === 'bm' ? '3 Negeri Teratas' : 'Top 3 States'}
-            {activeRegion && (
-              <span
-                className="ml-1.5 font-bold"
-                style={{ color: REGION_COLORS[activeRegion.name] }}
+    <motion.div
+      layout
+      className={`overflow-hidden rounded-xl border bg-card/80 backdrop-blur-sm ${theme.border}`}
+      style={{
+        boxShadow: expanded
+          ? `0 0 0 1px ${theme.color}16, 0 6px 18px rgba(0,0,0,0.08)`
+          : undefined,
+      }}
+    >
+      <button
+        onClick={onToggle}
+        className={`w-full px-3 py-2 text-left transition-colors hover:bg-white/[0.02] ${theme.subtleBg}`}
+      >
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0 flex-1">
+            <div className="min-w-0">
+              <p
+                className="text-[15px] font-bold tracking-[0.16em]"
+                style={{ color: theme.color }}
               >
-                · {REGION_DISPLAY[activeRegion.name] || activeRegion.name}
-              </span>
+                {REGION_DISPLAY[item.region]}
+              </p>
+
+              <p className="mt-1 text-[14px] font-extrabold text-foreground">
+                {formatRM(value)}
+              </p>
+
+              <p className="mt-0.5 text-[11px] text-muted-foreground">
+                {lang === 'bm' ? 'Peratus bahagian' : 'Share of total'}: {pct.toFixed(1)}%
+              </p>
+            </div>
+
+            <div className="mt-2">
+              <div className="h-1 rounded-full bg-secondary/60">
+                <div
+                  className="h-full rounded-full"
+                  style={{
+                    width: `${pct}%`,
+                    backgroundColor: theme.color,
+                    opacity: 0.95,
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="shrink-0 rounded-full bg-background/60 p-1.5">
+            {expanded ? (
+              <ChevronUp className="h-3.5 w-3.5 text-foreground" />
+            ) : (
+              <ChevronDown className="h-3.5 w-3.5 text-foreground" />
             )}
-          </p>
-          <ul className="space-y-1">
-            {(activeRegion?.states.slice(0, 3) ?? []).map((s, i) => {
-              const max = activeRegion!.states[0]?.value || 1;
-              const w = (s.value / max) * 100;
-              return (
-                <li key={s.name}>
-                  <div className="flex items-center justify-between text-[11px]">
-                    <div className="flex items-center gap-1.5 min-w-0">
-                      <span className="text-muted-foreground font-mono w-3 shrink-0">
-                        {i + 1}.
-                      </span>
-                      <span className="text-foreground truncate">{s.name}</span>
-                    </div>
-                    <span className="text-muted-foreground font-medium shrink-0">
-                      {formatRM(s.value)}
-                    </span>
-                  </div>
-                  <div className="mt-0.5 h-0.5 rounded-full bg-secondary/60">
-                    <div
-                      className="h-full rounded-full"
-                      style={{
-                        width: `${w}%`,
-                        backgroundColor: REGION_COLORS[activeRegion!.name],
-                        opacity: 0.7,
-                      }}
-                    />
-                  </div>
-                </li>
-              );
-            })}
-            {(!activeRegion || activeRegion.states.length === 0) && (
-              <li className="text-[11px] text-muted-foreground italic">
-                {lang === 'bm' ? 'Tiada negeri' : 'No states'}
-              </li>
-            )}
-          </ul>
+          </div>
         </div>
-      </div>
-    </div>
+      </button>
+
+      <AnimatePresence initial={false}>
+        {expanded && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="overflow-hidden"
+          >
+            <div className="border-t border-border px-3 pb-3 pt-2">
+              <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                {lang === 'bm' ? '3 Negeri Teratas' : 'Top 3 States'}
+              </p>
+
+              {topStates.length > 0 ? (
+                <div className="space-y-2">
+                  {topStates.map((state, index) => {
+                    const max = topStates[0]?.value || 1;
+                    const width = (state.value / max) * 100;
+
+                    return (
+                      <div
+                        key={state.name}
+                        className="rounded-lg border border-border/70 bg-background/35 px-2.5 py-2"
+                      >
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="flex min-w-0 items-center gap-2">
+                            <span className="w-4 shrink-0 text-[10px] font-mono text-muted-foreground">
+                              {index + 1}.
+                            </span>
+                            <span className="truncate text-[13px] font-medium text-foreground">
+                              {state.name}
+                            </span>
+                          </div>
+
+                          <span className="shrink-0 text-[13px] font-semibold text-foreground">
+                            {formatRM(state.value)}
+                          </span>
+                        </div>
+
+                        <div className="mt-1.5 h-1 rounded-full bg-secondary/60">
+                          <div
+                            className="h-full rounded-full"
+                            style={{
+                              width: `${width}%`,
+                              backgroundColor: theme.color,
+                            }}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="rounded-lg border border-dashed border-border px-2.5 py-2 text-[12px] italic text-muted-foreground">
+                  {lang === 'bm' ? 'Tiada negeri direkodkan' : 'No states recorded'}
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
   );
 }
 
 export default function DualTreeChart({ data }: Props) {
   const { lang } = useLanguage();
+  const [mode, setMode] = useState<Mode>('export');
+  const [openRegion, setOpenRegion] = useState<RegionKey | null>(null);
 
-  const buildBranch = (type: 'Eksport' | 'Import'): BranchData => {
-    const filtered = data.filter(r => r.jenisDagangan === type);
-    const regionMap: Record<string, Record<string, number>> = {};
+  const chartData = useMemo<RegionCardData[]>(() => {
+    const exportRegionMap: Record<string, Record<string, number>> = {};
+    const importRegionMap: Record<string, Record<string, number>> = {};
 
-    filtered.forEach(r => {
+    data.forEach((r) => {
       const region = matchRegion(r.kawasanEkonomi);
       if (!region) return;
-      if (!regionMap[region]) regionMap[region] = {};
-      regionMap[region][r.negeri] =
-        (regionMap[region][r.negeri] || 0) + r.jumlahDaganganRM;
+
+      const stateName = r.negeri || (lang === 'bm' ? 'Tidak Diketahui' : 'Unknown');
+
+      if (r.jenisDagangan === 'Eksport') {
+        if (!exportRegionMap[region]) exportRegionMap[region] = {};
+        exportRegionMap[region][stateName] =
+          (exportRegionMap[region][stateName] || 0) + r.jumlahDaganganRM;
+      } else {
+        if (!importRegionMap[region]) importRegionMap[region] = {};
+        importRegionMap[region][stateName] =
+          (importRegionMap[region][stateName] || 0) + r.jumlahDaganganRM;
+      }
     });
 
-    const regions: RegionNode[] = ALLOWED_REGIONS.map(name => {
-      const stateMap = regionMap[name] || {};
+    return REGIONS.map((region) => {
+      const exportStatesMap = exportRegionMap[region] || {};
+      const importStatesMap = importRegionMap[region] || {};
+
+      const statesExport = Object.entries(exportStatesMap)
+        .sort((a, b) => b[1] - a[1])
+        .map(([name, value]) => ({ name, value }));
+
+      const statesImport = Object.entries(importStatesMap)
+        .sort((a, b) => b[1] - a[1])
+        .map(([name, value]) => ({ name, value }));
+
+      const totalStateMap: Record<string, number> = {};
+
+      [...statesExport, ...statesImport].forEach((state) => {
+        totalStateMap[state.name] = (totalStateMap[state.name] || 0) + state.value;
+      });
+
+      const statesTotal = Object.entries(totalStateMap)
+        .sort((a, b) => b[1] - a[1])
+        .map(([name, value]) => ({ name, value }));
+
+      const exportValue = statesExport.reduce((a, b) => a + b.value, 0);
+      const importValue = statesImport.reduce((a, b) => a + b.value, 0);
+      const totalValue = exportValue + importValue;
+
       return {
-        name,
-        total: Object.values(stateMap).reduce((a, b) => a + b, 0),
-        states: Object.entries(stateMap)
-          .sort((a, b) => b[1] - a[1])
-          .map(([n, v]) => ({ name: n, value: v })),
+        region,
+        exportValue,
+        importValue,
+        totalValue,
+        statesExport,
+        statesImport,
+        statesTotal,
       };
     });
+  }, [data, lang]);
 
-    const grandTotal = regions.reduce((a, b) => a + b.total, 0);
-    return { regions, grandTotal };
-  };
+  const grandTotal = chartData.reduce((sum, item) => {
+    return sum + (mode === 'export' ? item.exportValue : item.importValue);
+  }, 0);
 
-  const exportBranch = useMemo(() => buildBranch('Eksport'), [data]);
-  const importBranch = useMemo(() => buildBranch('Import'), [data]);
-  const grandTotal = exportBranch.grandTotal + importBranch.grandTotal;
+  const sectionTitle =
+    mode === 'export'
+      ? lang === 'bm'
+        ? 'Eksport'
+        : 'Export'
+      : lang === 'bm'
+      ? 'Import'
+      : 'Import';
 
-  const exportLabel = lang === 'bm' ? 'Eksport' : 'Export';
-  const importLabel = lang === 'bm' ? 'Import' : 'Import';
-  const rootLabel = lang === 'bm' ? 'Kawasan Ekonomi' : 'Economic Region';
+  const sectionDescription =
+    mode === 'export'
+      ? lang === 'bm'
+        ? 'Paparan kawasan ekonomi berdasarkan nilai eksport.'
+        : 'Economic region view based on export value.'
+      : lang === 'bm'
+      ? 'Paparan kawasan ekonomi berdasarkan nilai import.'
+      : 'Economic region view based on import value.';
 
   return (
-    <div className="grid grid-cols-[auto_28px_minmax(0,1fr)] items-stretch gap-0 min-h-[420px]">
-      {/* ROOT */}
-      <div className="flex items-center">
-        <div className="rounded-xl border border-border bg-card/90 px-4 py-3 shadow-md text-center">
-          <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">
-            {rootLabel}
+    <div className="space-y-3">
+      <div className="flex flex-col gap-2 rounded-xl border border-border bg-card/70 p-3 md:flex-row md:items-center md:justify-between">
+        <div>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+            {lang === 'bm' ? 'Kawasan Ekonomi' : 'Economic Region'}
           </p>
-          <p className="text-sm font-bold text-foreground mt-0.5">
+
+          <h3 className="mt-1 text-[16px] font-extrabold text-foreground">
             {formatRM(grandTotal)}
+          </h3>
+
+          <p className="mt-1 text-[11px] text-muted-foreground">
+            {sectionDescription}
           </p>
+        </div>
+
+        <div className="inline-flex w-fit rounded-xl border border-border bg-background/50 p-1">
+          <button
+            onClick={() => setMode('export')}
+            className={`rounded-lg px-3 py-1.5 text-[11px] font-medium transition-colors ${
+              mode === 'export'
+                ? 'bg-primary text-primary-foreground'
+                : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
+            }`}
+          >
+            {lang === 'bm' ? 'Eksport' : 'Export'}
+          </button>
+
+          <button
+            onClick={() => setMode('import')}
+            className={`rounded-lg px-3 py-1.5 text-[11px] font-medium transition-colors ${
+              mode === 'import'
+                ? 'bg-primary text-primary-foreground'
+                : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
+            }`}
+          >
+            {lang === 'bm' ? 'Import' : 'Import'}
+          </button>
         </div>
       </div>
 
-      {/* Connector: root -> 2 branches */}
-      <div className="relative">
-        <svg
-          width="28"
-          height="100%"
-          viewBox="0 0 28 100"
-          preserveAspectRatio="none"
-          className="h-full w-full"
-        >
-          <path
-            d="M0,50 C14,50 14,25 28,25"
-            fill="none"
-            stroke="hsl(var(--border))"
-            strokeWidth="1.4"
-            opacity="0.7"
-          />
-          <path
-            d="M0,50 C14,50 14,75 28,75"
-            fill="none"
-            stroke="hsl(var(--border))"
-            strokeWidth="1.4"
-            opacity="0.7"
-          />
-        </svg>
+      <div>
+        <h4 className="text-sm font-bold text-foreground">
+          {lang === 'bm' ? `Paparan ${sectionTitle}` : `${sectionTitle} View`}
+        </h4>
       </div>
 
-      {/* Two branches stacked */}
-      <div className="flex flex-col gap-6 min-w-0">
-        <Branch
-          label={exportLabel}
-          branch={exportBranch}
-          branchColor="hsl(145, 55%, 42%)"
-          lang={lang}
-        />
-        <Branch
-          label={importLabel}
-          branch={importBranch}
-          branchColor="hsl(0, 65%, 55%)"
-          lang={lang}
-        />
+      <div className="space-y-3">
+        {chartData.map((item) => (
+          <RegionCard
+            key={item.region}
+            item={item}
+            mode={mode}
+            lang={lang}
+            grandTotal={grandTotal}
+            expanded={openRegion === item.region}
+            onToggle={() =>
+              setOpenRegion((prev) => (prev === item.region ? null : item.region))
+            }
+          />
+        ))}
       </div>
     </div>
   );
