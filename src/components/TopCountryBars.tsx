@@ -1,10 +1,15 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import type { TradeRecord } from '@/data/tradeDataLoader';
 import { useLanguage } from '@/contexts/LanguageContext';
 import {
-  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  CartesianGrid,
 } from 'recharts';
-import { motion } from 'framer-motion';
 
 function formatRM(value: number): string {
   if (value >= 1e12) return `RM ${(value / 1e12).toFixed(1)}T`;
@@ -14,76 +19,212 @@ function formatRM(value: number): string {
   return `RM ${value.toLocaleString()}`;
 }
 
+function truncateLabel(name: string, max = 18): string {
+  return name.length > max ? `${name.slice(0, max)}…` : name;
+}
+
+type ChartMode = 'total' | 'export' | 'import';
+
 interface Props {
   data: TradeRecord[];
 }
 
 export default function TopCountryBars({ data }: Props) {
   const { lang } = useLanguage();
+  const [mode, setMode] = useState<ChartMode>('total');
 
-  const { top10Export, top10Import } = useMemo(() => {
-    const expMap: Record<string, number> = {};
-    const impMap: Record<string, number> = {};
+  const chartData = useMemo(() => {
+    const exportMap: Record<string, number> = {};
+    const importMap: Record<string, number> = {};
 
-    data.forEach(r => {
+    data.forEach((r) => {
       if (r.jenisDagangan === 'Eksport') {
-        const c = r.destinasiEksport || 'Unknown';
-        expMap[c] = (expMap[c] || 0) + r.jumlahDaganganRM;
+        const country = r.destinasiEksport || 'Unknown';
+        exportMap[country] = (exportMap[country] || 0) + r.jumlahDaganganRM;
       } else {
-        const c = r.negaraAsal || 'Unknown';
-        impMap[c] = (impMap[c] || 0) + r.jumlahDaganganRM;
+        const country = r.negaraAsal || 'Unknown';
+        importMap[country] = (importMap[country] || 0) + r.jumlahDaganganRM;
       }
     });
 
-    return {
-      top10Export: Object.entries(expMap).sort((a, b) => b[1] - a[1]).slice(0, 10)
-        .map(([name, value]) => ({ name: name.length > 15 ? name.slice(0, 15) + '…' : name, value })),
-      top10Import: Object.entries(impMap).sort((a, b) => b[1] - a[1]).slice(0, 10)
-        .map(([name, value]) => ({ name: name.length > 15 ? name.slice(0, 15) + '…' : name, value })),
-    };
-  }, [data]);
+    const allCountries = Array.from(
+      new Set([...Object.keys(exportMap), ...Object.keys(importMap)])
+    );
+
+    return allCountries
+      .map((country) => {
+        const exportValue = exportMap[country] || 0;
+        const importValue = importMap[country] || 0;
+        const totalValue = exportValue + importValue;
+
+        return {
+          fullName: country,
+          name: truncateLabel(country, 18),
+          exportValue,
+          importValue,
+          totalValue,
+        };
+      })
+      .sort((a, b) => {
+        if (mode === 'export') return b.exportValue - a.exportValue;
+        if (mode === 'import') return b.importValue - a.importValue;
+        return b.totalValue - a.totalValue;
+      })
+      .slice(0, 10);
+  }, [data, mode]);
 
   const tooltipStyle = {
     backgroundColor: 'hsl(var(--card))',
     border: '1px solid hsl(var(--border))',
-    borderRadius: '8px',
+    borderRadius: '10px',
     fontSize: '11px',
     color: 'hsl(var(--foreground))',
+    boxShadow: '0 8px 24px rgba(0,0,0,0.15)',
   };
 
+  const chartTitle =
+    mode === 'total'
+      ? lang === 'bm'
+        ? 'Top 10 Negara Jumlah Perdagangan'
+        : 'Top 10 Total Trade Countries'
+      : mode === 'export'
+      ? lang === 'bm'
+        ? 'Top 10 Negara Eksport'
+        : 'Top 10 Export Countries'
+      : lang === 'bm'
+      ? 'Top 10 Negara Import'
+      : 'Top 10 Import Countries';
+
+  const chartDescription =
+    mode === 'total'
+      ? lang === 'bm'
+        ? 'Ranking negara berdasarkan jumlah perdagangan keseluruhan (import + eksport).'
+        : 'Country ranking based on total trade value (import + export).'
+      : mode === 'export'
+      ? lang === 'bm'
+        ? 'Ranking negara berdasarkan nilai eksport.'
+        : 'Country ranking based on export value.'
+      : lang === 'bm'
+      ? 'Ranking negara berdasarkan nilai import.'
+      : 'Country ranking based on import value.';
+
+  const dataKey =
+    mode === 'total'
+      ? 'totalValue'
+      : mode === 'export'
+      ? 'exportValue'
+      : 'importValue';
+
+  const fillColor =
+    mode === 'total'
+      ? 'hsl(210, 78%, 60%)'
+      : mode === 'export'
+      ? 'hsl(160, 60%, 45%)'
+      : 'hsl(0, 70%, 55%)';
+
+  const barLabel =
+    mode === 'total'
+      ? lang === 'bm'
+        ? 'Jumlah Perdagangan'
+        : 'Total Trade'
+      : mode === 'export'
+      ? lang === 'bm'
+        ? 'Eksport'
+        : 'Export'
+      : lang === 'bm'
+      ? 'Import'
+      : 'Import';
+
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      {/* Top 10 Import - Horizontal Bar */}
-      <div>
-        <h4 className="text-sm font-bold text-foreground mb-3">
-          {lang === 'bm' ? '10 Negara Import Teratas' : 'Top 10 Import Countries'}
-        </h4>
-        <ResponsiveContainer width="100%" height={320}>
-          <BarChart data={top10Import} layout="vertical" margin={{ left: 5, right: 20 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" horizontal={false} />
-            <XAxis type="number" tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} tickFormatter={v => formatRM(v)} />
-            <YAxis type="category" dataKey="name" tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} width={100} />
-            <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => [formatRM(v), 'Import']} />
-            <Bar dataKey="value" fill="hsl(0, 70%, 55%)" radius={[0, 4, 4, 0]} animationDuration={800} />
-          </BarChart>
-        </ResponsiveContainer>
+    <div className="space-y-4">
+      {/* Header + filter */}
+      <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+        <div>
+          <h4 className="text-sm font-bold text-foreground">{chartTitle}</h4>
+          <p className="mt-1 text-xs text-muted-foreground">{chartDescription}</p>
+        </div>
+
+        <div className="inline-flex w-fit rounded-xl border border-border bg-background/50 p-1">
+          <button
+            onClick={() => setMode('total')}
+            className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
+              mode === 'total'
+                ? 'bg-primary text-primary-foreground'
+                : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
+            }`}
+          >
+            {lang === 'bm' ? 'Jumlah Perdagangan' : 'Total Trade'}
+          </button>
+
+          <button
+            onClick={() => setMode('export')}
+            className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
+              mode === 'export'
+                ? 'bg-primary text-primary-foreground'
+                : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
+            }`}
+          >
+            {lang === 'bm' ? 'Eksport' : 'Export'}
+          </button>
+
+          <button
+            onClick={() => setMode('import')}
+            className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
+              mode === 'import'
+                ? 'bg-primary text-primary-foreground'
+                : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
+            }`}
+          >
+            {lang === 'bm' ? 'Import' : 'Import'}
+          </button>
+        </div>
       </div>
 
-      {/* Top 10 Export - Vertical Bar */}
-      <div>
-        <h4 className="text-sm font-bold text-foreground mb-3">
-          {lang === 'bm' ? '10 Negara Eksport Teratas' : 'Top 10 Export Countries'}
-        </h4>
-        <ResponsiveContainer width="100%" height={320}>
-          <BarChart data={top10Export} margin={{ left: 5, right: 20, bottom: 40 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
-            <XAxis dataKey="name" tick={{ fontSize: 9, fill: 'hsl(var(--muted-foreground))' }} angle={-45} textAnchor="end" />
-            <YAxis tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} tickFormatter={v => formatRM(v)} />
-            <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => [formatRM(v), 'Export']} />
-            <Bar dataKey="value" fill="hsl(160, 60%, 45%)" radius={[4, 4, 0, 0]} animationDuration={800} />
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
+      {/* Chart */}
+      <ResponsiveContainer width="100%" height={380}>
+        <BarChart
+          data={chartData}
+          layout="vertical"
+          margin={{ top: 8, right: 20, left: 20, bottom: 8 }}
+        >
+          <CartesianGrid
+            strokeDasharray="3 3"
+            stroke="hsl(var(--border))"
+            horizontal={true}
+            vertical={false}
+          />
+
+          <XAxis
+            type="number"
+            tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }}
+            tickFormatter={(v) => formatRM(v)}
+          />
+
+          <YAxis
+            type="category"
+            dataKey="name"
+            width={150}
+            tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }}
+          />
+
+          <Tooltip
+            contentStyle={tooltipStyle}
+            labelFormatter={(_, payload) => {
+              const item = payload?.[0]?.payload;
+              return item?.fullName || '';
+            }}
+            formatter={(value: number) => [formatRM(value), barLabel]}
+          />
+
+          <Bar
+            dataKey={dataKey}
+            name={barLabel}
+            fill={fillColor}
+            radius={[0, 6, 6, 0]}
+            animationDuration={800}
+          />
+        </BarChart>
+      </ResponsiveContainer>
     </div>
   );
 }
