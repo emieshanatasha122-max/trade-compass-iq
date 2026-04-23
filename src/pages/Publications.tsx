@@ -1,71 +1,53 @@
 import React from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Calendar, ArrowRight, FileText, BookOpen } from 'lucide-react';
-import { motion } from 'framer-motion';
 
 export default function Publications() {
-  const { t } = useLanguage();
-
-  const cards = [
-    {
-      category: t('mediaStatement'),
-      title: 'Statistik Eksport Import mengikut Negeri — Jan 2026',
-      description: 'Laporan rasmi mengenai statistik Perdagangan eksport dan import mengikut negeri di Malaysia.',
-      date: '01 Apr 2026',
-      icon: FileText,
-      url: 'https://www.dosm.gov.my',
-    },
-    {
-      category: t('annualBook'),
-      title: 'Buku Tahunan Perdagangan Luar Negeri Malaysia — 2025',
-      description: 'Buku tahunan komprehensif mengenai prestasi perdagangan luar negeri Malaysia.',
-      date: '15 Mar 2026',
-      icon: BookOpen,
-      url: 'https://www.dosm.gov.my',
-    },
-  ];
+  const { lang } = useLanguage();
 
   return (
-    <div>
-      <h2 className="text-lg font-bold text-foreground mb-1">{t('articlesMedia')}</h2>
-      <p className="text-xs text-muted-foreground mb-6">{t('publications')}</p>
+    <div className="space-y-6">
+      
+      {/* Header */}
+      <div>
+        <h1 className="text-2xl font-bold text-foreground">
+          {lang === 'bm' ? 'Penerbitan' : 'Publications'}
+        </h1>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-        {cards.map((card, i) => (
-          <motion.div
-            key={i}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.1 }}
-            className="glass-card group cursor-pointer"
-          >
-            <div className="w-full h-36 rounded-lg mb-4 flex items-center justify-center bg-primary/5">
-              <card.icon className="w-12 h-12 text-primary/30" />
-            </div>
-            <div className="flex items-center gap-2 mb-3">
-              <span className="text-[10px] font-semibold px-2.5 py-0.5 rounded-full bg-primary/10 text-primary">
-                {card.category}
-              </span>
-            </div>
-            <h3 className="text-sm font-semibold text-foreground mb-2 leading-relaxed">{card.title}</h3>
-            <p className="text-xs text-muted-foreground mb-3">{card.description}</p>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
-                <Calendar className="w-3 h-3" />
-                {card.date}
-              </div>
-              <a
-                href={card.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-1 text-xs font-medium text-primary group-hover:underline"
-              >
-                {t('readMore')} <ArrowRight className="w-3 h-3" />
-              </a>
-            </div>
-          </motion.div>
-        ))}
+        <p className="text-sm text-muted-foreground">
+          {lang === 'bm'
+            ? 'Koleksi penerbitan rasmi, buku tahunan dan kenyataan media perdagangan Malaysia.'
+            : 'Collection of official publications, annual reports and trade-related media releases.'}
+        </p>
       </div>
+
+      {/* Main Card */}
+      <div className="border border-border rounded-xl p-6 bg-card space-y-4">
+        
+        <p className="text-sm text-muted-foreground">
+          {lang === 'bm'
+            ? 'Halaman ini sedang dibangunkan. Kandungan akan merangkumi:'
+            : 'This page is under development. It will include:'}
+        </p>
+
+        <ul className="list-disc ml-5 text-sm text-muted-foreground space-y-1">
+          <li>
+            {lang === 'bm'
+              ? 'Berita dan kenyataan media bulanan'
+              : 'Monthly news and media releases'}
+          </li>
+          <li>
+            {lang === 'bm'
+              ? 'Buku laporan tahunan negeri (PDF)'
+              : 'State annual reports (PDF)'}
+          </li>
+          <li>
+            {lang === 'bm'
+              ? 'Pautan ke data terperinci'
+              : 'Links to detailed datasets'}
+          </li>
+        </ul>
+      </div>
+
     </div>
   );
 }
