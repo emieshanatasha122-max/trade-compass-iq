@@ -96,7 +96,7 @@ export default function Overview() {
                   {lang === 'bm' ? (
                     <>
                       <span className="block text-slate-900 dark:text-white">
-                        Perdagangan
+                        Perdagangan Malaysia
                       </span>
                       <span className="block text-slate-900 dark:text-white">
                         kekal
