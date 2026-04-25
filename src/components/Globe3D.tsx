@@ -7,6 +7,7 @@ import GlobeControls from './globe/GlobeControls';
 import CountryFilter from './globe/CountryFilter';
 import TradeInfoCard from './globe/TradeInfoCard';
 import CompassRose from './globe/CompassRose';
+import * as topojson from 'topojson-client';
 
 const MY_LAT = 4.2105;
 const MY_LNG = 101.9758;
@@ -70,13 +71,21 @@ export default function Globe3D({ data }: Globe3DProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const { lang } = useLanguage();
   const [isDark, setIsDark] = useState(false);
-  const [hoveredArc, setHoveredArc] = useState<TradeArc | null>(null);
-  const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
   const [tradeView, setTradeView] = useState<'all' | 'export' | 'import'>('all');
   const [globeReady, setGlobeReady] = useState(false);
   const [dimensions, setDimensions] = useState({ width: 800, height: 550 });
   const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
   const [compassAngle, setCompassAngle] = useState(0);
+  const [countries, setCountries] = useState<any>({ features: [] });
+
+  useEffect(() => {
+    fetch('https://unpkg.com/world-atlas@2/countries-110m.json')
+      .then(res => res.json())
+      .then(worldData => {
+        const geo = topojson.feature(worldData, worldData.objects.countries);
+        setCountries(geo);
+      });
+  }, []);
 
   // Dark mode detection
   useEffect(() => {
@@ -112,7 +121,7 @@ export default function Globe3D({ data }: Globe3DProps) {
     }
   }, [globeReady]);
 
-  // Track compass rotation from globe orientation
+  // Track compass rotation
   useEffect(() => {
     if (!globeReady || !globeRef.current) return;
     let animId: number;
@@ -147,7 +156,7 @@ export default function Globe3D({ data }: Globe3DProps) {
     return agg;
   }, [data]);
 
-  // Arcs — limited to top N countries by total trade value
+  // ✅ FIXED: Standardized arcs with separate scaling for export and import
   const arcs = useMemo(() => {
     const sorted = Object.entries(countryData)
       .map(([code, d]) => ({ code, total: d.exportValue + d.importValue }))
@@ -155,14 +164,23 @@ export default function Globe3D({ data }: Globe3DProps) {
       .sort((a, b) => b.total - a.total)
       .slice(0, TOP_N_ARCS);
 
-    // If a country is selected, only show arcs for that country
     const topCodes = new Set(selectedCountry ? [] : sorted.map(x => x.code));
     if (selectedCountry && countryData[selectedCountry]) {
-      topCodes.clear();
       topCodes.add(selectedCountry);
     }
 
-    let maxVal = 0;
+    // Step 1: Find max export and import values separately
+    let maxExport = 0;
+    let maxImport = 0;
+
+    topCodes.forEach(code => {
+      const d = countryData[code];
+      if (!d || !COUNTRY_COORDS[code]) return;
+      if (d.exportValue > maxExport) maxExport = d.exportValue;
+      if (d.importValue > maxImport) maxImport = d.importValue;
+    });
+
+    // Step 2: Create arcs with standardized stroke
     const arcList: TradeArc[] = [];
 
     topCodes.forEach(code => {
@@ -170,36 +188,53 @@ export default function Globe3D({ data }: Globe3DProps) {
       const coords = COUNTRY_COORDS[code];
       if (!d || !coords) return;
       const total = d.exportValue + d.importValue;
-      if (total > maxVal) maxVal = total;
       const topComm = Object.entries(d.commodities).sort((a, b) => b[1] - a[1])[0];
 
+      // Export arcs (GREEN) - using maxExport for scale
       if (d.exportValue > 0 && (tradeView === 'all' || tradeView === 'export')) {
+        // Stroke range: 0.3 to 1.5 (thin to thick)
+        const exportStroke = Math.max(0.3, Math.min(1.5, (d.exportValue / (maxExport || 1)) * 1.2));
         arcList.push({
           startLat: MY_LAT, startLng: MY_LNG,
           endLat: coords[0], endLng: coords[1],
-          color: ['#10B981', '#06D6A0'], value: d.exportValue, stroke: 0.5,
-          countryCode: code, countryName: d.name || code, type: 'export',
+          color: ['#10B981', '#06D6A0'],
+          value: d.exportValue,
+          stroke: exportStroke,
+          countryCode: code,
+          countryName: d.name || code,
+          type: 'export',
           topCommodity: topComm?.[0] || '-',
-          exportValue: d.exportValue, importValue: d.importValue, totalValue: total,
+          exportValue: d.exportValue,
+          importValue: d.importValue,
+          totalValue: total,
         });
       }
+
+      // Import arcs (RED) - using maxImport for scale
       if (d.importValue > 0 && (tradeView === 'all' || tradeView === 'import')) {
+        // Stroke range: 0.3 to 1.5 (same scale as export)
+        const importStroke = Math.max(0.3, Math.min(1.5, (d.importValue / (maxImport || 1)) * 1.2));
         arcList.push({
           startLat: coords[0], startLng: coords[1],
           endLat: MY_LAT, endLng: MY_LNG,
-          color: ['#EF4444', '#F97316'], value: d.importValue, stroke: 0.5,
-          countryCode: code, countryName: d.name || code, type: 'import',
+          color: ['#EF4444', '#F97316'],
+          value: d.importValue,
+          stroke: importStroke,
+          countryCode: code,
+          countryName: d.name || code,
+          type: 'import',
           topCommodity: topComm?.[0] || '-',
-          exportValue: d.exportValue, importValue: d.importValue, totalValue: total,
+          exportValue: d.exportValue,
+          importValue: d.importValue,
+          totalValue: total,
         });
       }
     });
 
-    arcList.forEach(a => { a.stroke = Math.max(0.4, (a.value / (maxVal || 1)) * 4.5); });
     return arcList;
   }, [countryData, tradeView, selectedCountry]);
 
-  // Points for all countries with trade data
+  // Points
   const points = useMemo(() => {
     return Object.entries(countryData)
       .filter(([code]) => COUNTRY_COORDS[code])
@@ -231,7 +266,7 @@ export default function Globe3D({ data }: Globe3DProps) {
       .sort((a, b) => a.name.localeCompare(b.name));
   }, [countryData]);
 
-  // Selected country info
+  // Selected country info for right-side card
   const selectedInfo = useMemo(() => {
     if (!selectedCountry || !countryData[selectedCountry]) return null;
     const d = countryData[selectedCountry];
@@ -245,13 +280,21 @@ export default function Globe3D({ data }: Globe3DProps) {
     };
   }, [selectedCountry, countryData]);
 
-  // Country selection with smooth 2.5s camera animation
+  // ✅ FIXED: Country selection - returns to Malaysia when unselecting
   const handleCountrySelect = useCallback((code: string | null) => {
     setSelectedCountry(code);
+    
     if (code && COUNTRY_COORDS[code] && globeRef.current) {
+      // Zoom ke negara yang dipilih
       globeRef.current.pointOfView(
         { lat: COUNTRY_COORDS[code][0], lng: COUNTRY_COORDS[code][1], altitude: 1.5 },
         2500
+      );
+    } else if (globeRef.current) {
+      // Unselect - kembali ke Malaysia
+      globeRef.current.pointOfView(
+        { lat: MY_LAT, lng: MY_LNG, altitude: 2.2 },
+        1500
       );
     }
   }, []);
@@ -260,11 +303,6 @@ export default function Globe3D({ data }: Globe3DProps) {
     const p = point as { code: string };
     handleCountrySelect(p.code);
   }, [handleCountrySelect]);
-
-  const handleArcHover = useCallback((arc: object | null, _prev: object | null, event?: MouseEvent) => {
-    setHoveredArc(arc as TradeArc | null);
-    if (event) setTooltipPos({ x: event.clientX, y: event.clientY });
-  }, []);
 
   const handleZoomIn = useCallback(() => {
     if (!globeRef.current) return;
@@ -278,7 +316,7 @@ export default function Globe3D({ data }: Globe3DProps) {
     globeRef.current.pointOfView({ ...pov, altitude: Math.min(MAX_ALTITUDE, pov.altitude + 0.4) }, 400);
   }, []);
 
-  // Globe textures - ONLY SATELLITE MODE (No map toggle)
+  // Globe textures
   const globeImageUrl = isDark
     ? '//unpkg.com/three-globe/example/img/earth-night.jpg'
     : '//unpkg.com/three-globe/example/img/earth-blue-marble.jpg';
@@ -309,14 +347,14 @@ export default function Globe3D({ data }: Globe3DProps) {
               }`}
             >
               {v === 'all' ? (lang === 'bm' ? 'Semua' : 'All')
-                : v === 'export' ? (lang === 'bm' ? 'Eksport' : 'Export')
-                : (lang === 'bm' ? 'Import' : 'Import')}
+                : v === 'export' ? (lang === 'bm' ? 'Eksport' : 'Exports')
+                : (lang === 'bm' ? 'Import' : 'Imports')}
             </button>
           ))}
         </div>
       </div>
 
-      {/* Zoom controls only (no basemap switcher) */}
+      {/* Zoom controls */}
       <div className="absolute right-3 top-1/2 -translate-y-1/2 z-20 flex flex-col gap-1">
         <button
           onClick={handleZoomIn}
@@ -334,10 +372,10 @@ export default function Globe3D({ data }: Globe3DProps) {
         </button>
       </div>
 
-      {/* Compass — bottom left */}
+      {/* Compass */}
       <CompassRose angle={compassAngle} />
 
-      {/* Info card — only when a country is actively selected */}
+      {/* Info Card - RIGHT SIDE (only when country is selected) */}
       {selectedCountry && selectedInfo && (
         <TradeInfoCard
           countryName={selectedInfo.name}
@@ -345,27 +383,24 @@ export default function Globe3D({ data }: Globe3DProps) {
           exportValue={selectedInfo.exportValue}
           importValue={selectedInfo.importValue}
           topCommodity={selectedInfo.topCommodity}
-          onClose={() => setSelectedCountry(null)}
+          onClose={() => handleCountrySelect(null)}
           lang={lang}
         />
       )}
 
-      {/* Legend — bottom right */}
+      {/* Legend */}
       <div className="absolute bottom-3 right-3 z-20 bg-card/90 backdrop-blur-sm border border-border rounded-lg p-2.5 text-[10px]">
         <div className="flex items-center gap-1.5 mb-1">
           <span className="w-3 h-0.5 rounded bg-[#10B981]" />
-          <span className="text-muted-foreground">{lang === 'bm' ? 'Eksport' : 'Export'}</span>
+          <span className="text-muted-foreground">{lang === 'bm' ? 'Eksport' : 'Exports'}</span>
         </div>
         <div className="flex items-center gap-1.5">
           <span className="w-3 h-0.5 rounded bg-[#EF4444]" />
-          <span className="text-muted-foreground">{lang === 'bm' ? 'Import' : 'Import'}</span>
-        </div>
-        <div className="mt-1 pt-1 border-t border-border text-muted-foreground">
-          Top {TOP_N_ARCS} {lang === 'bm' ? 'rakan dagang' : 'partners'}
+          <span className="text-muted-foreground">{lang === 'bm' ? 'Import' : 'Imports'}</span>
         </div>
       </div>
 
-      {/* Globe */}
+      {/* Globe Component - NO HOVER TOOLTIP */}
       <div style={{ position: 'relative', zIndex: 1 }}>
         <Globe
           ref={globeRef}
@@ -377,6 +412,15 @@ export default function Globe3D({ data }: Globe3DProps) {
           atmosphereAltitude={0.25}
           onGlobeReady={() => setGlobeReady(true)}
 
+          showAtmosphere={true}
+          showGraticules={false}
+
+          polygonsData={countries.features}
+          polygonCapColor={() => 'rgba(0,0,0,0)'}
+          polygonSideColor={() => 'rgba(0,0,0,0)'}
+          polygonStrokeColor={() => 'rgba(228, 211, 211, 0.53)'}
+          polygonAltitude={0.01}
+
           arcsData={arcs}
           arcStartLat="startLat" arcStartLng="startLng"
           arcEndLat="endLat" arcEndLng="endLng"
@@ -384,7 +428,6 @@ export default function Globe3D({ data }: Globe3DProps) {
           arcDashLength={0.5} arcDashGap={0.25}
           arcDashAnimateTime={1800}
           arcAltitudeAutoScale={0.45}
-          onArcHover={handleArcHover as any}
 
           pointsData={points}
           pointLat="lat" pointLng="lng"
@@ -399,34 +442,21 @@ export default function Globe3D({ data }: Globe3DProps) {
           ringRepeatPeriod="repeatPeriod"
           ringColor="color"
 
-          labelsData={points.filter(p => p.value > 0).slice(0, 20)}
-          labelLat="lat" labelLng="lng" labelText="name"
-          labelSize={0.5} labelDotRadius={0.12}
+          labelsData={points.filter(p => p.value > 0).slice(0, 195)}
+          labelLat="lat"
+          labelLng="lng"
+          labelText={(d: any) =>
+            d.name
+              ?.toLowerCase()
+              .replace(/\b\w/g, (char: string) => char.toUpperCase())
+          }
+          labelSize={0.75}
+          labelDotRadius={0.08}
           labelColor={() => '#FFFFFF'}
-          labelTypeFace={{ weight: 'bold' } as any}
-          labelResolution={2} labelAltitude={0.015}
+          labelResolution={3}
+          labelAltitude={0.02}
         />
       </div>
-
-      {/* Arc tooltip */}
-      {hoveredArc && (
-        <div
-          className="fixed z-50 pointer-events-none bg-card/95 backdrop-blur-md border border-border rounded-lg shadow-xl p-3 text-xs max-w-xs"
-          style={{ left: tooltipPos.x + 12, top: tooltipPos.y - 10 }}
-        >
-          <p className="font-bold text-foreground mb-1.5">
-            {hoveredArc.type === 'export'
-              ? `Malaysia → ${hoveredArc.countryName}`
-              : `${hoveredArc.countryName} → Malaysia`}
-          </p>
-          <div className="space-y-1 text-muted-foreground">
-            <p>{lang === 'bm' ? 'Jumlah Perdagangan' : 'Total Trade'}: <span className="font-semibold text-foreground">{formatRM(hoveredArc.totalValue)}</span></p>
-            <p>{lang === 'bm' ? 'Eksport' : 'Export'}: <span className="text-[#10B981] font-semibold">{formatRM(hoveredArc.exportValue)}</span></p>
-            <p>{lang === 'bm' ? 'Import' : 'Import'}: <span className="text-[#EF4444] font-semibold">{formatRM(hoveredArc.importValue)}</span></p>
-            <p>{lang === 'bm' ? 'Barangan Utama' : 'Top Commodity'}: <span className="text-foreground">{hoveredArc.topCommodity}</span></p>
-          </div>
-        </div>
-      )}
 
       {/* Loading */}
       {!globeReady && (
