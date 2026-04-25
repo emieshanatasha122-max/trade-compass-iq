@@ -85,7 +85,7 @@ export default function DashboardLayout() {
                     <p className="truncate text-[10px] md:text-xs text-muted-foreground/80">
                       {lang === 'bm'
                         ? 'Pusat Analitik Data Raya Negara'
-                        : 'National Big Data Analytic Centre'}
+                        : 'National Big Data Analytics Centre'}
                     </p>
                   </div>
                 </div>
