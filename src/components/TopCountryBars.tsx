@@ -158,7 +158,7 @@ export default function TopCountryBars({ data }: Props) {
 
           <button
             onClick={() => setMode('export')}
-            className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
+            className={`rounded-lg px-4 py-2 whitespace-nowrap text-xs font-medium transition-colors ${
               mode === 'export'
                 ? 'bg-primary text-primary-foreground'
                 : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
@@ -203,7 +203,7 @@ export default function TopCountryBars({ data }: Props) {
           <YAxis
             type="category"
             dataKey="name"
-            width={150}
+            width={50}
             tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }}
           />
 
