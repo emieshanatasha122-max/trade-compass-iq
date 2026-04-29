@@ -5,6 +5,8 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import ChatBot from '@/components/ChatBot';
 import SidebarFilters from '@/components/SidebarFilters';
+import Footer from '@/components/Footer';
+
 
 export default function DashboardLayout() {
   const { lang, setLang, t } = useLanguage();
@@ -192,6 +194,9 @@ export default function DashboardLayout() {
 
         <main className="flex-1 overflow-y-auto p-4 md:p-6">
           <Outlet />
+
+           {/* Footer */}
+          <Footer />
         </main>
       </div>
 
