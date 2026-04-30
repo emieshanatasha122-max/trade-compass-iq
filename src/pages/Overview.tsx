@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useFilters } from '@/contexts/FilterContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import KPICards from '@/components/KPICards';
@@ -16,6 +16,7 @@ import {
   Package,
   Flag,
 } from 'lucide-react';
+import { ChevronUp } from 'lucide-react';
 
 function SectionHeader({
   title,
@@ -38,6 +39,31 @@ function SectionHeader({
 }
 
 export default function Overview() {
+const [showScrollTop, setShowScrollTop] = useState(false);
+
+  useEffect(() => {
+    const scrollEl = document.getElementById('dashboard-scroll');
+
+    if (!scrollEl) return;
+
+    const handleScroll = () => {
+      setShowScrollTop(scrollEl.scrollTop > 300);
+    };
+
+    scrollEl.addEventListener('scroll', handleScroll);
+
+    return () => scrollEl.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const scrollToTop = () => {
+    const scrollEl = document.getElementById('dashboard-scroll');
+
+    scrollEl?.scrollTo({
+      top: 0,
+      behavior: 'smooth',
+    });
+  };
+
   const { filteredData, isLoading } = useFilters();
   const { t, lang } = useLanguage();
 
@@ -202,7 +228,7 @@ export default function Overview() {
       </section>
 
       {/* SECTION E & F */}
-      <section>
+      <section className="mb-24">
         <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
           <div>
             <SectionHeader
@@ -235,6 +261,17 @@ export default function Overview() {
           </div>
         </div>
       </section>
+
+      {/* Scroll To Top Button */}
+      {showScrollTop && (
+        <button
+          onClick={scrollToTop}
+          className="fixed bottom-20 right-6 z-50 rounded-full bg-primary p-3 text-primary-foreground shadow-lg transition hover:scale-110"
+          aria-label="Scroll to top"
+        >
+          <ChevronUp className="h-5 w-5" />
+        </button>
+      )}
     </div>
   );
 }
