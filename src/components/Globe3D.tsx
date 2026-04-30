@@ -1,3 +1,4 @@
+import * as topojson from 'topojson-client';
 import React, { useRef, useMemo, useState, useCallback, useEffect } from 'react';
 import Globe, { GlobeMethods } from 'react-globe.gl';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -7,7 +8,7 @@ import GlobeControls from './globe/GlobeControls';
 import CountryFilter from './globe/CountryFilter';
 import TradeInfoCard from './globe/TradeInfoCard';
 import CompassRose from './globe/CompassRose';
-import * as topojson from 'topojson-client';
+
 
 const MY_LAT = 4.2105;
 const MY_LNG = 101.9758;
@@ -52,13 +53,15 @@ interface TradeArc {
   value: number; stroke: number;
   countryCode: string; countryName: string;
   type: 'export' | 'import';
-  topCommodity: string;
+  topExportCommodity: string;
+  topImportCommodity: string;
   exportValue: number; importValue: number; totalValue: number;
 }
 
 interface CountryAgg {
   exportValue: number; importValue: number;
-  commodities: Record<string, number>;
+  exportCommodities: Record<string, number>;
+  importCommodities: Record<string, number>;
   name: string;
 }
 
@@ -71,7 +74,6 @@ export default function Globe3D({ data }: Globe3DProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const { lang } = useLanguage();
   const [isDark, setIsDark] = useState(false);
-  const [tradeView, setTradeView] = useState<'all' | 'export' | 'import'>('all');
   const [globeReady, setGlobeReady] = useState(false);
   const [dimensions, setDimensions] = useState({ width: 800, height: 550 });
   const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
@@ -142,7 +144,7 @@ export default function Globe3D({ data }: Globe3DProps) {
     data.forEach(r => {
       const code = r.kodDestinasiEksportImport;
       if (!code || code === 'MY' || !COUNTRY_COORDS[code]) return;
-      if (!agg[code]) agg[code] = { exportValue: 0, importValue: 0, commodities: {}, name: '' };
+      if (!agg[code]) agg[code] = { exportValue: 0, importValue: 0, exportCommodities: {}, importCommodities: {}, name: '' };
       if (r.jenisDagangan === 'Eksport') {
         agg[code].exportValue += r.jumlahDaganganRM;
         agg[code].name = r.destinasiEksport || code;
@@ -150,8 +152,13 @@ export default function Globe3D({ data }: Globe3DProps) {
         agg[code].importValue += r.jumlahDaganganRM;
         agg[code].name = r.negaraAsal || code;
       }
-      agg[code].commodities[r.komoditiUtama] =
-        (agg[code].commodities[r.komoditiUtama] || 0) + r.jumlahDaganganRM;
+      if (r.jenisDagangan === 'Eksport') {
+        agg[code].exportCommodities[r.komoditiUtama] =
+          (agg[code].exportCommodities[r.komoditiUtama] || 0) + r.jumlahDaganganRM;
+      } else {
+        agg[code].importCommodities[r.komoditiUtama] =
+          (agg[code].importCommodities[r.komoditiUtama] || 0) + r.jumlahDaganganRM;
+      }
     });
     return agg;
   }, [data]);
@@ -188,10 +195,11 @@ export default function Globe3D({ data }: Globe3DProps) {
       const coords = COUNTRY_COORDS[code];
       if (!d || !coords) return;
       const total = d.exportValue + d.importValue;
-      const topComm = Object.entries(d.commodities).sort((a, b) => b[1] - a[1])[0];
+      const topExportComm = Object.entries(d.exportCommodities).sort((a, b) => b[1] - a[1])[0];
+      const topImportComm = Object.entries(d.importCommodities).sort((a, b) => b[1] - a[1])[0];
 
       // Export arcs (GREEN) - using maxExport for scale
-      if (d.exportValue > 0 && (tradeView === 'all' || tradeView === 'export')) {
+      if (d.exportValue > 0) {
         // Stroke range: 0.3 to 1.5 (thin to thick)
         const exportStroke = Math.max(0.3, Math.min(1.5, (d.exportValue / (maxExport || 1)) * 1.2));
         arcList.push({
@@ -203,7 +211,8 @@ export default function Globe3D({ data }: Globe3DProps) {
           countryCode: code,
           countryName: d.name || code,
           type: 'export',
-          topCommodity: topComm?.[0] || '-',
+          topExportCommodity: topExportComm?.[0] || '-',
+          topImportCommodity: topImportComm?.[0] || '-',
           exportValue: d.exportValue,
           importValue: d.importValue,
           totalValue: total,
@@ -211,7 +220,7 @@ export default function Globe3D({ data }: Globe3DProps) {
       }
 
       // Import arcs (RED) - using maxImport for scale
-      if (d.importValue > 0 && (tradeView === 'all' || tradeView === 'import')) {
+      if (d.importValue > 0 ) {
         // Stroke range: 0.3 to 1.5 (same scale as export)
         const importStroke = Math.max(0.3, Math.min(1.5, (d.importValue / (maxImport || 1)) * 1.2));
         arcList.push({
@@ -223,7 +232,8 @@ export default function Globe3D({ data }: Globe3DProps) {
           countryCode: code,
           countryName: d.name || code,
           type: 'import',
-          topCommodity: topComm?.[0] || '-',
+          topExportCommodity: topExportComm?.[0] || '-',
+          topImportCommodity: topImportComm?.[0] || '-',
           exportValue: d.exportValue,
           importValue: d.importValue,
           totalValue: total,
@@ -232,7 +242,7 @@ export default function Globe3D({ data }: Globe3DProps) {
     });
 
     return arcList;
-  }, [countryData, tradeView, selectedCountry]);
+  }, [countryData, selectedCountry]);
 
   // Points
   const points = useMemo(() => {
@@ -270,13 +280,15 @@ export default function Globe3D({ data }: Globe3DProps) {
   const selectedInfo = useMemo(() => {
     if (!selectedCountry || !countryData[selectedCountry]) return null;
     const d = countryData[selectedCountry];
-    const topComm = Object.entries(d.commodities).sort((a, b) => b[1] - a[1])[0];
+    const topExportComm = Object.entries(d.exportCommodities).sort((a, b) => b[1] - a[1])[0];
+    const topImportComm = Object.entries(d.importCommodities).sort((a, b) => b[1] - a[1])[0];
     return {
       name: d.name || selectedCountry,
       totalValue: d.exportValue + d.importValue,
       exportValue: d.exportValue,
       importValue: d.importValue,
-      topCommodity: topComm?.[0] || '-',
+      topExportCommodity: topExportComm?.[0] || '-',
+      topImportCommodity: topImportComm?.[0] || '-',
     };
   }, [selectedCountry, countryData]);
 
@@ -335,23 +347,7 @@ export default function Globe3D({ data }: Globe3DProps) {
           onSelect={handleCountrySelect}
           lang={lang}
         />
-        <div className="flex items-center gap-1">
-          {(['all', 'export', 'import'] as const).map(v => (
-            <button
-              key={v}
-              onClick={() => setTradeView(v)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 ${
-                tradeView === v
-                  ? 'bg-primary text-primary-foreground shadow-md'
-                  : 'bg-card/80 backdrop-blur-sm text-muted-foreground hover:text-foreground border border-border'
-              }`}
-            >
-              {v === 'all' ? (lang === 'bm' ? 'Semua' : 'All')
-                : v === 'export' ? (lang === 'bm' ? 'Eksport' : 'Exports')
-                : (lang === 'bm' ? 'Import' : 'Imports')}
-            </button>
-          ))}
-        </div>
+
       </div>
 
       {/* Zoom controls */}
@@ -382,7 +378,8 @@ export default function Globe3D({ data }: Globe3DProps) {
           totalValue={selectedInfo.totalValue}
           exportValue={selectedInfo.exportValue}
           importValue={selectedInfo.importValue}
-          topCommodity={selectedInfo.topCommodity}
+          topExportCommodity={selectedInfo.topExportCommodity}
+          topImportCommodity={selectedInfo.topImportCommodity}
           onClose={() => handleCountrySelect(null)}
           lang={lang}
         />
@@ -426,7 +423,7 @@ export default function Globe3D({ data }: Globe3DProps) {
           arcEndLat="endLat" arcEndLng="endLng"
           arcColor="color" arcStroke="stroke"
           arcDashLength={0.5} arcDashGap={0.25}
-          arcDashAnimateTime={1800}
+          arcDashAnimateTime={4000}
           arcAltitudeAutoScale={0.45}
 
           pointsData={points}
@@ -442,7 +439,7 @@ export default function Globe3D({ data }: Globe3DProps) {
           ringRepeatPeriod="repeatPeriod"
           ringColor="color"
 
-          labelsData={points.filter(p => p.value > 0).slice(0, 195)}
+          labelsData={selectedCountry ? points.filter(p => p.code === selectedCountry) :  points.slice(0, 30)}
           labelLat="lat"
           labelLng="lng"
           labelText={(d: any) =>
