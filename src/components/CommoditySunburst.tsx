@@ -217,6 +217,7 @@ export default function CommoditySunburst({ data }: Props) {
           nameKey="name"
           content={<CustomContent isDark={isDark} />}
           aspectRatio={1}
+          isAnimationActive={false}
         >
           <Tooltip
             contentStyle={tooltipStyle}
