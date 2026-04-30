@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { useFilters } from '@/contexts/FilterContext';
-import { useLanguage, ENTERPRISE_LABEL_MAP } from '@/contexts/LanguageContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Filter, ChevronDown, ChevronRight, X } from 'lucide-react';
-import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface FilterGroupProps {
@@ -44,20 +43,24 @@ function FilterGroup({ title, options, selected, onToggle, onClear }: FilterGrou
               <X className="w-3 h-3" /> Clear
             </button>
           )}
-          <div className="space-y-1 max-h-[180px] overflow-y-auto scrollbar-thin pr-1">
-            {options.map(opt => (
-              <label
-                key={opt.value}
-                className="flex items-center gap-2 py-1 px-1 rounded hover:bg-sidebar-accent/30 cursor-pointer transition-colors"
-              >
-                <Checkbox
-                  checked={selected.includes(opt.value)}
-                  onCheckedChange={() => onToggle(opt.value)}
-                  className="h-3.5 w-3.5 border-sidebar-foreground/40 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
-                />
-                <span className="text-[11px] text-sidebar-foreground truncate">{opt.label}</span>
-              </label>
-            ))}
+          <div className="flex flex-wrap gap-2">
+            {options.map(opt => {
+              const isActive = selected.includes(opt.value);
+
+              return (
+                <button
+                  key={opt.value}
+                  onClick={() => onToggle(opt.value)}
+                  className={`px-3 py-1 rounded-full text-[11px] border transition
+                    ${isActive
+                      ? 'bg-primary text-white border-primary'
+                      : 'border-sidebar-border text-sidebar-foreground hover:bg-sidebar-accent/40'
+                    }`}
+                >
+                  {opt.label}
+                </button>
+              );
+            })}
           </div>
         </div>
       )}
@@ -66,7 +69,7 @@ function FilterGroup({ title, options, selected, onToggle, onClear }: FilterGrou
 }
 
 export default function SidebarFilters() {
-  const { filters, toggleFilter, clearFilter, clearAllFilters, uniqueYears, uniqueNegeri, uniqueKawasanEkonomi, uniqueKeluasan } = useFilters();
+  const { filters, toggleFilter, clearFilter, clearAllFilters, uniqueYears, uniqueNegeri, uniqueKawasanEkonomi } = useFilters();
   const { t, lang } = useLanguage();
 
   const hasAnyFilter = Object.values(filters).some(arr => arr.length > 0);
@@ -122,32 +125,16 @@ export default function SidebarFilters() {
         <FilterGroup
           title={lang === 'bm' ? 'Kawasan Ekonomi' : 'Economic Area'}
           filterKey="kawasanEkonomi"
-          options={uniqueKawasanEkonomi.map(k => ({ value: k, label: k }))}
+          options={[
+                   { value: 'AFTA', label: 'A.F.T.A' },
+                   { value: 'NAFTA', label: 'N.A.F.T.A' },
+                   { value: 'EU', label: 'E.U.' },
+                  ]}
           selected={filters.kawasanEkonomi}
           onToggle={(v) => toggleFilter('kawasanEkonomi', v)}
           onClear={() => clearFilter('kawasanEkonomi')}
         />
 
-        <FilterGroup
-          title={t('enterpriseSize')}
-          filterKey="keluasan"
-          options={(() => {
-            // Canonical 4 company-size categories (always shown, even if CSV drops one)
-            const canonical = ['LARGE', 'SME_MEDIUM', 'SME_SMALL', 'SME_MICRO'];
-            const fromData = uniqueKeluasan.filter(k => {
-              const u = (k || '').toUpperCase();
-              return u !== 'AGENTS' && u !== 'AGENT';
-            });
-            const merged = Array.from(new Set([...canonical, ...fromData]));
-            return merged.map(k => ({
-              value: k,
-              label: ENTERPRISE_LABEL_MAP[k.toUpperCase()]?.[lang] || ENTERPRISE_LABEL_MAP[k]?.[lang] || k,
-            }));
-          })()}
-          selected={filters.keluasan}
-          onToggle={(v) => toggleFilter('keluasan', v)}
-          onClear={() => clearFilter('keluasan')}
-        />
       </ScrollArea>
     </div>
   );
