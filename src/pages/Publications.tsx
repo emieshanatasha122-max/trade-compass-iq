@@ -6,58 +6,73 @@ import {
   ChevronRight,
   ExternalLink,
   Newspaper,
-  Archive,
 } from 'lucide-react';
 
 const statsLatest = [
   {
-    title: 'Stats Alert Januari 2026',
-    month: 'Januari',
+    titleBm: 'Stats Alert Januari 2026',
+    titleEn: 'Stats Alert January 2026',
+    monthBm: 'Januari',
     monthEn: 'January',
     year: 2026,
-    cover: '/stats-alert/covers/stats-alert-2026-jan.png',
-    bmUrl: '#',
-    enUrl: '#',
+    coverBm: '/covers/infografik-stats-bm-2026-jan.png',
+    coverEn: '/covers/infografik-stats-bi-2026-jan.png',
+    bmUrl: 'https://www.dosm.gov.my/portal-main/release-content/export-import-statistics-by-state-january-2026',
+    enUrl: 'https://www.dosm.gov.my/portal-main/release-content/export-import-statistics-by-state-january-2026',
   },
   {
-    title: 'Stats Alert Februari 2026',
-    month: 'Februari',
+    titleBm: 'Stats Alert Februari 2026',
+    titleEn: 'Stats Alert February 2026',
+    monthBm: 'Februari',
     monthEn: 'February',
     year: 2026,
-    cover: '/stats-alert/covers/stats-alert-2026-feb.png',
-    bmUrl: '#',
-    enUrl: '#',
+    coverBm: '/covers/infografik-stats-bm-2026-feb.png',
+    coverEn: '/covers/infografik-stats-bi-2026-feb.png',
+    bmUrl: 'https://www.dosm.gov.my/portal-main/release-content/export-import-statistics-by-state-feb2026',
+    enUrl: 'https://www.dosm.gov.my/portal-main/release-content/export-import-statistics-by-state-february-2026',
   },
   {
-    title: 'Stats Alert Mac 2026',
-    month: 'Mac',
+    titleBm: 'Stats Alert Mac 2026',
+    titleEn: 'Stats Alert March 2026',
+    monthBm: 'Mac',
     monthEn: 'March',
     year: 2026,
-    cover: '/stats-alert/covers/stats-alert-2026-mac.png',
-    bmUrl: '#',
-    enUrl: '#',
+    coverBm: '/covers/infografik-stats-bm-2026-mac.png',
+    coverEn: '/covers/infografik-stats-bi-2026-mac.png',
+    bmUrl: 'https://www.dosm.gov.my/portal-main/release-content/export-import-statistics-by-state-mar2026',
+    enUrl: 'https://www.dosm.gov.my/portal-main/release-content/export-import-statistics-by-state-mar2026',
   },
 ];
 
-const statsArchiveYears = [
+const statsYears = [
+  {
+    year: 2026,
+    availabilityBm: '3 bulan tersedia',
+    availabilityEn: '3 months available',
+    path: '/publications/stats-alert/2026',
+  },
   {
     year: 2025,
-    count: 12,
+    availabilityBm: '12 bulan tersedia',
+    availabilityEn: '12 months available',
     path: '/publications/stats-alert/2025',
   },
   {
     year: 2024,
-    count: 12,
+    availabilityBm: '12 bulan tersedia',
+    availabilityEn: '12 months available',
     path: '/publications/stats-alert/2024',
   },
   {
     year: 2023,
-    count: 12,
+    availabilityBm: '12 bulan tersedia',
+    availabilityEn: '12 months available',
     path: '/publications/stats-alert/2023',
   },
   {
     year: 2022,
-    count: 1,
+    availabilityBm: 'Disember tersedia',
+    availabilityEn: 'December available',
     path: '/publications/stats-alert/2022',
   },
 ];
@@ -161,8 +176,9 @@ const books = [
 export default function Publications() {
   const { lang } = useLanguage();
   const bookScrollRef = useRef<HTMLDivElement | null>(null);
-  const statsScrollRef = useRef<HTMLDivElement | null>(null);
+
   const [selectedYear, setSelectedYear] = useState<string>('all');
+  const [openStatsYear, setOpenStatsYear] = useState<number | null>(2026);
 
   const years = [2025, 2024, 2023, 2022, 2021, 2020];
 
@@ -171,13 +187,10 @@ export default function Publications() {
     return books.filter((book) => String(book.year) === selectedYear);
   }, [selectedYear]);
 
-  const scrollContainer = (
-    ref: React.RefObject<HTMLDivElement>,
-    direction: 'left' | 'right'
-  ) => {
-    if (!ref.current) return;
+  const scrollBooks = (direction: 'left' | 'right') => {
+    if (!bookScrollRef.current) return;
 
-    ref.current.scrollBy({
+    bookScrollRef.current.scrollBy({
       left: direction === 'left' ? -420 : 420,
       behavior: 'smooth',
     });
@@ -204,6 +217,7 @@ export default function Publications() {
 
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-foreground">
           {lang === 'bm' ? 'Penerbitan' : 'Publications'}
@@ -230,113 +244,148 @@ export default function Publications() {
 
             <p className="mt-1 text-xs text-muted-foreground">
               {lang === 'bm'
-                ? 'Paparan terkini bagi tahun 2026. Pilih BM atau EN untuk melihat maklumat lanjut.'
-                : 'Latest 2026 alerts. Select BM or EN to view more details.'}
+                ? 'Paparan bergaya berita untuk stats alert terkini bagi tahun 2026.'
+                : 'News-style display for the latest stats alerts in 2026.'}
             </p>
           </div>
 
           <Newspaper className="h-5 w-5 text-primary" />
         </div>
 
-        <div className="relative mt-5">
-          <button
-            type="button"
-            onClick={() => scrollContainer(statsScrollRef, 'left')}
-            className="absolute left-2 top-1/2 z-10 -translate-y-1/2 rounded-full border border-border bg-background/90 p-2 text-foreground shadow-md backdrop-blur transition hover:bg-secondary"
-            aria-label="Scroll stats alert left"
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </button>
+        {/* News-style cards */}
+        <div className="mt-5 grid gap-4 md:grid-cols-3">
+          {statsLatest.map((item) => (
+            <article
+              key={`${item.year}-${item.monthEn}`}
+              className="overflow-hidden rounded-xl border border-border bg-background/40 transition hover:border-primary/50 hover:bg-background/70"
+            >
+              <div className="aspect-[16/10] bg-secondary/40">
+                <img
+                  src={lang === 'bm' ? item.coverBm : item.coverEn}
+                  alt={lang === 'bm' ? item.titleBm : item.titleEn}
+                  className="h-full w-full object-cover"
+                />
+              </div>
 
-          <div ref={statsScrollRef} className="overflow-x-auto scroll-smooth pb-2">
-            <div className="flex gap-3">
-              {statsLatest.map((item) => (
-                <article
-                  key={item.title}
-                  className="min-w-[165px] max-w-[165px] flex-shrink-0 overflow-hidden rounded-xl border border-border bg-background/40 transition hover:border-primary/50 hover:bg-background/70"
-                >
-                  <img
-                    src={item.cover}
-                    alt={item.title}
-                    className="aspect-[3/4] w-full object-cover"
-                  />
-
-                  <div className="p-3">
-                    <span className="rounded-full border border-border px-2 py-0.5 text-[10px] font-semibold text-muted-foreground">
-                      {lang === 'bm' ? item.month : item.monthEn} {item.year}
-                    </span>
-
-                    <h3 className="mt-2 line-clamp-2 min-h-[34px] text-xs font-bold leading-snug text-foreground">
-                      {item.title}
-                    </h3>
-
-                    <div className="mt-3 grid grid-cols-2 gap-2">
-                      <a
-                        href={item.bmUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center justify-center gap-1 rounded-lg bg-primary px-2 py-2 text-xs font-semibold text-primary-foreground transition hover:opacity-90"
-                      >
-                        BM
-                        <ExternalLink className="h-3 w-3" />
-                      </a>
-
-                      <a
-                        href={item.enUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center justify-center gap-1 rounded-lg border border-border bg-background px-2 py-2 text-xs font-semibold text-foreground transition hover:bg-secondary"
-                      >
-                        EN
-                        <ExternalLink className="h-3 w-3" />
-                      </a>
-                    </div>
-                  </div>
-                </article>
-              ))}
-            </div>
-          </div>
-
-          <button
-            type="button"
-            onClick={() => scrollContainer(statsScrollRef, 'right')}
-            className="absolute right-2 top-1/2 z-10 -translate-y-1/2 rounded-full border border-border bg-background/90 p-2 text-foreground shadow-md backdrop-blur transition hover:bg-secondary"
-            aria-label="Scroll stats alert right"
-          >
-            <ChevronRight className="h-4 w-4" />
-          </button>
-        </div>
-
-        {/* Archive Cards */}
-        <div className="mt-6">
-          <div className="flex items-center gap-2">
-            <Archive className="h-4 w-4 text-primary" />
-            <h3 className="text-sm font-bold text-foreground">
-              {lang === 'bm' ? 'Arkib Stats Alert' : 'Stats Alert Archive'}
-            </h3>
-          </div>
-
-          <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {statsArchiveYears.map((item) => (
-              <Link
-                key={item.year}
-                to={item.path}
-                className="rounded-xl border border-border bg-background/40 p-4 transition hover:border-primary/50 hover:bg-background/70"
-              >
-                <p className="text-xl font-extrabold text-foreground">{item.year}</p>
-
-                <p className="mt-1 text-xs text-muted-foreground">
-                  {lang === 'bm'
-                    ? `${item.count} stats alert tersedia`
-                    : `${item.count} stats alerts available`}
+              <div className="p-4">
+                <p className="text-[11px] font-medium text-muted-foreground">
+                  {lang === 'bm' ? item.monthBm : item.monthEn} {item.year}
                 </p>
 
-                <div className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-primary">
-                  {lang === 'bm' ? 'Lihat Arkib' : 'View Archive'}
-                  <ExternalLink className="h-3.5 w-3.5" />
+                <h3 className="mt-1 line-clamp-2 min-h-[40px] text-sm font-bold leading-snug text-foreground">
+                  {lang === 'bm' ? item.titleBm : item.titleEn}
+                </h3>
+
+                <p className="mt-2 line-clamp-3 text-xs text-muted-foreground">
+                  {lang === 'bm'
+                    ? 'Lihat stats alert perdagangan Malaysia mengikut bulan.'
+                    : 'View Malaysia trade stats alert by month.'}
+                </p>
+
+                <div className="mt-4 flex justify-center">
+                  <a
+                    href={lang === 'bm' ? item.bmUrl : item.enUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground transition hover:opacity-90"
+                  >
+                    {lang === 'bm' ? 'Lihat di sini' : 'View here'}
+                    <ExternalLink className="h-3.5 w-3.5" />
+                  </a>
                 </div>
-              </Link>
-            ))}
+              </div>
+            </article>
+          ))}
+        </div>
+
+        {/* Stats Alert Accordion */}
+        <div className="mt-6">
+          <h3 className="text-sm font-bold text-foreground">
+            {lang === 'bm'
+              ? 'Stats Alert Mengikut Tahun'
+              : 'Stats Alert by Year'}
+          </h3>
+
+          <div className="mt-3 space-y-2">
+            {statsYears.map((item) => {
+              const isOpen = openStatsYear === item.year;
+
+              return (
+                <div
+                  key={item.year}
+                  className="overflow-hidden rounded-xl border border-border bg-background/40"
+                >
+                  <button
+                    type="button"
+                    onClick={() => setOpenStatsYear(isOpen ? null : item.year)}
+                    className="flex w-full items-center justify-between px-4 py-3 text-left transition hover:bg-background/70"
+                  >
+                    <div>
+                      <p className="text-sm font-bold text-foreground">
+                        {lang === 'bm'
+                          ? `Statistik Eksport Import Mengikut Negeri, ${item.year}`
+                          : `Export Import Statistics by State, ${item.year}`}
+                      </p>
+
+                      <p className="mt-0.5 text-xs text-muted-foreground">
+                        {lang === 'bm'
+                          ? item.availabilityBm
+                          : item.availabilityEn}
+                      </p>
+                    </div>
+
+                    <span className="text-sm font-bold text-primary">
+                      {isOpen ? '▼' : '▸'}
+                    </span>
+                  </button>
+
+                  {isOpen && (
+                    <div className="space-y-2 border-t border-border px-4 py-3">
+                      {item.year === 2026 ? (
+                        statsLatest.map((m) => (
+                          <div
+                            key={`${m.year}-${m.monthEn}`}
+                            className="flex flex-col gap-2 rounded-lg bg-card/40 px-3 py-2 text-xs md:flex-row md:items-center md:justify-between"
+                          >
+                            <span className="font-medium text-foreground">
+                              {lang === 'bm'
+                                ? `Statistik Eksport Import Mengikut Negeri, ${m.monthBm} ${m.year}`
+                                : `Export Import Statistics by State, ${m.monthEn} ${m.year}`}
+                            </span>
+
+                            <a
+                              href={lang === 'bm' ? m.bmUrl : m.enUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1 font-semibold text-primary hover:underline"
+                            >
+                              {lang === 'bm' ? 'Lihat' : 'View'}
+                              <ExternalLink className="h-3.5 w-3.5" />
+                            </a>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="flex flex-col gap-2 rounded-lg bg-card/40 px-3 py-2 text-xs md:flex-row md:items-center md:justify-between">
+                          <span className="font-medium text-muted-foreground">
+                            {lang === 'bm'
+                              ? `Senarai Statistik Eksport Import Mengikut Negeri, ${item.year}`
+                              : `Export Import Statistics by State List, ${item.year}`}
+                          </span>
+
+                          <Link
+                            to={item.path}
+                            className="inline-flex items-center gap-1 font-semibold text-primary hover:underline"
+                          >
+                            {lang === 'bm' ? 'Lihat Senarai' : 'View List'}
+                            <ExternalLink className="h-3.5 w-3.5" />
+                          </Link>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>
@@ -374,7 +423,7 @@ export default function Publications() {
         <div className="relative mt-5">
           <button
             type="button"
-            onClick={() => scrollContainer(bookScrollRef, 'left')}
+            onClick={() => scrollBooks('left')}
             className="absolute left-2 top-1/2 z-10 -translate-y-1/2 rounded-full border border-border bg-background/90 p-2 text-foreground shadow-md backdrop-blur transition hover:bg-secondary"
             aria-label="Scroll left"
           >
@@ -428,7 +477,7 @@ export default function Publications() {
 
           <button
             type="button"
-            onClick={() => scrollContainer(bookScrollRef, 'right')}
+            onClick={() => scrollBooks('right')}
             className="absolute right-2 top-1/2 z-10 -translate-y-1/2 rounded-full border border-border bg-background/90 p-2 text-foreground shadow-md backdrop-blur transition hover:bg-secondary"
             aria-label="Scroll right"
           >
