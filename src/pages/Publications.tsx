@@ -1,5 +1,4 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
 import {
   ChevronLeft,
@@ -10,8 +9,8 @@ import {
 
 const statsLatest = [
   {
-    titleBm: 'Stats Alert Januari 2026',
-    titleEn: 'Stats Alert January 2026',
+    titleBm: 'Statistik Eksport Import Mengikut Negeri, Januari 2026',
+    titleEn: 'Export Import Statistics by State, January 2026',
     monthBm: 'Januari',
     monthEn: 'January',
     year: 2026,
@@ -21,8 +20,8 @@ const statsLatest = [
     enUrl: 'https://www.dosm.gov.my/portal-main/release-content/export-import-statistics-by-state-january-2026',
   },
   {
-    titleBm: 'Stats Alert Februari 2026',
-    titleEn: 'Stats Alert February 2026',
+    titleBm: 'Statistik Eksport Import Mengikut Negeri, Februari 2026',
+    titleEn: 'Export Import Statistics by State, February 2026',
     monthBm: 'Februari',
     monthEn: 'February',
     year: 2026,
@@ -32,8 +31,8 @@ const statsLatest = [
     enUrl: 'https://www.dosm.gov.my/portal-main/release-content/export-import-statistics-by-state-february-2026',
   },
   {
-    titleBm: 'Stats Alert Mac 2026',
-    titleEn: 'Stats Alert March 2026',
+    titleBm: 'Statistik Eksport Import Mengikut Negeri, Mac 2026',
+    titleEn: 'Export Import Statistics by State, March 2026',
     monthBm: 'Mac',
     monthEn: 'March',
     year: 2026,
@@ -44,36 +43,278 @@ const statsLatest = [
   },
 ];
 
+const statsArchiveItems: Record<
+  number,
+  {
+    titleBm: string;
+    titleEn: string;
+    bmUrl: string;
+    enUrl: string;
+  }[]
+> = {
+  2025: [
+    {
+      titleBm: 'Statistik Eksport Import Mengikut Negeri, Januari 2025',
+      titleEn: 'Export Import Statistics by State, January 2025',
+      bmUrl: 'LINK BM JAN 2025',
+      enUrl: 'LINK EN JAN 2025',
+    },
+    {
+      titleBm: 'Statistik Eksport Import Mengikut Negeri, Februari 2025',
+      titleEn: 'Export Import Statistics by State, February 2025',
+      bmUrl: 'LINK BM FEB 2025',
+      enUrl: 'LINK EN FEB 2025',
+    },
+    {
+      titleBm: 'Statistik Eksport Import Mengikut Negeri, Mac 2025',
+      titleEn: 'Export Import Statistics by State, March 2025',
+      bmUrl: 'LINK BM MAC 2025',
+      enUrl: 'LINK EN MAC 2025',
+    },
+    {
+      titleBm: 'Statistik Eksport Import Mengikut Negeri, April 2025',
+      titleEn: 'Export Import Statistics by State, April 2025',
+      bmUrl: 'LINK BM APR 2025',
+      enUrl: 'LINK EN APR 2025',
+    },
+    {
+      titleBm: 'Statistik Eksport Import Mengikut Negeri, Mei 2025',
+      titleEn: 'Export Import Statistics by State, May 2025',
+      bmUrl: 'LINK BM MAY 2025',
+      enUrl: 'LINK EN MAY 2025',
+    },
+    {
+      titleBm: 'Statistik Eksport Import Mengikut Negeri, Jun 2025',
+      titleEn: 'Export Import Statistics by State, June 2025',
+      bmUrl: 'LINK BM JUN 2025',
+      enUrl: 'LINK EN JUN 2025',
+    },
+    {
+      titleBm: 'Statistik Eksport Import Mengikut Negeri, Julai 2025',
+      titleEn: 'Export Import Statistics by State, July 2025',
+      bmUrl: 'LINK BM JUL 2025',
+      enUrl: 'LINK EN JUL 2025',
+    },
+    {
+      titleBm: 'Statistik Eksport Import Mengikut Negeri, Ogos 2025',
+      titleEn: 'Export Import Statistics by State, August 2025',
+      bmUrl: 'LINK BM AGO 2025',
+      enUrl: 'LINK EN AGO 2025',
+    },
+    {
+      titleBm: 'Statistik Eksport Import Mengikut Negeri, September 2025',
+      titleEn: 'Export Import Statistics by State, September 2025',
+      bmUrl: 'LINK BM SEP 2025',
+      enUrl: 'LINK EN SEP 2025',
+    },
+    {
+      titleBm: 'Statistik Eksport Import Mengikut Negeri, Oktober 2025',
+      titleEn: 'Export Import Statistics by State, October 2025',
+      bmUrl: 'LINK BM OKT 2025',
+      enUrl: 'LINK EN OKT 2025',
+    },
+    {
+      titleBm: 'Statistik Eksport Import Mengikut Negeri, November 2025',
+      titleEn: 'Export Import Statistics by State, November 2025',
+      bmUrl: 'LINK BM NOV 2025',
+      enUrl: 'LINK EN NOV 2025',
+    },
+    {
+      titleBm: 'Statistik Eksport Import Mengikut Negeri, Disember 2025',
+      titleEn: 'Export Import Statistics by State, December 2025',
+      bmUrl: 'LINK BM DEC 2025',
+      enUrl: 'LINK EN DEC 2025',
+    },
+  ],
+  2024: [
+    {
+      titleBm: 'Statistik Eksport Import Mengikut Negeri, Januari 2024',
+      titleEn: 'Export Import Statistics by State, January 2024',
+      bmUrl: 'LINK BM JAN 2024',
+      enUrl: 'LINK EN JAN 2024',
+    },
+    {
+      titleBm: 'Statistik Eksport Import Mengikut Negeri, Februari 2024',
+      titleEn: 'Export Import Statistics by State, February 2024',
+      bmUrl: 'LINK BM FEB 2024',
+      enUrl: 'LINK EN FEB 2024',
+    },
+    {
+      titleBm: 'Statistik Eksport Import Mengikut Negeri, Mac 2024',
+      titleEn: 'Export Import Statistics by State, March 2024',
+      bmUrl: 'LINK BM MAC 2024',
+      enUrl: 'LINK EN MAC 2024',
+    },
+    {
+      titleBm: 'Statistik Eksport Import Mengikut Negeri, April 2024',
+      titleEn: 'Export Import Statistics by State, April 2024',
+      bmUrl: 'LINK BM APR 2024',
+      enUrl: 'LINK EN APR 2024',
+    },
+    {
+      titleBm: 'Statistik Eksport Import Mengikut Negeri, Mei 2024',
+      titleEn: 'Export Import Statistics by State, May 2024',
+      bmUrl: 'LINK BM MAY 2024',
+      enUrl: 'LINK EN MAY 2024',
+    },
+    {
+      titleBm: 'Statistik Eksport Import Mengikut Negeri, Jun 2024',
+      titleEn: 'Export Import Statistics by State, June 2024',
+      bmUrl: 'LINK BM JUN 2024',
+      enUrl: 'LINK EN JUN 2024',
+    },
+    {
+      titleBm: 'Statistik Eksport Import Mengikut Negeri, Julai 2024',
+      titleEn: 'Export Import Statistics by State, July 2024',
+      bmUrl: 'LINK BM JUL 2024',
+      enUrl: 'LINK EN JUL 2024',
+    },
+    {
+      titleBm: 'Statistik Eksport Import Mengikut Negeri, Ogos 2024',
+      titleEn: 'Export Import Statistics by State, August 2024',
+      bmUrl: 'LINK BM AGO 2024',
+      enUrl: 'LINK EN AGO 2024',
+    },
+    {
+      titleBm: 'Statistik Eksport Import Mengikut Negeri, September 2024',
+      titleEn: 'Export Import Statistics by State, September 2024',
+      bmUrl: 'LINK BM SEP 2024',
+      enUrl: 'LINK EN SEP 2024',
+    },
+    {
+      titleBm: 'Statistik Eksport Import Mengikut Negeri, Oktober 2024',
+      titleEn: 'Export Import Statistics by State, October 2024',
+      bmUrl: 'LINK BM OKT 2024',
+      enUrl: 'LINK EN OKT 2024',
+    },
+    {
+      titleBm: 'Statistik Eksport Import Mengikut Negeri, November 2024',
+      titleEn: 'Export Import Statistics by State, November 2024',
+      bmUrl: 'LINK BM NOV 2024',
+      enUrl: 'LINK EN NOV 2024',
+    },
+    {
+      titleBm: 'Statistik Eksport Import Mengikut Negeri, Disember 2024',
+      titleEn: 'Export Import Statistics by State, December 2024',
+      bmUrl: 'LINK BM DEC 2024',
+      enUrl: 'LINK EN DEC 2024',
+    },
+  ],
+  2023: [
+    {
+      titleBm: 'Statistik Eksport Import Mengikut Negeri, Januari 2023',
+      titleEn: 'Export Import Statistics by State, January 2023',
+      bmUrl: 'LINK BM JAN 2023',
+      enUrl: 'LINK EN JAN 2023',
+    },
+    {
+      titleBm: 'Statistik Eksport Import Mengikut Negeri, Februari 2023',
+      titleEn: 'Export Import Statistics by State, February 2023',
+      bmUrl: 'LINK BM FEB 2023',
+      enUrl: 'LINK EN FEB 2023',
+    },
+    {
+      titleBm: 'Statistik Eksport Import Mengikut Negeri, Mac 2023',
+      titleEn: 'Export Import Statistics by State, March 2023',
+      bmUrl: 'LINK BM MAC 2023',
+      enUrl: 'LINK EN MAC 2023',
+    },
+    {
+      titleBm: 'Statistik Eksport Import Mengikut Negeri, April 2023',
+      titleEn: 'Export Import Statistics by State, April 2023',
+      bmUrl: 'LINK BM APR 2023',
+      enUrl: 'LINK EN APR 2023',
+    },
+    {
+      titleBm: 'Statistik Eksport Import Mengikut Negeri, Mei 2023',
+      titleEn: 'Export Import Statistics by State, May 2023',
+      bmUrl: 'LINK BM MAY 2023',
+      enUrl: 'LINK EN MAY 2023',
+    },
+    {
+      titleBm: 'Statistik Eksport Import Mengikut Negeri, Jun 2023',
+      titleEn: 'Export Import Statistics by State, June 2023',
+      bmUrl: 'LINK BM JUN 2023',
+      enUrl: 'LINK EN JUN 2023',
+    },
+    {
+      titleBm: 'Statistik Eksport Import Mengikut Negeri, Julai 2023',
+      titleEn: 'Export Import Statistics by State, July 2023',
+      bmUrl: 'LINK BM JUL 2023',
+      enUrl: 'LINK EN JUL 2023',
+    },
+    {
+      titleBm: 'Statistik Eksport Import Mengikut Negeri, Ogos 2023',
+      titleEn: 'Export Import Statistics by State, August 2023',
+      bmUrl: 'LINK BM AGO 2023',
+      enUrl: 'LINK EN AGO 2023',
+    },
+    {
+      titleBm: 'Statistik Eksport Import Mengikut Negeri, September 2023',
+      titleEn: 'Export Import Statistics by State, September 2023',
+      bmUrl: 'LINK BM SEP 2023',
+      enUrl: 'LINK EN SEP 2023',
+    },
+    {
+      titleBm: 'Statistik Eksport Import Mengikut Negeri, Oktober 2023',
+      titleEn: 'Export Import Statistics by State, October 2023',
+      bmUrl: 'LINK BM OKT 2023',
+      enUrl: 'LINK EN OKT 2023',
+    },
+    {
+      titleBm: 'Statistik Eksport Import Mengikut Negeri, November 2023',
+      titleEn: 'Export Import Statistics by State, November 2023',
+      bmUrl: 'LINK BM NOV 2023',
+      enUrl: 'LINK EN NOV 2023',
+    },
+    {
+      titleBm: 'Statistik Eksport Import Mengikut Negeri, Disember 2023',
+      titleEn: 'Export Import Statistics by State, December 2023',
+      bmUrl: 'LINK BM DEC 2023',
+      enUrl: 'LINK EN DEC 2023',
+    },
+  ],
+  2022: [
+    {
+      titleBm: 'Statistik Eksport Import Mengikut Negeri, November 2022',
+      titleEn: 'Export Import Statistics by State, November 2022',
+      bmUrl: 'https://www.dosm.gov.my/portal-main/release-content/1d81a3ea-8112-11ed-80ec-0cc47a9b694a',
+      enUrl: 'https://www.dosm.gov.my/portal-main/release-content/1d81a3ea-8112-11ed-80ec-0cc47a9b694a',
+    },
+    {
+      titleBm: 'Statistik Eksport Import Mengikut Negeri, Disember 2022',
+      titleEn: 'Export Import Statistics by State, December 2022',
+      bmUrl: 'https://www.dosm.gov.my/portal-main/release-content/5009e3c9-841f-11ed-96a6-1866daa77ef9',
+      enUrl: 'https://www.dosm.gov.my/portal-main/release-content/5009e3c9-841f-11ed-96a6-1866daa77ef9',
+    },
+  ],
+};
+
 const statsYears = [
   {
     year: 2026,
     availabilityBm: '3 bulan tersedia',
     availabilityEn: '3 months available',
-    path: '/publications/stats-alert/2026',
   },
   {
     year: 2025,
     availabilityBm: '12 bulan tersedia',
     availabilityEn: '12 months available',
-    path: '/publications/stats-alert/2025',
   },
   {
     year: 2024,
     availabilityBm: '12 bulan tersedia',
     availabilityEn: '12 months available',
-    path: '/publications/stats-alert/2024',
   },
   {
     year: 2023,
     availabilityBm: '12 bulan tersedia',
     availabilityEn: '12 months available',
-    path: '/publications/stats-alert/2023',
   },
   {
     year: 2022,
     availabilityBm: 'Disember tersedia',
     availabilityEn: 'December available',
-    path: '/publications/stats-alert/2022',
   },
 ];
 
@@ -217,7 +458,6 @@ export default function Publications() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-foreground">
           {lang === 'bm' ? 'Penerbitan' : 'Publications'}
@@ -230,9 +470,10 @@ export default function Publications() {
         </p>
       </div>
 
-      {/* Stats Alert Section */}
       <section className="rounded-xl border border-border bg-card/70 p-4">
-        <div className="flex items-start justify-between gap-3">
+        <div className="flex items-start gap-3">
+          <Newspaper className="mt-1 h-5 w-5 shrink-0 text-primary" />
+
           <div>
             <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-primary">
               Stats Alert
@@ -248,11 +489,8 @@ export default function Publications() {
                 : 'News-style display for the latest stats alerts in 2026.'}
             </p>
           </div>
-
-          <Newspaper className="h-5 w-5 text-primary" />
         </div>
 
-        {/* News-style cards */}
         <div className="mt-5 grid gap-4 md:grid-cols-3">
           {statsLatest.map((item) => (
             <article
@@ -298,17 +536,16 @@ export default function Publications() {
           ))}
         </div>
 
-        {/* Stats Alert Accordion */}
         <div className="mt-6">
           <h3 className="text-sm font-bold text-foreground">
-            {lang === 'bm'
-              ? 'Stats Alert Mengikut Tahun'
-              : 'Stats Alert by Year'}
+            {lang === 'bm' ? 'Stats Alert Mengikut Tahun' : 'Stats Alert by Year'}
           </h3>
 
           <div className="mt-3 space-y-2">
             {statsYears.map((item) => {
               const isOpen = openStatsYear === item.year;
+              const monthlyItems =
+                item.year === 2026 ? statsLatest : statsArchiveItems[item.year] || [];
 
               return (
                 <div
@@ -328,9 +565,7 @@ export default function Publications() {
                       </p>
 
                       <p className="mt-0.5 text-xs text-muted-foreground">
-                        {lang === 'bm'
-                          ? item.availabilityBm
-                          : item.availabilityEn}
+                        {lang === 'bm' ? item.availabilityBm : item.availabilityEn}
                       </p>
                     </div>
 
@@ -341,16 +576,14 @@ export default function Publications() {
 
                   {isOpen && (
                     <div className="space-y-2 border-t border-border px-4 py-3">
-                      {item.year === 2026 ? (
-                        statsLatest.map((m) => (
+                      {monthlyItems.length > 0 ? (
+                        monthlyItems.map((m) => (
                           <div
-                            key={`${m.year}-${m.monthEn}`}
+                            key={lang === 'bm' ? m.titleBm : m.titleEn}
                             className="flex flex-col gap-2 rounded-lg bg-card/40 px-3 py-2 text-xs md:flex-row md:items-center md:justify-between"
                           >
                             <span className="font-medium text-foreground">
-                              {lang === 'bm'
-                                ? `Statistik Eksport Import Mengikut Negeri, ${m.monthBm} ${m.year}`
-                                : `Export Import Statistics by State, ${m.monthEn} ${m.year}`}
+                              {lang === 'bm' ? m.titleBm : m.titleEn}
                             </span>
 
                             <a
@@ -365,20 +598,10 @@ export default function Publications() {
                           </div>
                         ))
                       ) : (
-                        <div className="flex flex-col gap-2 rounded-lg bg-card/40 px-3 py-2 text-xs md:flex-row md:items-center md:justify-between">
-                          <span className="font-medium text-muted-foreground">
-                            {lang === 'bm'
-                              ? `Senarai Statistik Eksport Import Mengikut Negeri, ${item.year}`
-                              : `Export Import Statistics by State List, ${item.year}`}
-                          </span>
-
-                          <Link
-                            to={item.path}
-                            className="inline-flex items-center gap-1 font-semibold text-primary hover:underline"
-                          >
-                            {lang === 'bm' ? 'Lihat Senarai' : 'View List'}
-                            <ExternalLink className="h-3.5 w-3.5" />
-                          </Link>
+                        <div className="rounded-lg bg-card/40 px-3 py-2 text-xs text-muted-foreground">
+                          {lang === 'bm'
+                            ? 'Senarai bulanan belum ditambah.'
+                            : 'Monthly list has not been added yet.'}
                         </div>
                       )}
                     </div>
@@ -390,7 +613,6 @@ export default function Publications() {
         </div>
       </section>
 
-      {/* Books Section */}
       <section className="rounded-xl border border-border bg-card/70 p-4">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
@@ -408,9 +630,7 @@ export default function Publications() {
             onChange={(e) => setSelectedYear(e.target.value)}
             className="h-9 w-[135px] rounded-lg border border-border bg-background px-3 text-xs font-medium text-foreground outline-none focus:border-primary"
           >
-            <option value="all">
-              {lang === 'bm' ? 'Semua Tahun' : 'All Years'}
-            </option>
+            <option value="all">{lang === 'bm' ? 'Semua Tahun' : 'All Years'}</option>
 
             {years.map((year) => (
               <option key={year} value={year}>
@@ -486,7 +706,6 @@ export default function Publications() {
         </div>
       </section>
 
-      {/* DOSM Section */}
       <section className="rounded-xl border border-border bg-card/70 p-4">
         <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-primary">
           {lang === 'bm' ? 'Ketahui Lebih Lanjut' : 'Learn More'}
