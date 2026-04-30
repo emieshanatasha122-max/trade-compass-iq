@@ -16,8 +16,7 @@ const statsLatest = [
     year: 2026,
     coverBm: '/covers/infografik-stats-bm-2026-jan.png',
     coverEn: '/covers/infografik-stats-bi-2026-jan.png',
-    bmUrl: 'https://www.dosm.gov.my/portal-main/release-content/export-import-statistics-by-state-january-2026',
-    enUrl: 'https://www.dosm.gov.my/portal-main/release-content/export-import-statistics-by-state-january-2026',
+    Url: 'https://www.dosm.gov.my/portal-main/release-content/export-import-statistics-by-state-january-2026',
   },
   {
     titleBm: 'Statistik Eksport Import Mengikut Negeri, Februari 2026',
@@ -27,8 +26,7 @@ const statsLatest = [
     year: 2026,
     coverBm: '/covers/infografik-stats-bm-2026-feb.png',
     coverEn: '/covers/infografik-stats-bi-2026-feb.png',
-    bmUrl: 'https://www.dosm.gov.my/portal-main/release-content/export-import-statistics-by-state-feb2026',
-    enUrl: 'https://www.dosm.gov.my/portal-main/release-content/export-import-statistics-by-state-february-2026',
+    Url: 'https://www.dosm.gov.my/portal-main/release-content/export-import-statistics-by-state-feb2026',
   },
   {
     titleBm: 'Statistik Eksport Import Mengikut Negeri, Mac 2026',
@@ -38,8 +36,7 @@ const statsLatest = [
     year: 2026,
     coverBm: '/covers/infografik-stats-bm-2026-mac.png',
     coverEn: '/covers/infografik-stats-bi-2026-mac.png',
-    bmUrl: 'https://www.dosm.gov.my/portal-main/release-content/export-import-statistics-by-state-mar2026',
-    enUrl: 'https://www.dosm.gov.my/portal-main/release-content/export-import-statistics-by-state-mar2026',
+    Url: 'https://www.dosm.gov.my/portal-main/release-content/export-import-statistics-by-state-mar2026',
   },
 ];
 
@@ -48,244 +45,201 @@ const statsArchiveItems: Record<
   {
     titleBm: string;
     titleEn: string;
-    bmUrl: string;
-    enUrl: string;
+    Url: string;
+
   }[]
 > = {
   2025: [
     {
       titleBm: 'Statistik Eksport Import Mengikut Negeri, Januari 2025',
       titleEn: 'Export Import Statistics by State, January 2025',
-      bmUrl: 'LINK BM JAN 2025',
-      enUrl: 'LINK EN JAN 2025',
+      Url: 'https://www.dosm.gov.my/portal-main/release-content/export-import-statistics-by-state-january-2025',
     },
     {
       titleBm: 'Statistik Eksport Import Mengikut Negeri, Februari 2025',
       titleEn: 'Export Import Statistics by State, February 2025',
-      bmUrl: 'LINK BM FEB 2025',
-      enUrl: 'LINK EN FEB 2025',
+      Url: 'https://www.dosm.gov.my/portal-main/release-content/export-import-statistics-by-state-february-2025',
     },
     {
       titleBm: 'Statistik Eksport Import Mengikut Negeri, Mac 2025',
       titleEn: 'Export Import Statistics by State, March 2025',
-      bmUrl: 'LINK BM MAC 2025',
-      enUrl: 'LINK EN MAC 2025',
+      Url: 'https://www.dosm.gov.my/portal-main/release-content/export-import-statistics-by-state-march-2025',
     },
     {
       titleBm: 'Statistik Eksport Import Mengikut Negeri, April 2025',
       titleEn: 'Export Import Statistics by State, April 2025',
-      bmUrl: 'LINK BM APR 2025',
-      enUrl: 'LINK EN APR 2025',
+      Url: 'https://www.dosm.gov.my/portal-main/release-content/export-import-statistics-by-state-april-2025',
     },
     {
       titleBm: 'Statistik Eksport Import Mengikut Negeri, Mei 2025',
       titleEn: 'Export Import Statistics by State, May 2025',
-      bmUrl: 'LINK BM MAY 2025',
-      enUrl: 'LINK EN MAY 2025',
+      Url: 'https://www.dosm.gov.my/portal-main/release-content/export-import-statistics-by-state-may-2025',
     },
     {
       titleBm: 'Statistik Eksport Import Mengikut Negeri, Jun 2025',
       titleEn: 'Export Import Statistics by State, June 2025',
-      bmUrl: 'LINK BM JUN 2025',
-      enUrl: 'LINK EN JUN 2025',
+      Url: 'https://www.dosm.gov.my/portal-main/release-content/export-import-statistics-by-state-june-2025',
     },
     {
       titleBm: 'Statistik Eksport Import Mengikut Negeri, Julai 2025',
       titleEn: 'Export Import Statistics by State, July 2025',
-      bmUrl: 'LINK BM JUL 2025',
-      enUrl: 'LINK EN JUL 2025',
+      Url: 'https://www.dosm.gov.my/portal-main/release-content/export-import-statistics-by-state-july-2025',
     },
     {
       titleBm: 'Statistik Eksport Import Mengikut Negeri, Ogos 2025',
       titleEn: 'Export Import Statistics by State, August 2025',
-      bmUrl: 'LINK BM AGO 2025',
-      enUrl: 'LINK EN AGO 2025',
+      Url: 'https://www.dosm.gov.my/portal-main/release-content/export-import-statistics-by-state-august-2025',
     },
     {
       titleBm: 'Statistik Eksport Import Mengikut Negeri, September 2025',
       titleEn: 'Export Import Statistics by State, September 2025',
-      bmUrl: 'LINK BM SEP 2025',
-      enUrl: 'LINK EN SEP 2025',
+      Url: 'https://www.dosm.gov.my/portal-main/release-content/export-import-statistics-by-state-september-2025',
     },
     {
       titleBm: 'Statistik Eksport Import Mengikut Negeri, Oktober 2025',
       titleEn: 'Export Import Statistics by State, October 2025',
-      bmUrl: 'LINK BM OKT 2025',
-      enUrl: 'LINK EN OKT 2025',
+      Url: 'https://www.dosm.gov.my/portal-main/release-content/export-import-statistics-by-state-october-2025',
     },
     {
       titleBm: 'Statistik Eksport Import Mengikut Negeri, November 2025',
       titleEn: 'Export Import Statistics by State, November 2025',
-      bmUrl: 'LINK BM NOV 2025',
-      enUrl: 'LINK EN NOV 2025',
+      Url: 'https://www.dosm.gov.my/portal-main/release-content/export-import-statistics-by-state-november-2025',
     },
     {
       titleBm: 'Statistik Eksport Import Mengikut Negeri, Disember 2025',
       titleEn: 'Export Import Statistics by State, December 2025',
-      bmUrl: 'LINK BM DEC 2025',
-      enUrl: 'LINK EN DEC 2025',
+      Url: 'https://www.dosm.gov.my/portal-main/release-content/export-import-statistics-by-state-december-2025',
     },
   ],
   2024: [
     {
       titleBm: 'Statistik Eksport Import Mengikut Negeri, Januari 2024',
       titleEn: 'Export Import Statistics by State, January 2024',
-      bmUrl: 'LINK BM JAN 2024',
-      enUrl: 'LINK EN JAN 2024',
+      Url: 'https://www.dosm.gov.my/portal-main/release-content/export-import-statistics-by-state-jan2024',
     },
     {
       titleBm: 'Statistik Eksport Import Mengikut Negeri, Februari 2024',
       titleEn: 'Export Import Statistics by State, February 2024',
-      bmUrl: 'LINK BM FEB 2024',
-      enUrl: 'LINK EN FEB 2024',
+      Url: 'https://www.dosm.gov.my/portal-main/release-content/export-import-statistics-by-state-feb2024',
     },
     {
       titleBm: 'Statistik Eksport Import Mengikut Negeri, Mac 2024',
       titleEn: 'Export Import Statistics by State, March 2024',
-      bmUrl: 'LINK BM MAC 2024',
-      enUrl: 'LINK EN MAC 2024',
+      Url: 'https://www.dosm.gov.my/portal-main/release-content/export-import-statistics-by-state-mar2024-',
     },
     {
       titleBm: 'Statistik Eksport Import Mengikut Negeri, April 2024',
       titleEn: 'Export Import Statistics by State, April 2024',
-      bmUrl: 'LINK BM APR 2024',
-      enUrl: 'LINK EN APR 2024',
+      Url: 'https://www.dosm.gov.my/portal-main/release-content/export-import-statistics-by-state-apr2024-',
     },
     {
       titleBm: 'Statistik Eksport Import Mengikut Negeri, Mei 2024',
       titleEn: 'Export Import Statistics by State, May 2024',
-      bmUrl: 'LINK BM MAY 2024',
-      enUrl: 'LINK EN MAY 2024',
+      Url: 'https://www.dosm.gov.my/portal-main/release-content/export-import-statistics-by-state-may2024-',
     },
     {
       titleBm: 'Statistik Eksport Import Mengikut Negeri, Jun 2024',
       titleEn: 'Export Import Statistics by State, June 2024',
-      bmUrl: 'LINK BM JUN 2024',
-      enUrl: 'LINK EN JUN 2024',
+      Url: 'https://www.dosm.gov.my/portal-main/release-content/export-import-statistics-by-state-jun2024-',
     },
     {
       titleBm: 'Statistik Eksport Import Mengikut Negeri, Julai 2024',
       titleEn: 'Export Import Statistics by State, July 2024',
-      bmUrl: 'LINK BM JUL 2024',
-      enUrl: 'LINK EN JUL 2024',
+      Url: 'https://www.dosm.gov.my/portal-main/release-content/export-import-statistics-by-state-jul2024-',
     },
     {
       titleBm: 'Statistik Eksport Import Mengikut Negeri, Ogos 2024',
       titleEn: 'Export Import Statistics by State, August 2024',
-      bmUrl: 'LINK BM AGO 2024',
-      enUrl: 'LINK EN AGO 2024',
+      Url: 'https://www.dosm.gov.my/portal-main/release-content/export-import-statistics-by-state-aug2024-',
     },
     {
       titleBm: 'Statistik Eksport Import Mengikut Negeri, September 2024',
       titleEn: 'Export Import Statistics by State, September 2024',
-      bmUrl: 'LINK BM SEP 2024',
-      enUrl: 'LINK EN SEP 2024',
+      Url: 'https://www.dosm.gov.my/portal-main/release-content/export-import-statistics-by-state-sep2024-',
     },
     {
       titleBm: 'Statistik Eksport Import Mengikut Negeri, Oktober 2024',
       titleEn: 'Export Import Statistics by State, October 2024',
-      bmUrl: 'LINK BM OKT 2024',
-      enUrl: 'LINK EN OKT 2024',
+      Url: 'https://www.dosm.gov.my/portal-main/release-content/export-import-statistics-by-state-oct2024-',
     },
     {
       titleBm: 'Statistik Eksport Import Mengikut Negeri, November 2024',
       titleEn: 'Export Import Statistics by State, November 2024',
-      bmUrl: 'LINK BM NOV 2024',
-      enUrl: 'LINK EN NOV 2024',
+      Url: 'https://www.dosm.gov.my/portal-main/release-content/export-import-statistics-by-state-nov2024-',
     },
     {
       titleBm: 'Statistik Eksport Import Mengikut Negeri, Disember 2024',
       titleEn: 'Export Import Statistics by State, December 2024',
-      bmUrl: 'LINK BM DEC 2024',
-      enUrl: 'LINK EN DEC 2024',
+      Url: 'https://www.dosm.gov.my/portal-main/release-content/export-import-statistics-by-state-december-2024',
     },
   ],
   2023: [
     {
       titleBm: 'Statistik Eksport Import Mengikut Negeri, Januari 2023',
       titleEn: 'Export Import Statistics by State, January 2023',
-      bmUrl: 'LINK BM JAN 2023',
-      enUrl: 'LINK EN JAN 2023',
+      Url: 'https://www.dosm.gov.my/portal-main/release-content/7677e5e4-841f-11ed-96a6-1866daa77ef9',
     },
     {
       titleBm: 'Statistik Eksport Import Mengikut Negeri, Februari 2023',
       titleEn: 'Export Import Statistics by State, February 2023',
-      bmUrl: 'LINK BM FEB 2023',
-      enUrl: 'LINK EN FEB 2023',
-    },
-    {
-      titleBm: 'Statistik Eksport Import Mengikut Negeri, Mac 2023',
-      titleEn: 'Export Import Statistics by State, March 2023',
-      bmUrl: 'LINK BM MAC 2023',
-      enUrl: 'LINK EN MAC 2023',
+      Url: 'https://www.dosm.gov.my/portal-main/release-content/a79348d2-841f-11ed-96a6-1866daa77ef9',
     },
     {
       titleBm: 'Statistik Eksport Import Mengikut Negeri, April 2023',
       titleEn: 'Export Import Statistics by State, April 2023',
-      bmUrl: 'LINK BM APR 2023',
-      enUrl: 'LINK EN APR 2023',
+      Url: 'https://www.dosm.gov.my/portal-main/release-content/dc35ffe8-841f-11ed-96a6-1866daa77ef9',
     },
     {
       titleBm: 'Statistik Eksport Import Mengikut Negeri, Mei 2023',
       titleEn: 'Export Import Statistics by State, May 2023',
-      bmUrl: 'LINK BM MAY 2023',
-      enUrl: 'LINK EN MAY 2023',
+      Url: 'https://www.dosm.gov.my/portal-main/release-content/fa145dd7-841f-11ed-96a6-1866daa77ef9',
     },
     {
       titleBm: 'Statistik Eksport Import Mengikut Negeri, Jun 2023',
       titleEn: 'Export Import Statistics by State, June 2023',
-      bmUrl: 'LINK BM JUN 2023',
-      enUrl: 'LINK EN JUN 2023',
+      Url: 'https://www.dosm.gov.my/portal-main/release-content/1e02f969-8420-11ed-96a6-1866daa77ef9',
     },
     {
       titleBm: 'Statistik Eksport Import Mengikut Negeri, Julai 2023',
       titleEn: 'Export Import Statistics by State, July 2023',
-      bmUrl: 'LINK BM JUL 2023',
-      enUrl: 'LINK EN JUL 2023',
+      Url: 'https://www.dosm.gov.my/portal-main/release-content/35b0ce9b-8420-11ed-96a6-1866daa77ef9',
     },
     {
       titleBm: 'Statistik Eksport Import Mengikut Negeri, Ogos 2023',
       titleEn: 'Export Import Statistics by State, August 2023',
-      bmUrl: 'LINK BM AGO 2023',
-      enUrl: 'LINK EN AGO 2023',
+      Url: 'https://www.dosm.gov.my/portal-main/release-content/export-import-statistics-by-state-august-2023',
     },
     {
       titleBm: 'Statistik Eksport Import Mengikut Negeri, September 2023',
       titleEn: 'Export Import Statistics by State, September 2023',
-      bmUrl: 'LINK BM SEP 2023',
-      enUrl: 'LINK EN SEP 2023',
+      Url: 'https://www.dosm.gov.my/portal-main/release-content/export-import-statistics-by-state-sep-2023',
     },
     {
       titleBm: 'Statistik Eksport Import Mengikut Negeri, Oktober 2023',
       titleEn: 'Export Import Statistics by State, October 2023',
-      bmUrl: 'LINK BM OKT 2023',
-      enUrl: 'LINK EN OKT 2023',
+      Url: 'https://www.dosm.gov.my/portal-main/release-content/export-import-statistics-by-state-oct-2023',
     },
     {
       titleBm: 'Statistik Eksport Import Mengikut Negeri, November 2023',
       titleEn: 'Export Import Statistics by State, November 2023',
-      bmUrl: 'LINK BM NOV 2023',
-      enUrl: 'LINK EN NOV 2023',
+      Url: 'https://www.dosm.gov.my/portal-main/release-content/export-import-statistics-by-state-nov-2023',
     },
     {
       titleBm: 'Statistik Eksport Import Mengikut Negeri, Disember 2023',
       titleEn: 'Export Import Statistics by State, December 2023',
-      bmUrl: 'LINK BM DEC 2023',
-      enUrl: 'LINK EN DEC 2023',
+      Url: 'https://www.dosm.gov.my/portal-main/release-content/export-import-statistics-by-state-december-',
     },
   ],
   2022: [
     {
       titleBm: 'Statistik Eksport Import Mengikut Negeri, November 2022',
       titleEn: 'Export Import Statistics by State, November 2022',
-      bmUrl: 'https://www.dosm.gov.my/portal-main/release-content/1d81a3ea-8112-11ed-80ec-0cc47a9b694a',
-      enUrl: 'https://www.dosm.gov.my/portal-main/release-content/1d81a3ea-8112-11ed-80ec-0cc47a9b694a',
+      Url: 'https://www.dosm.gov.my/portal-main/release-content/1d81a3ea-8112-11ed-80ec-0cc47a9b694a',
     },
     {
       titleBm: 'Statistik Eksport Import Mengikut Negeri, Disember 2022',
       titleEn: 'Export Import Statistics by State, December 2022',
-      bmUrl: 'https://www.dosm.gov.my/portal-main/release-content/5009e3c9-841f-11ed-96a6-1866daa77ef9',
-      enUrl: 'https://www.dosm.gov.my/portal-main/release-content/5009e3c9-841f-11ed-96a6-1866daa77ef9',
+      Url: 'https://www.dosm.gov.my/portal-main/release-content/5009e3c9-841f-11ed-96a6-1866daa77ef9',
     },
   ],
 };
@@ -412,6 +366,48 @@ const books = [
     file: '/books/2025/statistik-perdagangan-malaysia-negeri-2025-sarawak.pdf',
     cover: '/covers/cover-2025-sarawak.png',
   },
+    {
+    title: 'Statistik Perdagangan Malaysia Mengikut Negeri 2025 (Terengganu)',
+    year: 2025,
+    state: 'Terengganu',
+    file: '/books/2025/statistik-perdagangan-malaysia-negeri-2025-terengganu.pdf',
+    cover: '/covers/cover-2025-terengganu.png',
+  },
+    {
+    title: 'Statistik Perdagangan Malaysia Mengikut Negeri 2025 (Johor)',
+    year: 2025,
+    state: 'Johor',
+    file: '/books/2025/statistik-perdagangan-malaysia-negeri-2025-johor.pdf',
+    cover: '/covers/cover-2025-johor.png',
+  },
+    {
+    title: 'Statistik Perdagangan Malaysia Mengikut Negeri 2025 (Kelantan)',
+    year: 2025,
+    state: 'Kelantan',
+    file: '/books/2025/statistik-perdagangan-malaysia-negeri-2025-kelantan.pdf',
+    cover: '/covers/cover-2025-kelantan.png',
+  },
+    {
+    title: 'Statistik Perdagangan Malaysia Mengikut Negeri 2025 (Melaka)',
+    year: 2025,
+    state: 'Melaka',
+    file: '/books/2025/statistik-perdagangan-malaysia-negeri-2025-melaka.pdf',
+    cover: '/covers/cover-2025-melaka.png',
+  },
+    {
+    title: 'Statistik Perdagangan Malaysia Mengikut Negeri 2025 (W.P. Kuala Lumpur)',
+    year: 2025,
+    state: 'W.P. Kuala Lumpur',
+    file: '/books/2025/statistik-perdagangan-malaysia-negeri-2025-wp-kuala-lumpur.pdf',
+    cover: '/covers/cover-2025-wp-kuala-lumpur.png',
+  },
+    {
+    title: 'Statistik Perdagangan Malaysia Mengikut Negeri 2025 (W.P. Labuan)',
+    year: 2025,
+    state: 'W.P. Labuan',
+    file: '/books/2025/statistik-perdagangan-malaysia-negeri-2025-wp-labuan.pdf',
+    cover: '/covers/cover-2025-wp-labuan.png',
+  },
 ];
 
 export default function Publications() {
@@ -419,7 +415,7 @@ export default function Publications() {
   const bookScrollRef = useRef<HTMLDivElement | null>(null);
 
   const [selectedYear, setSelectedYear] = useState<string>('all');
-  const [openStatsYear, setOpenStatsYear] = useState<number | null>(2026);
+  const [openStatsYear, setOpenStatsYear] = useState<number | null>(null);
 
   const years = [2025, 2024, 2023, 2022, 2021, 2020];
 
