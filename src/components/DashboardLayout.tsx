@@ -3,7 +3,6 @@ import { Outlet, Link, useLocation } from 'react-router-dom';
 import { Sun, Moon, PanelLeftClose, PanelLeft } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { motion, AnimatePresence } from 'framer-motion';
-import ChatBot from '@/components/ChatBot';
 import SidebarFilters from '@/components/SidebarFilters';
 import Footer from '@/components/Footer';
 
@@ -192,15 +191,15 @@ export default function DashboardLayout() {
           </div>
         </header>
 
-        <main className="flex-1 overflow-y-auto p-4 md:p-6">
-          <Outlet />
+        <main id="dashboard-scroll" className="flex-1 overflow-y-auto">
+          <div className="p-4 md:p-6 space-y-20">
+            <Outlet />
 
-           {/* Footer */}
-          <Footer />
+            {/* Footer */}
+            <Footer />
+          </div>
         </main>
       </div>
-
-      <ChatBot />
-    </div>
+      </div>
   );
 }
