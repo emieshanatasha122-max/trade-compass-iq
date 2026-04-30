@@ -6,7 +6,8 @@ interface TradeInfoCardProps {
   totalValue: number;
   exportValue: number;
   importValue: number;
-  topCommodity: string;
+  topExportCommodity: string;
+  topImportCommodity: string;
   onClose: () => void;
   lang: 'bm' | 'en';
 }
@@ -20,7 +21,7 @@ function formatRM(value: number): string {
 }
 
 export default function TradeInfoCard({
-  countryName, totalValue, exportValue, importValue, topCommodity, onClose, lang,
+  countryName, totalValue, exportValue, importValue, topExportCommodity, topImportCommodity, onClose, lang,
 }: TradeInfoCardProps) {
   return (
     <div className="absolute top-11 right-10 z-30 w-60
@@ -32,7 +33,7 @@ export default function TradeInfoCard({
       {/* Header */}
       <div className="flex items-center justify-between px-3 py-2 bg-primary/10 border-b border-border">
         <div className="flex items-center gap-1.5">
-          <span className="text-xs font-bold text-white">Malaysia → {countryName}</span>
+          <span className="text-xs font-bold text-white">Malaysia ⇄ {countryName}</span>
         </div>
         <button onClick={onClose} className="text-muted-foreground hover:text-foreground transition-colors">
           <X className="w-3.5 h-3.5" />
@@ -55,10 +56,19 @@ export default function TradeInfoCard({
             <p className="text-xs font-semibold text-[#EF4444]">{formatRM(importValue)}</p>
           </div>
         </div>
-        <div className="pt-1 border-t border-border">
-          <p className="text-[10px] text-white">{lang === 'bm' ? 'Barangan Utama' : 'Top Commodity'}</p>
-          <p className="text-xs font-medium text-white">{topCommodity}</p>
+        <div className="pt-1 border-t border-border space-y-2">
+          <p className="text-[10px] text-white">{lang === 'bm' ? 'Barangan Utama Eksport' : 'Top Export Commodity'}</p>
+          <p className="text-xs font-medium text-white">{topExportCommodity}</p>
         </div>
+
+        <div>
+          <p className="text-[10px] text-white">
+            {lang === 'bm' ? 'Barangan Utama Import' : 'Top Import Commodity'}
+          </p>
+          <p className="text-xs font-medium text-white">{topImportCommodity}</p>
+        </div>
+
+
       </div>
     </div>
   );
