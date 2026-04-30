@@ -5,8 +5,8 @@ export default function Footer() {
   const { lang } = useLanguage();
 
   return (
-    <footer className="mt-10 border-t border-border bg-card/40 px-4 py-8">
-      <div className="mx-auto grid max-w-5xl gap-8 md:grid-cols-2 md:items-start">
+    <footer className="mt-6 border-t border-border bg-card/40 px-4 py-5">
+      <div className="mx-auto grid max-w-5xl gap-5 md:grid-cols-2">
         
         {/* Left: Logos + Department */}
         <div className="flex items-start gap-4 md:justify-self-end md:mr-6">
@@ -16,7 +16,7 @@ export default function Footer() {
             <img
               src="/jata-negara.png"
               alt="Jata Negara"
-              className="h-14 w-auto"
+              className="h-12 w-auto"
             />
 
             <div className="h-9 w-px bg-border" />
@@ -30,13 +30,13 @@ export default function Footer() {
 
           {/* Text */}
           <div>
-            <h2 className="text-lg font-bold text-foreground">
+            <h2 className="text-base font-semibold text-foreground">
               {lang === 'bm'
                 ? 'Jabatan Perangkaan Malaysia'
                 : 'Department of Statistics Malaysia'}
             </h2>
 
-            <p className="mt-1 text-sm text-muted-foreground">
+            <p className="mt-0.5 text-xs text-muted-foreground">
               {lang === 'bm'
                 ? 'Pusat Analitik Data Raya Negara'
                 : 'National Big Data Analytics Centre'}
@@ -45,7 +45,7 @@ export default function Footer() {
         </div>
 
         {/* Right: Contact */}
-        <div className="space-y-4 text-sm text-muted-foreground">
+        <div className="space-y-2 text-xs text-muted-foreground">
           <div className="flex items-start gap-3">
             <MapPin className="mt-1 h-4 w-4 shrink-0 text-primary" />
 
