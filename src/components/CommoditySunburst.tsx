@@ -140,7 +140,7 @@ function CustomContent({
           y={y + height * 0.65}
           textAnchor="middle"
           dominantBaseline="central"
-          fontSize={9}
+          fontSize={13}
           fontWeight={600}
           fill={isDark ? 'rgba(255,255,255,0.88)' : '#334155'}
           style={{
