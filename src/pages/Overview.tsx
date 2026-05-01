@@ -235,8 +235,8 @@ const [showScrollTop, setShowScrollTop] = useState(false);
               title={lang === 'bm' ? 'Perdagangan mengikut Kumpulan Ekonomi Utama' : 'Trade by Major Economic Grouping'}
               description={
                 lang === 'bm'
-                  ? 'Carta memaparkan tiga (3) kumpulan ekonomi utama bagi eksport dan import Malaysia'
-                  : 'Chart shows three (3) major economics grouping for Malaysia’s export and import'
+                  ? 'Carta memaparkan tiga (3) kumpulan ekonomi utama bagi eksport dan import Malaysia (Klik pada Ekonomi)'
+                  : 'Chart shows three (3) major economics grouping for Malaysia’s export and import (Click on Economic)'
               }
               icon={GitBranch}
             />
