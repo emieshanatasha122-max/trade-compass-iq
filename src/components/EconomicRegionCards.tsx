@@ -76,20 +76,21 @@ function getStateFlag(name: string): string | null {
 function matchRegion(raw: string): RegionKey | null {
   const upper = normalizeText(raw);
 
-  if (
-    upper.includes('AFTA') ||
-    upper.includes('ASEAN FREE TRADE AREA') ||
-    upper === 'ASEAN'
-  ) {
-    return 'AFTA';
-  }
-
+  // Check NAFTA first to avoid 'AFTA' substring matching 'NAFTA'
   if (
     upper.includes('NAFTA') ||
     upper.includes('USMCA') ||
     upper.includes('NORTH AMERICAN FREE TRADE')
   ) {
     return 'NAFTA';
+  }
+
+  if (
+    upper === 'AFTA' ||
+    upper.includes('ASEAN FREE TRADE AREA') ||
+    upper === 'ASEAN'
+  ) {
+    return 'AFTA';
   }
 
   if (
