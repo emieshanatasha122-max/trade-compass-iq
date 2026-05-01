@@ -267,8 +267,8 @@ const statsYears = [
   },
   {
     year: 2022,
-    availabilityBm: 'Disember tersedia',
-    availabilityEn: 'December available',
+    availabilityBm: '2 bulan tersedia',
+    availabilityEn: '2 months available',
   },
 ];
 
@@ -455,14 +455,8 @@ export default function Publications() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-foreground">
+        <p className="text-2xl font-bold uppercase tracking-[0.2em] text-primary">
           {lang === 'bm' ? 'Penerbitan' : 'Publications'}
-        </h1>
-
-        <p className="mt-1 text-sm text-muted-foreground">
-          {lang === 'bm'
-            ? 'Koleksi stats alert, buku penerbitan dan pautan rasmi berkaitan perdagangan Malaysia.'
-            : 'Collection of stats alerts, publication books and official links related to Malaysia trade.'}
         </p>
       </div>
 
@@ -481,8 +475,8 @@ export default function Publications() {
 
             <p className="mt-1 text-xs text-muted-foreground">
               {lang === 'bm'
-                ? 'Paparan bergaya berita untuk stats alert terkini bagi tahun 2026.'
-                : 'News-style display for the latest stats alerts in 2026.'}
+                ? 'Paparan Stats Alert Terkini bagi Tahun 2026'
+                : 'Latest Stats Alert for 2026'}
             </p>
           </div>
         </div>
@@ -711,17 +705,17 @@ export default function Publications() {
           {lang === 'bm' ? 'Portal Rasmi DOSM' : 'Official DOSM Portal'}
         </h2>
 
-        <p className="mt-2 max-w-3xl text-sm text-muted-foreground">
+        <p className="mt-2 w-full text-sm text-muted-foreground">
           {lang === 'bm'
-            ? 'Untuk maklumat rasmi, penerbitan penuh dan data terperinci, sila layari portal rasmi Jabatan Perangkaan Malaysia (DOSM).'
-            : 'For official information, full publications and detailed data, please visit the official Department of Statistics Malaysia (DOSM) portal.'}
+            ? 'Untuk maklumat rasmi, penerbitan penuh dan data terperinci, sila layari portal rasmi Jabatan Perangkaan Malaysia (DOSM)'
+            : 'For official information, full publications and detailed data, please visit the official Department of Statistics Malaysia (DOSM) portal'}
         </p>
 
         <a
           href="https://www.dosm.gov.my"
           target="_blank"
           rel="noopener noreferrer"
-          className="mt-4 inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition hover:opacity-90"
+          className="mt-4 inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground transition hover:opacity-90"
         >
           {lang === 'bm' ? 'Layari Portal DOSM' : 'Visit DOSM Portal'}
           <ExternalLink className="h-4 w-4" />
