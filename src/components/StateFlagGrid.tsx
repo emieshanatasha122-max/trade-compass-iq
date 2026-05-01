@@ -120,22 +120,16 @@ export default function StateFlagGrid({ data }: Props) {
               <p className="text-sm font-semibold text-foreground">{state.name}</p>
               <p className="text-2xl font-bold text-primary mt-1">{state.pct}%</p>
               <p className="text-[10px] text-muted-foreground">
-                {lang === 'bm' ? 'Sumbangan Perdagangan Nasional' : 'Share of National Trade'}
+                {lang === 'bm' ? 'Sumbangan Perdagangan' : 'Trade Share'}
               </p>
               <p className="text-sm font-semibold text-foreground mt-1">{formatRM(state.value, lang)}</p>
 
               <div className="mt-2 w-full border-t border-border/50 pt-2 space-y-1">
                 <p className="text-[10px] text-muted-foreground text-center">
                   <span className="font-semibold text-foreground">
-                    {lang === 'bm' ? 'Komoditi Teratas' : 'Top Commodity'}:
+                    {lang === 'bm' ? 'Komoditi Utama' : 'Top Commodity'}:
                   </span>{' '}
                   {state.topCommodity.length > 25 ? state.topCommodity.slice(0, 25) + '…' : state.topCommodity}
-                </p>
-                <p className="text-[10px] text-muted-foreground text-center">
-                  <span className="font-semibold text-foreground">
-                    {lang === 'bm' ? 'Jumlah Rekod' : 'Total Records'}:
-                  </span>{' '}
-                  {state.records.toLocaleString()}
                 </p>
               </div>
             </div>
