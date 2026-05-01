@@ -127,11 +127,11 @@ const [showScrollTop, setShowScrollTop] = useState(false);
                       <span className="block text-slate-900 dark:text-white">
                         kekal
                         <span className="bg-gradient-to-r from-cyan-500 via-sky-500 to-emerald-500 bg-clip-text pl-3 text-transparent">
-                          kukuh dan kompetitif
+                          kukuh
                         </span>
                       </span>
                       <span className="block text-slate-900 dark:text-white">
-                        pada tahun 2026.
+                        pada tahun 2025
                       </span>
                     </>
                   ) : (
@@ -142,11 +142,11 @@ const [showScrollTop, setShowScrollTop] = useState(false);
                       <span className="block text-slate-900 dark:text-white">
                         remains
                         <span className="bg-gradient-to-r from-cyan-500 via-sky-500 to-emerald-500 bg-clip-text pl-3 text-transparent">
-                          strong and competitive
+                          strong
                         </span>
                       </span>
                       <span className="block text-slate-900 dark:text-white">
-                        in 2026.
+                        in 2025
                       </span>
                     </>
                   )}
@@ -154,14 +154,14 @@ const [showScrollTop, setShowScrollTop] = useState(false);
 
                 <p className="max-w-2xl text-sm leading-7 text-slate-600 dark:text-slate-300 md:text-base">
                   {lang === 'bm'
-                    ? 'Peningkatan eksport didorong oleh komoditi elektronik dan permintaan global yang berdaya tahan, manakala import terus menyokong pertumbuhan industri domestik.'
-                    : 'Export growth is driven by electronics commodities and resilient global demand, while imports continue to support domestic industrial expansion.'}
+                    ? 'Pertumbuhan eksport dipacu oleh permintaan antarabangsa yang stabil, sementara import kekal memainkan peranan penting dalam menyokong aktiviti perindustrian domestik'
+                    : 'EGrowth in exports is driven by stable international demand, while imports continue to play an important role in supporting domestic industrial activity'}
                 </p>
               </div>
 
               <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
                 <span className="rounded-full border border-border bg-background/60 px-3 py-1.5 backdrop-blur-sm">
-                  {lang === 'bm' ? 'Data sehingga Februari 2026' : 'Data up to February 2026'}
+                  {lang === 'bm' ? 'Data sehingga Disember 2025' : 'Data up to December 2025'}
                 </span>
               </div>
             </div>
@@ -214,11 +214,11 @@ const [showScrollTop, setShowScrollTop] = useState(false);
       {/* SECTION D */}
       <section>
         <SectionHeader
-          title={lang === 'bm' ? 'Komoditi Perdagangan' : 'Commodity Trade'}
+          title={lang === 'bm' ? 'Perdagangan mengikut Komoditi' : 'Trade by Comodity'}
           description={
             lang === 'bm'
-              ? 'Taburan perdagangan mengikut kategori komoditi.'
-              : 'Trade distribution by commodity category.'
+              ? 'Treemap menggambarkan struktur hierarki perdagangan mengikut komoditi'
+              : 'Treemap depicts hierarchical structure of trade’s commodities'
           }
           icon={Package}
         />
@@ -232,11 +232,11 @@ const [showScrollTop, setShowScrollTop] = useState(false);
         <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
           <div>
             <SectionHeader
-              title={lang === 'bm' ? 'Perdagangan mengikut Kawasan Ekonomi' : 'Trade by Economic Region'}
+              title={lang === 'bm' ? 'Perdagangan mengikut Kumpulan Ekonomi Utama' : 'Trade by Major Economic Grouping'}
               description={
                 lang === 'bm'
-                  ? 'Hierarki perdagangan mengikut kawasan ekonomi dan negeri.'
-                  : 'Trade hierarchy by economic region and state.'
+                  ? 'Carta memaparkan tiga (3) kumpulan ekonomi utama bagi eksport dan import Malaysia'
+                  : 'Chart shows three (3) major economics grouping for Malaysia’s export and import'
               }
               icon={GitBranch}
             />
@@ -247,11 +247,11 @@ const [showScrollTop, setShowScrollTop] = useState(false);
 
           <div>
             <SectionHeader
-              title={lang === 'bm' ? '10 Negara Perdagangan Teratas' : 'Top 10 Trading Countries'}
+              title={lang === 'bm' ? 'Rakan Perdagangan Utama' : 'Top Trading Partners'}
               description={
                 lang === 'bm'
-                  ? 'Import dan eksport mengikut negara.'
-                  : 'Import and export by country.'
+                  ? 'Graf bar menunjukkan rakan dagang sehala dan dua hala terbesar Malaysia'
+                  : 'Bar graph shows Malaysia’s top one-way and two-way trading partners '
               }
               icon={Flag}
             />

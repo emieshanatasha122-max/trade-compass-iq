@@ -19,8 +19,8 @@ const translations: Translations = {
   totalImportValue: { bm: 'Jumlah Import', en: 'Total Import' },
   tradeBalance: { bm: 'Imbangan Perdagangan', en: 'Trade Balance' },
   tooltipTradeBalance: { bm: 'Perbezaan antara nilai eksport dan import. Positif bermaksud lebihan Perdagangan.', en: 'Difference between export and import values. Positive means trade surplus.' },
-  top3States: { bm: '3 Negeri Perdagangan Teratas', en: 'Top 3 Trading States' },
-  top3Commodities: { bm: '3 Komoditi Teratas', en: 'Top 3 Commodities' },
+  top3States: { bm: 'Negeri Utama Perdagangan', en: 'Major Trade by States' },
+  top3Commodities: { bm: 'Komoditi Utama', en: 'Major Commodities' },
   topTradingState: { bm: 'Negeri Perdagangan Teratas', en: 'Top Trading State' },
   topSITCCategory: { bm: 'Komoditi SITC Teratas', en: 'Top SITC Category' },
   mainEnterpriseSize: { bm: 'Saiz Perusahaan Utama', en: 'Main Enterprise Size' },
@@ -32,15 +32,15 @@ const translations: Translations = {
   tooltipMainEnterprise: { bm: 'Saiz perusahaan yang menyumbang paling besar.', en: 'Enterprise size contributing the most to trade.' },
 
   globalTradeMap: { bm: 'Pemetaan Perdagangan Global', en: 'Global Trade Mapping' },
-  globalTradeMapDesc: { bm: 'Peta ini menggambarkan hubungan Perdagangan global Malaysia dan destinasi eksport utama.', en: 'This map illustrates Malaysia\'s global trade connections and major export destinations.' },
+  globalTradeMapDesc: { bm: 'Peta menggambarkan hubungan perdagangan Malaysia di peringkat global', en: 'Map illustrates Malaysia’s trade relationships at global level' },
 
   tradeTrends: { bm: 'Analisis Trend Perdagangan', en: 'Trade Trend Analysis' },
-  tradeTrendsDesc: { bm: 'Klik pada titik tahun untuk melihat perincian bulanan.', en: 'Click a year point to drill into the monthly breakdown.' },
+  tradeTrendsDesc: { bm: 'Graf garis menunjukkan trend perdagangan mengikut tahun dan bulan (Klik pada titik tahun untuk melihat perincian bulanan)', en: 'Line graph shows the trade trend by year and month (Click a year point to drill into the monthly breakdown)' },
   monthlyTrend: { bm: 'Trend Bulanan', en: 'Monthly Trend' },
   yearlyTrend: { bm: 'Trend Tahunan', en: 'Yearly Trend' },
 
   stateActivity: { bm: 'Perdagangan Mengikut Negeri', en: 'Trade by State' },
-  stateActivityDesc: { bm: 'Visualisasi ini menyerlahkan negeri mana yang memainkan peranan terbesar dalam Perdagangan antarabangsa Malaysia.', en: 'This visualization highlights which states play the biggest role in Malaysia\'s international trade.' },
+  stateActivityDesc: { bm: 'Paparan menunjukkan jumlah perdagangan bagi setiap negeri', en: 'Exhibit displays total trade by each state' },
 
   commodityStructure: { bm: 'Analisis Komoditi', en: 'Commodity Analysis' },
   commodityStructureDesc: { bm: 'Bahagian ini menunjukkan kategori komoditi teratas mengikut nilai Perdagangan.', en: 'This section shows the top commodity categories by trade value.' },
