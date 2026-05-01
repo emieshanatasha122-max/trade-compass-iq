@@ -518,7 +518,7 @@ export default function Publications() {
 
                 <div className="mt-4 flex justify-center">
                   <a
-                    href={lang === 'bm' ? item.bmUrl : item.enUrl}
+                    href={item.Url}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground transition hover:opacity-90"
@@ -583,7 +583,7 @@ export default function Publications() {
                             </span>
 
                             <a
-                              href={lang === 'bm' ? m.bmUrl : m.enUrl}
+                              href={m.Url}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="inline-flex items-center gap-1 font-semibold text-primary hover:underline"
