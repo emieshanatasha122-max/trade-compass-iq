@@ -85,28 +85,28 @@ export default function TopCountryBars({ data }: Props) {
   const chartTitle =
     mode === 'total'
       ? lang === 'bm'
-        ? 'Top 10 Negara Jumlah Perdagangan'
-        : 'Top 10 Total Trade Countries'
+        ? 'Top 10 Negara Rakan Dagang Utama'
+        : 'Top 10 Trading Partners'
       : mode === 'export'
       ? lang === 'bm'
-        ? 'Top 10 Negara Eksport'
+        ? 'Top 10 Destinasi Eksport Utama'
         : 'Top 10 Export Countries'
       : lang === 'bm'
-      ? 'Top 10 Negara Import'
-      : 'Top 10 Import Countries';
+      ? 'Top 10 Negara Asal Utama'
+      : 'Top 10 Country of Origin';
 
   const chartDescription =
     mode === 'total'
       ? lang === 'bm'
-        ? 'Ranking negara berdasarkan jumlah perdagangan keseluruhan (import + eksport).'
-        : 'Country ranking based on total trade value (import + export).'
+        ? 'Ranking negara berdasarkan jumlah perdagangan keseluruhan (import + eksport)'
+        : 'Country ranking based on total trade value (import + export)'
       : mode === 'export'
       ? lang === 'bm'
-        ? 'Ranking negara berdasarkan nilai eksport.'
-        : 'Country ranking based on export value.'
+        ? 'Ranking negara berdasarkan nilai eksport'
+        : 'Country ranking based on export value'
       : lang === 'bm'
-      ? 'Ranking negara berdasarkan nilai import.'
-      : 'Country ranking based on import value.';
+      ? 'Ranking negara berdasarkan nilai import'
+      : 'Country ranking based on import value';
 
   const dataKey =
     mode === 'total'
