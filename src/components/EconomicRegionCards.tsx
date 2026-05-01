@@ -40,21 +40,21 @@ const REGION_THEME: Record<
 };
 
 const STATE_FLAGS: Record<string, string> = {
-  johor: '/flags/Johor.svg',
-  kedah: '/flags/Kedah.svg',
-  kelantan: '/flags/Kelantan.svg',
-  melaka: '/flags/Melaka.svg',
-  'negeri sembilan': '/flags/Negeri_Sembilan.svg',
-  pahang: '/flags/Pahang.svg',
-  perak: '/flags/Perak.svg',
-  perlis: '/flags/Perlis.svg',
-  'pulau pinang': '/flags/Pulau_Pinang.svg',
-  sabah: '/flags/Sabah.svg',
-  sarawak: '/flags/Sarawak.svg',
-  selangor: '/flags/Selangor.svg',
-  terengganu: '/flags/Terengganu.svg',
-  'wp kuala lumpur': '/flags/WP_Kuala_Lumpur.svg',
-  'wp labuan': '/flags/WP_Labuan.svg',
+  johor: 'public/flags/Johor.svg',
+  kedah: 'public/flags/Kedah.svg',
+  kelantan: 'public/flags/Kelantan.svg',
+  melaka: 'public/flags/Melaka.svg',
+  'negeri sembilan': 'public/flags/Negeri_Sembilan.svg',
+  pahang: 'public/flags/Pahang.svg',
+  perak: 'public/flags/Perak.svg',
+  perlis: 'public/flags/Perlis.svg',
+  'pulau pinang': 'public/flags/Pulau_Pinang.svg',
+  sabah: 'public/flags/Sabah.svg',
+  sarawak: 'public/flags/Sarawak.svg',
+  selangor: 'public/flags/Selangor.svg',
+  terengganu: 'public/flags/Terengganu.svg',
+  'wp kuala lumpur': 'public/flags/WP_Kuala_Lumpur.svg',
+  'wp labuan': 'public/flags/WP_Labuan.svg',
 };
 
 function formatRM(value: number): string {
@@ -281,7 +281,7 @@ export default function EconomicRegionCards({ data }: Props) {
       <div
         className="relative min-h-[520px] overflow-hidden rounded-xl border border-border bg-card/70 p-4 bg-cover bg-center bg-no-repeat"
         style={{
-          backgroundImage: "url('/economic-region-bg.png')",
+          backgroundImage: "url('/public/economic-region-bg.png')",
         }}
       >
 
