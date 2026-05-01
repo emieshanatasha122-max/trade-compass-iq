@@ -88,11 +88,6 @@ const translations: Translations = {
   sarawak: { bm: 'Sarawak', en: 'Sarawak' },
   zonBebas: { bm: 'Zon Bebas', en: 'Free Zone' },
 
-  tooltipSupra: { bm: 'Supra merujuk kepada Perdagangan yang tidak dapat dikenalpasti negeri asalnya.', en: 'Supra refers to trade that cannot be attributed to a specific state of origin.' },
-  tooltipAgent: { bm: 'Ejen Perdagangan merujuk kepada syarikat yang bertindak sebagai perantara dalam urus niaga Perdagangan.', en: 'Trading Agents refer to companies acting as intermediaries in trade transactions.' },
-  tooltipNES: { bm: 'NES bermaksud "Tidak Dinyatakan di Tempat Lain".', en: 'NES means "Not Elsewhere Specified".' },
-  tooltipExportIntensity: { bm: 'Keamatan warna menunjukkan jumlah nilai eksport Malaysia ke setiap negara.', en: 'Color intensity shows total Malaysian export value to each country.' },
-
   exportIntensity: { bm: 'Keamatan Eksport', en: 'Export Intensity' },
   searchCountry: { bm: 'Cari Negara', en: 'Search Country' },
   searchCountryPlaceholder: { bm: 'Taip nama negara...', en: 'Type country name...' },
@@ -118,17 +113,6 @@ const translations: Translations = {
   radarTopAttributes: { bm: 'Atribut Utama', en: 'Top Attributes' },
   radarPrimaryState: { bm: 'Negeri Utama', en: 'Primary State' },
   radarRegion: { bm: 'Kawasan', en: 'Region' },
-};
-
-export const ENTERPRISE_LABEL_MAP: Record<string, Record<string, string>> = {
-  'LARGE': { bm: 'Syarikat Besar', en: 'Large Enterprises' },
-  'SME MICRO': { bm: 'PKS Mikro', en: 'Micro SMEs' },
-  'SME SMALL': { bm: 'PKS Kecil', en: 'Small SMEs' },
-  'SME MEDIUM': { bm: 'PKS Sederhana', en: 'Medium SMEs' },
-  'SME_MICRO': { bm: 'PKS Mikro', en: 'Micro SMEs' },
-  'SME_SMALL': { bm: 'PKS Kecil', en: 'Small SMEs' },
-  'SME_MEDIUM': { bm: 'PKS Sederhana', en: 'Medium SMEs' },
-  'AGENTS': { bm: 'Ejen Perdagangan', en: 'Trading Agents' },
 };
 
 interface LanguageContextType {
