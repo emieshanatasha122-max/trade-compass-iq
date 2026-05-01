@@ -118,15 +118,19 @@ export default function TrendDrillDown({ data }: Props) {
 
   const chartData = drillYear ? monthlyData : yearlyData;
 
-  const insightText = drillYear
-    ? lang === 'bm'
-      ? `Perincian bulanan untuk tahun ${drillYear} menunjukkan corak musiman Perdagangan. Bandingkan kemuncak eksport dan import untuk mengenal pasti bulan paling aktif.`
-      : `The monthly breakdown for ${drillYear} reveals seasonal trade patterns. Compare export and import peaks to identify the most active months.`
-    : lang === 'bm'
-      ? 'Eksport menunjukkan trend peningkatan yang konsisten dan mencapai kemuncak pada tahun 2022 sebelum menurun sedikit pada tahun berikutnya. Import pula kekal lebih rendah sepanjang tempoh ini, mengekalkan imbangan Perdagangan yang positif.'
-      : 'Exports show a consistent upward trend, reaching a peak in 2022 before slightly declining in the following year. Imports remain lower throughout the period, maintaining a positive trade balance.';
+// ===============================
+// Insight Text (DISABLED)
+// ===============================
 
-  return (
+// const insightText = drillYear
+//   ? lang === 'bm'
+//     ? `Perincian bulanan untuk tahun ${drillYear} menunjukkan corak musiman Perdagangan. Bandingkan kemuncak eksport dan import untuk mengenal pasti bulan paling aktif.`
+//     : `The monthly breakdown for ${drillYear} reveals seasonal trade patterns. Compare export and import peaks to identify the most active months.`
+//   : lang === 'bm'
+//     ? 'Eksport menunjukkan trend peningkatan yang konsisten dan mencapai kemuncak pada tahun 2022 sebelum menurun sedikit pada tahun berikutnya. Import pula kekal lebih rendah sepanjang tempoh ini, mengekalkan imbangan Perdagangan yang positif.'
+//     : 'Exports show a consistent upward trend, reaching a peak in 2022 before slightly declining in the following year. Imports remain lower throughout the period, maintaining a positive trade balance.';
+  
+return (
     <div>
       {drillYear ? (
         <div className="mb-4 flex items-center justify-between gap-4">
@@ -252,12 +256,18 @@ export default function TrendDrillDown({ data }: Props) {
         </LineChart>
       </ResponsiveContainer>
 
-      <div className="mt-4 flex items-start gap-3 rounded-lg border border-border/60 bg-muted/30 px-4 py-3">
-        <BarChart3 className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-        <p className="text-xs leading-relaxed text-muted-foreground">
-          {insightText}
-        </p>
-      </div>
+        {/* ===============================
+            Insight Box (DISABLED)
+        ================================
+
+        <div className="mt-4 flex items-start gap-3 rounded-lg border border-border/60 bg-muted/30 px-4 py-3">
+          <BarChart3 className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+          <p className="text-xs leading-relaxed text-muted-foreground">
+            {insightText}
+          </p>
+        </div>
+
+        ================================ */}
     </div>
   );
 }
