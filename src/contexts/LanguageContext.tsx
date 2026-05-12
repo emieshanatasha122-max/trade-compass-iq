@@ -142,3 +142,14 @@ export function useLanguage() {
   if (!ctx) throw new Error('useLanguage must be used within LanguageProvider');
   return ctx;
 }
+
+export const ENTERPRISE_LABEL_MAP: Record<string, Record<string, string>> = {
+  'LARGE': { bm: 'Syarikat Besar', en: 'Large Enterprises' },
+  'SME_MICRO': { bm: 'PKS Mikro', en: 'Micro SMEs' },
+  'SME_SMALL': { bm: 'PKS Kecil', en: 'Small SMEs' },
+  'SME_MEDIUM': { bm: 'PKS Sederhana', en: 'Medium SMEs' },
+  'SME MICRO': { bm: 'PKS Mikro', en: 'Micro SMEs' },
+  'SME SMALL': { bm: 'PKS Kecil', en: 'Small SMEs' },
+  'SME MEDIUM': { bm: 'PKS Sederhana', en: 'Medium SMEs' },
+  'AGENTS': { bm: 'Ejen', en: 'Agents' },
+};
